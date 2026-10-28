@@ -310,7 +310,7 @@ H.sleep=function(s){return sleepTick(s.ms||500);};
 H.clear=function(){clearTask();return Promise.resolve();};
 H.quote=function(s){clearTask();task.append(el("blockquote",{class:"quote",text:s.para!=null?PARAS[s.para]:fill(s.text)}));return Promise.resolve();};
 
-H.name=function(s,tok){if(S.data.name){if(S.data.greeted)return say(fill(s.back),s.who,tok);S.data.greeted=1;save();return line(fill(s.greet),s.who,tok);}
+H.name=function(s,tok){if(!S.data.name&&BK.mode==="sheet"&&(BK.me||BK.tpw))S.data.name=BK.me?BK.me.name:"老师";if(S.data.name){if(S.data.greeted)return say(fill(s.back),s.who,tok);S.data.greeted=1;save();return line(fill(s.greet),s.who,tok);}
   return say(s.ask,s.who,tok).then(function(){return new Promise(function(res,rej){clearTask();var inp=el("input",{type:"text",id:"in-name",placeholder:"写你的名字或昵称",autocomplete:"off"});var b=btn("说出来");task.append(q(s.ask),el("div",{class:"field"},[inp]),el("div",{class:"row"},[b]));inp.focus();function go(){if(tok!==RUN.token)return rej(CANCEL);var v=inp.value.trim();if(!v){inp.focus();return;}S.data.name=v;S.data.greeted=1;commit();refreshMe();clearTask();res();}b.addEventListener("click",go);inp.addEventListener("keydown",function(e){if(e.key==="Enter")go();});});})
   .then(function(){logMe(fill("我叫{name}。"));return line(fill(s.greet),s.who,tok);});};
 

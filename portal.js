@@ -142,7 +142,7 @@
     app.scrollTop = 0;
     app.className = "screen open";
     app.innerHTML = '<canvas id="ink" aria-hidden="true"></canvas><div id="hillsBox"></div>' +
-      '<div class="stage"><div class="title" id="ttl"><span class="zi">弦</span><span class="zi">歌</span><span class="seal">HORA</span></div>' +
+      '<div class="stage"><div class="title" id="ttl">' + titleSVG() + '<span class="seal">HORA</span></div>' +
       '<div class="sub" id="sub">HORA 语文</div>' +
       '<svg class="qin" id="qin" viewBox="0 0 1000 120" role="button" tabindex="0" aria-label="拨一下琴弦">' +
       '<rect x="0" y="0" width="1000" height="120" fill="transparent"/>' + huiDots() +
@@ -166,7 +166,8 @@
         done = true; document.getElementById("hint").hidden = true;
         var cv = document.getElementById("ink"), sr = sheet.getBoundingClientRect();
         inkRings(cv, r.left - sr.left + r.width * at, r.top - sr.top + r.height / 2);
-        var hb = document.getElementById("hillsBox"); hb.innerHTML = hillsSVG(); hb.firstChild.classList.add("bleed");
+        var hb = document.getElementById("hillsBox"); hb.innerHTML = hillsSVG(); hb.firstChild.style.setProperty("--mx", (at * 100).toFixed(1) + "%"); hb.firstChild.classList.add("bleed");
+        inkTitle(at);
         ["ttl", "sub", "quote", "bIn"].forEach(function (id) { document.getElementById(id).classList.add("show"); });
       }
     }
@@ -174,6 +175,40 @@
     qin.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); play(); } });
     document.getElementById("bIn").addEventListener("click", function () { ac(); if (me || teacher) showShelf(); else showLogin(); });
     if (reduce) play();
+  }
+  /* 题字：墨点落在纸上，一团团洇开，洇满笔画就成了“弦歌”两个字 */
+  function titleSVG() {
+    return '<svg id="tsvg" viewBox="0 0 420 170" role="img" aria-label="弦歌"><defs>' +
+      '<filter id="inkEdge" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="14"/><feGaussianBlur stdDeviation="1.2"/></filter>' +
+      '<filter id="halo" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>' +
+      '<mask id="inkMask" maskUnits="userSpaceOnUse" x="-40" y="-40" width="500" height="250"><g id="blots" filter="url(#inkEdge)"></g></mask>' +
+      '<mask id="haloMask" maskUnits="userSpaceOnUse" x="-40" y="-40" width="500" height="250"><g id="blots2" filter="url(#inkEdge)"></g></mask></defs>' +
+      '<g id="tHalo" mask="url(#haloMask)" filter="url(#halo)" opacity=".45"><text x="10" y="140" fill="#1c1a17">弦</text><text x="215" y="140" fill="#1c1a17">歌</text></g>' +
+      '<g id="tInk" mask="url(#inkMask)"><text x="10" y="140" fill="#1c1a17">弦</text><text x="215" y="140" fill="#1c1a17">歌</text></g></svg>';
+  }
+  function inkTitle(at) {
+    var ns = "http://www.w3.org/2000/svg", g1 = document.getElementById("blots"), g2 = document.getElementById("blots2"), halo = document.getElementById("tHalo");
+    if (!g1) return;
+    var R = Math.random, ox = 20 + at * 380, seeds = [];
+    for (var gx = 6; gx < 416; gx += 22) for (var gy = 8; gy < 168; gy += 22) {   /* 墨点铺成网格（保证最后洇满），先落在靠近拨弦的一侧，再往两边洇 */
+      var x = gx + (R() - .5) * 14, y = gy + (R() - .5) * 14, dist = Math.abs(x - ox) / 400;
+      seeds.push({ x: x, y: y, r: 16 + R() * 8, t0: 200 + dist * 1700 + R() * 900, dur: 900 + R() * 700 });
+    }
+    seeds.forEach(function (sd) {
+      [g1, g2].forEach(function (g, k) { var c = document.createElementNS(ns, "circle"); c.setAttribute("cx", sd.x); c.setAttribute("cy", sd.y); c.setAttribute("r", 0); c.setAttribute("fill", "#fff"); g.appendChild(c); (sd.el || (sd.el = []))[k] = c; });
+    });
+    function fill() { seeds.forEach(function (sd) { sd.el[0].setAttribute("r", sd.r * 1.6); sd.el[1].setAttribute("r", sd.r * 1.9); }); halo.setAttribute("opacity", ".12"); }
+    if (reduce) return fill();
+    var start = performance.now();
+    (function frame(now) {
+      var t = now - start, live = false;
+      seeds.forEach(function (sd) {
+        var k = Math.min(1, Math.max(0, (t - sd.t0) / sd.dur)), e = 1 - Math.pow(1 - k, 3); if (k < 1) live = true;
+        sd.el[0].setAttribute("r", (sd.r * 1.6 * e).toFixed(1)); sd.el[1].setAttribute("r", (sd.r * 1.9 * e).toFixed(1));
+      });
+      halo.setAttribute("opacity", (.45 - Math.min(1, t / 3600) * .33).toFixed(3));
+      if (live || t < 3600) requestAnimationFrame(frame); else fill();
+    })(start);
   }
   function huiDots() {   /* 琴徽：十三个，中间最大 */
     var pos = [1 / 8, 1 / 6, 1 / 5, 1 / 4, 1 / 3, 2 / 5, 1 / 2, 3 / 5, 2 / 3, 3 / 4, 4 / 5, 5 / 6, 7 / 8], s = "";
@@ -279,7 +314,7 @@
     app.className = "screen"; location.hash = "album";
     var list = byGrade(g), lastId = get("hora-lastLesson");
     var h = top("十二册") + '<div class="page"><h1 class="h1">' + NUM[g] + '年级 · 册页</h1><p class="lead">左右翻页，一页一篇课文。</p><div class="album" id="album">';
-    h += '<section class="leaf front"><div class="leaf-in"><div class="row2"><div class="big">' + NUM[g] + '年级</div><div class="yin"><div>一句话说得合宜，<br>就如金苹果在银网子里。<small>箴言 25:11</small></div><div>愿我口中的言语、心里的意念<br>在你面前蒙悦纳。<small>诗篇 19:14</small></div></div></div></div></section>';
+    h += '<section class="leaf front"><div class="leaf-in"><div class="row2"><div class="big">' + NUM[g] + '年级</div><div class="yin"><div>一句话说得合宜，<br>就如金苹果<br>在银网子里。<small>箴言 25:11</small></div><div>愿我口中的言语、<br>心里的意念<br>在你面前蒙悦纳。<small>诗篇 19:14</small></div></div></div></div></section>';
     list.forEach(function (l, i) {
       var dd = teacher ? 0 : doneDays(l), pt = l.picText, pic = l.pic ? '<figure class="photo"><img src="' + esc(l.pic) + '" alt="' + esc(l.picAlt || "《" + l.title + "》") + '" loading="lazy">' +
         (pt ? '<div class="pp-top">' + esc(pt.top) + '</div><div class="pp-day">' + esc(pt.day) + '</div><div class="pp-lunar">' + esc(pt.lunar) + '</div><div class="pp-week">' + esc(pt.week) + '</div>' : "") + '</figure>' : '<span style="font-family:var(--f-brush);font-size:3rem">' + esc(l.title) + '</span>';
@@ -322,4 +357,5 @@
   var g0 = get("hora-grade");
   if ((me || teacher) && /^#(album|map)$/.test(location.hash) && g0 && byGrade(g0).length) showAlbum(g0);
   else showOpen();
+  try { document.fonts.load('150px "Ma Shan Zheng"', "弦歌"); } catch (e) {}
 })();

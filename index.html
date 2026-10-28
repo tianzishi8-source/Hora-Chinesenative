@@ -51,27 +51,30 @@ button{font:inherit;color:inherit;cursor:pointer}
 .open{display:grid;place-items:center}
 .open canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .hills{position:absolute;left:0;right:0;bottom:0;height:52%;width:100%;pointer-events:none}
-.hills.bleed{animation:bleed 2.6s cubic-bezier(.2,.7,.2,1) both}
-@keyframes bleed{0%{opacity:0;filter:blur(14px)}40%{opacity:.7}100%{opacity:1;filter:blur(0)}}
+/* 墨从拨弦处往外洇开：用一个不断扩大的、边缘发毛的遮罩，而不是模糊变清晰 */
+@property --r{syntax:"<length>";inherits:false;initial-value:0px}
+.hills.bleed{--mx:50%;-webkit-mask-image:radial-gradient(ellipse 130% 100% at var(--mx) 0%,#000 var(--r),rgba(0,0,0,.35) calc(var(--r) + 60px),transparent calc(var(--r) + 200px));mask-image:radial-gradient(ellipse 130% 100% at var(--mx) 0%,#000 var(--r),rgba(0,0,0,.35) calc(var(--r) + 60px),transparent calc(var(--r) + 200px));animation:spread 3.4s cubic-bezier(.25,.6,.3,1) .15s both}
+@keyframes spread{from{--r:0px}to{--r:1800px}}
+.inkin{-webkit-mask-image:radial-gradient(circle at 50% 55%,#000 var(--r),rgba(0,0,0,.3) calc(var(--r) + 40px),transparent calc(var(--r) + 140px));mask-image:radial-gradient(circle at 50% 55%,#000 var(--r),rgba(0,0,0,.3) calc(var(--r) + 40px),transparent calc(var(--r) + 140px));animation:spread2 2s cubic-bezier(.25,.6,.3,1) both}
+@keyframes spread2{from{--r:0px}to{--r:900px}}
 .stage{position:relative;width:min(980px,100%);padding:0 20px;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2}
-.title{display:flex;align-items:center;gap:18px;min-height:150px}
-.title .zi{font-family:var(--f-brush);font-size:clamp(84px,14vw,150px);line-height:1;color:var(--ink);display:inline-block}
-.title.show .zi{animation:write 1.4s cubic-bezier(.3,.6,.2,1) both}
-.title.show .zi:nth-child(2){animation-delay:.45s}
+.title{display:flex;align-items:center;gap:6px;min-height:150px}
+.title svg{width:clamp(250px,40vw,440px);height:auto;overflow:visible}
+.title text{font-family:var(--f-brush);font-size:150px}
 @keyframes write{0%{clip-path:inset(0 0 100% 0);filter:blur(6px);opacity:.2}60%{filter:blur(1px);opacity:1}100%{clip-path:inset(0 0 0 0);filter:blur(0);opacity:1}}
-.title:not(.show) .zi{opacity:0}
+
 .seal{display:inline-grid;place-items:center;background:var(--cinnabar);color:#f7e8dc;font-family:var(--f-brush);line-height:1;border-radius:3px;
   box-shadow:inset 0 0 0 2px rgba(247,232,220,.55),inset 0 0 0 4px var(--cinnabar),inset 0 0 6px rgba(0,0,0,.25)}
 .title .seal{width:54px;height:54px;font-size:12px;font-family:var(--f-serif);font-weight:600;letter-spacing:.05em;writing-mode:vertical-rl;text-orientation:upright;align-self:flex-end;margin-bottom:12px;opacity:0;transform:scale(1.6) rotate(-6deg)}
-.title.show .seal{animation:stamp .5s 1.5s cubic-bezier(.3,1.6,.5,1) both}
+.title.show .seal{animation:stamp .5s 3.3s cubic-bezier(.3,1.6,.5,1) both}
 @keyframes stamp{to{opacity:1;transform:scale(1) rotate(-3deg)}}
-.sub{font-family:var(--f-serif);letter-spacing:.6em;font-size:.95rem;color:var(--ink-mid);padding-left:.6em;opacity:0;transition:opacity 1s 1.9s}
+.sub{font-family:var(--f-serif);letter-spacing:.6em;font-size:.95rem;color:var(--ink-mid);padding-left:.6em;opacity:0;transition:opacity 1s 3.4s}
 .sub.show{opacity:1}
 .qin{width:100%;height:auto;aspect-ratio:1000/120;display:block;cursor:pointer;touch-action:manipulation}
 .qin:focus{outline:none}.qin:focus-visible .s{stroke:var(--cinnabar)}
 .hint{font-size:.9rem;color:var(--ink-soft);letter-spacing:.3em;font-family:var(--f-serif);animation:breathe 2.6s ease-in-out infinite}
 @keyframes breathe{50%{opacity:.35}}
-.quote{text-shadow:0 0 6px var(--xuan),0 0 14px var(--xuan),0 0 22px var(--xuan);font-family:var(--f-serif);color:var(--ink-soft);font-size:.92rem;letter-spacing:.12em;text-align:center;opacity:0;transition:opacity 1.2s 2.2s;max-width:30em}
+.quote{transition-delay:3.7s!important;text-shadow:0 0 6px var(--xuan),0 0 14px var(--xuan),0 0 22px var(--xuan);font-family:var(--f-serif);color:var(--ink-soft);font-size:.92rem;letter-spacing:.12em;text-align:center;opacity:0;transition:opacity 1.2s 2.2s;max-width:30em}
 .quote.show{opacity:1}
 .quote small{display:block;letter-spacing:.2em;font-size:.78rem;margin-top:2px}
 
@@ -82,7 +85,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .scrollbtn::before{left:-6px}.scrollbtn::after{right:-6px}
 .scrollbtn:hover{filter:brightness(1.04)}
 .scrollbtn:disabled{filter:grayscale(.6) opacity(.7);cursor:default}
-.open .scrollbtn{opacity:0;transform:translateY(8px);transition:opacity .8s 2.4s,transform .8s 2.4s}
+.open .scrollbtn{opacity:0;transform:translateY(8px);transition:opacity .8s 4s,transform .8s 4s}
 .open .scrollbtn.show{opacity:1;transform:none}
 
 /* ---------- 顶栏（纸上） ---------- */
@@ -164,7 +167,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .pp-day{left:0;right:12%;top:30%;text-align:center;font-weight:900;font-size:clamp(3.4rem,8vw,5.4rem);line-height:1;color:#1f1b17;letter-spacing:-.03em}
 .pp-lunar{right:8%;top:28%;writing-mode:vertical-rl;color:#a8352a;font-size:clamp(.68rem,1.5vw,.85rem);letter-spacing:.3em;border-left:1px solid rgba(168,53,42,.4);padding-left:5px}
 .pp-week{left:0;right:0;bottom:16%;margin:0 auto;width:max-content;border:1.5px solid #2c2924;border-radius:4px;padding:0 10px;color:#2c2924;font-weight:600;letter-spacing:.2em;font-size:clamp(.7rem,1.5vw,.88rem)}
-.leaf.ink .pic>*{animation:bleed 1.8s cubic-bezier(.2,.7,.2,1) both}
+.leaf.ink .pic{animation:spread2 2s cubic-bezier(.25,.6,.3,1) both;-webkit-mask-image:radial-gradient(circle at 50% 55%,#000 var(--r),rgba(0,0,0,.3) calc(var(--r) + 40px),transparent calc(var(--r) + 140px));mask-image:radial-gradient(circle at 50% 55%,#000 var(--r),rgba(0,0,0,.3) calc(var(--r) + 40px),transparent calc(var(--r) + 140px))}
 .colo{writing-mode:vertical-rl;display:flex;flex-direction:column;gap:14px;align-items:flex-start;max-height:420px}
 .colo h3{font-family:var(--f-brush);font-weight:400;font-size:2.1rem;margin:0;letter-spacing:.1em;line-height:1.2}
 .colo .au{font-family:var(--f-serif);color:var(--ink-mid);font-size:.95rem;letter-spacing:.2em}
@@ -174,7 +177,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .leaf .act .prog{font-family:var(--f-ui);font-size:.82rem;color:var(--ink-soft)}
 .front .leaf-in{grid-template-columns:1fr;place-items:center;text-align:center}
 .front .big{font-family:var(--f-brush);font-size:4.4rem;writing-mode:vertical-rl;line-height:1.1;letter-spacing:.1em}
-.front .yin{display:flex;flex-direction:row-reverse;gap:22px}.front .yin>div{writing-mode:vertical-rl;font-size:.98rem;color:var(--ink-mid);letter-spacing:.2em;line-height:2}.front .yin small{display:block;padding-top:5em;font-size:.72rem;color:var(--ink-soft);letter-spacing:.1em}
+.front .yin{display:flex;flex-direction:row-reverse;gap:22px}.front .yin>div{writing-mode:vertical-rl;font-size:.98rem;color:var(--ink-mid);letter-spacing:.2em;line-height:2}.front .yin small{display:block;padding-top:3em;font-size:.72rem;color:var(--ink-soft);letter-spacing:.1em}
 .front .row2{display:flex;gap:34px;align-items:flex-start}
 .blank .pic{border:1px solid rgba(120,90,50,.18);background:repeating-linear-gradient(90deg,transparent 0 30px,rgba(167,48,42,.06) 30px 31px),var(--xuan)}
 .blank .pic span{writing-mode:vertical-rl;font-family:var(--f-brush);font-size:1.8rem;color:rgba(28,26,23,.25);letter-spacing:.3em}
