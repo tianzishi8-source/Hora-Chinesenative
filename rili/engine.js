@@ -90,7 +90,10 @@ function sync(){
       api("save",Object.assign(cred(),{payload:p,summary:studentText(p)})).then(function(){dirty=false;setSaveSt("已保存");}).catch(function(e){setSaveSt(e.code==="pin"?"没保存：数字不对":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)sync();},20000);});},1200);return;}
   if(!DB||!UID||syncOK===false)return;if(writing){pending=true;return;}writing=true;DB.doc("answers/"+UID).set(JSON.parse(JSON.stringify(payload()))).then(function(){syncOK=true;}).catch(function(e){if(e&&e.code==="invalid_argument")syncOK=false;}).then(function(){writing=false;if(pending){pending=false;sync();}});}
 function commit(){save();sync();}
-addEventListener("beforeunload",function(e){if(BK.mode==="sheet"&&dirty){e.preventDefault();e.returnValue="";}});
+var leaving=false;
+function leaveTo(url){leaving=true;if(BK.mode!=="sheet"||!dirty||!BK.me){location.href=url;return;}clearTimeout(saveT);setSaveSt("保存中…");var done=false;function go(){if(!done){done=true;location.href=url;}}
+  var p=JSON.parse(JSON.stringify(payload()));api("save",Object.assign(cred(),{payload:p,summary:studentText(p)})).then(function(){dirty=false;go();}).catch(go);setTimeout(go,4000);}
+addEventListener("beforeunload",function(e){if(BK.mode==="sheet"&&dirty&&!leaving){e.preventDefault();e.returnValue="";}});
 BK.share=function(key,items){if(BK.mode==="sheet"){if(BK.me)api("share",Object.assign(cred(),{key:key,items:items})).catch(function(){});return;}if(DB&&UID)DB.doc("shares/"+UID).set({key:key,items:items,at:new Date().toISOString()}).catch(function(){});};
 BK.gallery=function(key,maxReal){
   if(BK.mode==="sheet"){if(!BK.me)return Promise.resolve({real:[],got:[]});return api("gallery",Object.assign(cred(),{key:key})).then(function(j){return {real:shuffle(j.shares||[]).slice(0,maxReal),got:j.got||[]};}).catch(function(){return {real:[],got:[]};});}
@@ -610,13 +613,21 @@ else{if(S.day>DAYS.length)S.day=1;runFrom(S.day,Math.min(S.beat[S.day]||0,DAYS[S
 /* ================= 网站版：登录（班级码＋名字＋4位数字）、换人、老师 ================= */
 function normCls(v){return String(v||"").replace(/\s+/g,"").toUpperCase();}
 function normName(v){return String(v||"").replace(/\s+/g," ").trim();}
+var HOME;
+function getSess(){try{var a=JSON.parse(sessionStorage.getItem("hora-session")||"null");if(a&&a.pin)return a;}catch(e){}try{var b=JSON.parse(localStorage.getItem("hora-last")||"{}");if(b.pin)return b;}catch(e){}return null;}
+function dropSess(){try{sessionStorage.removeItem("hora-session");}catch(e){}try{var lm=JSON.parse(localStorage.getItem("hora-last")||"{}");delete lm.pin;localStorage.setItem("hora-last",JSON.stringify(lm));}catch(e){}}
 function sheetStart(){
-  var tools=$(".tools");
-  var bWho=el("button",{class:"tbtn",type:"button",id:"bWho",hidden:"",text:"换人"});bWho.addEventListener("click",function(){if(dirty&&!confirmLeave())return;BK.me=null;try{var lm=JSON.parse(localStorage.getItem("hora-last")||"{}");delete lm.pin;localStorage.setItem("hora-last",JSON.stringify(lm));}catch(e){}RUN.token++;resetUI();showLogin();});
+  HOME=SITE.home||"";var tools=$(".tools");
+  if(HOME){var bMap=el("button",{class:"tbtn",type:"button",id:"bMap",text:"课文地图"});bMap.addEventListener("click",function(){leaveTo(HOME+"#map");});tools.prepend(bMap);}
+  var bWho=el("button",{class:"tbtn",type:"button",id:"bWho",hidden:"",text:"换人"});bWho.addEventListener("click",function(){if(dirty&&!confirmLeave())return;if(HOME){dropSess();leaveTo(HOME);return;}BK.me=null;dropSess();RUN.token++;resetUI();showLogin();});
   var bT=el("button",{class:"tbtn",type:"button",id:"bTLogin",text:"老师"});bT.addEventListener("click",function(){if(BK.tpw){openTeacher();return;}showTeacherLogin();});
   tools.append(bWho,bT);
-  if(location.hash==="#teacher")showTeacherLogin(true);else showLogin();
+  if(location.hash==="#teacher")showTeacherLogin(true);
+  else{var ss=getSess();if(ss)autoLogin(ss);else if(HOME)location.replace(HOME);else showLogin();}
   addEventListener("hashchange",function(){if(location.hash==="#teacher"&&!BK.tpw)showTeacherLogin(!BK.me);});}
+function autoLogin(ss){var me={cls:normCls(ss.cls),name:normName(ss.name),pin:String(ss.pin)};var keep=false;try{keep=!!JSON.parse(localStorage.getItem("hora-last")||"{}").pin;}catch(e){}
+  setSaveSt("正在连接……");
+  api("login",me).then(function(j){enter(me,j.state,keep);}).catch(function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"){dropSess();if(HOME){location.replace(HOME);return;}showLogin();return;}enter(me,null,keep);setSaveSt("没连上，稍后自动再存",true);});}
 function confirmLeave(){return true;}
 function overlay(id){var o=$("#"+id);if(!o){o=el("div",{class:"ov login",id:id},[el("div",{class:"sheet login-s",role:"dialog"})]);document.body.append(o);}o.hidden=false;return $(".sheet",o);}
 function showLogin(){var sh=overlay("ovLogin");var last={};try{last=JSON.parse(localStorage.getItem("hora-last")||"{}");}catch(e){}
@@ -636,13 +647,13 @@ function showLogin(){var sh=overlay("ovLogin");var last={};try{last=JSON.parse(l
       if(e.code==="pin")msg.textContent="这个班里已经有人用了这个名字，数字对不上。是你的话，再想想当初定的数字；不是你，就换个名字（比如加上姓）。";
       else if(e.code==="cls")msg.textContent="没有这个班级码，请问一下老师。";
       else{msg.innerHTML="";msg.append("连不上老师的表格（可能是网络问题）。 ");var off=el("button",{type:"button",class:"ghost",text:"先在这台设备上做"});off.addEventListener("click",function(){enter(me,null,keep.checked);setSaveSt("没连上，稍后自动再存",true);});msg.append(off);}});});}
-function enter(me,state,keep){BK.me=me;try{localStorage.setItem("hora-last",JSON.stringify(keep?me:{cls:me.cls,name:me.name}));}catch(e){}
+function enter(me,state,keep){BK.me=me;try{localStorage.setItem("hora-last",JSON.stringify(keep?me:{cls:me.cls,name:me.name}));}catch(e){}try{sessionStorage.setItem("hora-session",JSON.stringify(me));}catch(e){}
   KEY="hora-"+L.id+"-"+me.cls+"|"+me.name;S={day:1,beat:{},done:{},data:{},log:{},chats:[]};try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);for(var k in o)S[k]=o[k];}}catch(e){}
-  mergeRemote(state);S.data.name=me.name;save();$("#ovLogin").hidden=true;$("#bWho").hidden=false;if(state!==null)setSaveSt("已连上");restart();}
+  mergeRemote(state);S.data.name=me.name;save();if($("#ovLogin"))$("#ovLogin").hidden=true;$("#bWho").hidden=false;if(state!==null)setSaveSt("已连上");restart();}
 function showTeacherLogin(fromHash){var sh=overlay("ovTLogin");
   sh.innerHTML='<h3>老师</h3><label class="field"><span class="lab">老师密码</span><input type="password" id="tl-pw" autocomplete="off"></label><div class="row"><button type="button" class="btn" id="tl-go">进入</button><button type="button" class="ghost" id="tl-x">'+(fromHash?"我是学生":"取消")+'</button></div><p class="note" id="tl-msg">密码是部署表格时你自己设的。</p>';
   var pw=$("#tl-pw",sh),msg=$("#tl-msg",sh);pw.focus();
-  $("#tl-x",sh).addEventListener("click",function(){$("#ovTLogin").hidden=true;if(fromHash&&!BK.me)showLogin();});
+  $("#tl-x",sh).addEventListener("click",function(){$("#ovTLogin").hidden=true;if(fromHash&&!BK.me){var ss=getSess();if(ss)autoLogin(ss);else if(HOME)location.href=HOME;else showLogin();}});
   function go(){msg.textContent="正在核对……";BK.tpw=pw.value;api("t_all",{pw:pw.value}).then(function(j){$("#ovTLogin").hidden=true;$("#bTMode").hidden=false;$("#bTeacher").hidden=false;$("#bTLogin").hidden=true;
       if(!BK.me){$("#ovLogin")&&($("#ovLogin").hidden=true);BK.me=null;KEY="hora-"+L.id+"-teacher-preview";setSaveSt("老师预览：不保存");restart();}
       tDocs=[];openTeacher();}).catch(function(e){BK.tpw=null;msg.textContent=e.code==="pw"?"密码不对。":"连不上表格，稍后再试。";});}
