@@ -301,3 +301,31 @@ textarea:focus,input[type=text]:focus,input[type=password]:focus{border-color:va
 .login-s h3{margin:0}
 .savest{font-size:.78rem;color:var(--muted);align-self:center;margin-right:4px}
 .savest.bad{color:var(--accent)}
+
+/* ===== 立绘（清弦、长歌、“我”） =====
+   图是动漫风的半身立绘；为了和宣纸、水墨放在一起：降一点饱和、略暖，用 multiply 叠在纸上（白衣服透出纸色），脚下衬一抹淡墨。
+   只截头到腰：box 里显示原图 x 245–780、y 30–815 那一块。 */
+.actor.sprite{opacity:.86;transform:none;cursor:pointer}
+.actor.sprite.on{opacity:1}
+.hush .actor.sprite{opacity:.55}
+.spr{position:relative;display:block;width:120px;height:176px;overflow:hidden;
+  background:radial-gradient(70% 26% at 50% 100%,rgba(55,62,60,.16),transparent 72%);
+  -webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+.spr img{position:absolute;width:229px;max-width:none;left:-55px;top:-7px;filter:saturate(.72) sepia(.07) contrast(.97);mix-blend-mode:multiply;user-select:none;-webkit-user-drag:none}
+.actor.sprite .spr{transition:transform .35s ease}
+.actor.sprite.on .spr{transform:translateY(-3px)}
+@media (prefers-reduced-motion:no-preference){.actor.sprite .spr img{animation:breathe-s 4.2s ease-in-out infinite}}
+@keyframes breathe-s{50%{transform:translateY(1px)}}
+.actor.sprite .nm{margin-top:2px}
+.look{max-width:560px}
+.looks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:10px 0 14px}
+.lk{border:1px solid var(--line);background:var(--page);border-radius:12px;padding:6px 0 0;display:grid;place-items:center}
+.lk .spr{width:96px;height:140px;background:none}
+.lk .spr img{width:183px;left:-44px;top:-5px}
+.lk.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+@media (max-width:860px){
+  .spr{width:70px;height:103px}
+  .spr img{width:134px;left:-32px;top:-4px}
+  .actor.sprite .nm{display:none}
+  .lk .spr{width:64px;height:94px}.lk .spr img{width:122px;left:-29px;top:-3px}
+}

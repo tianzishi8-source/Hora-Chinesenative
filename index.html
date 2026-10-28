@@ -124,6 +124,15 @@ button{font:inherit;color:inherit;cursor:pointer}
 .msg.err{color:var(--cinnabar)}
 .tlink{display:block;margin:10px auto 0;border:0;background:none;font-family:var(--f-ui);font-size:.82rem;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px}
 
+.looksheet{width:min(560px,100%)}
+.lk-h{font-family:var(--f-ui);font-size:.82rem;color:var(--ink-mid);letter-spacing:.2em;margin:10px 0 6px}
+.looks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.lk{border:1px solid rgba(120,90,50,.22);background:rgba(255,252,244,.55);border-radius:6px;padding:6px 0 0;display:grid;place-items:center;transition:transform .2s}
+.lk:hover{transform:translateY(-3px)}
+.lk.on{border-color:var(--cinnabar);box-shadow:0 0 0 2px rgba(167,48,42,.2)}
+.lk .spr{position:relative;display:block;width:96px;max-width:100%;height:140px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 82%,transparent);mask-image:linear-gradient(#000 82%,transparent)}
+.lk .spr img{position:absolute;width:183px;max-width:none;left:50%;margin-left:-91px;top:-5px;filter:saturate(.72) sepia(.07) contrast(.97);mix-blend-mode:multiply}
+@media (max-width:480px){.lk .spr{height:110px}.lk .spr img{width:150px;margin-left:-75px}}
 /* ---------- 十二册 ---------- */
 .shelf{display:flex;flex-direction:column;gap:30px}
 .tier{position:relative}

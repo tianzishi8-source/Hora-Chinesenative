@@ -186,9 +186,37 @@ function drawActor(cv,who){var c=cv.getContext("2d"),W=cv.width,H=cv.height,P=PE
   if(talking){for(var q2=0;q2<2;q2++){var q=(t*1.8+q2/2)%1;c.strokeStyle=hexA(ink,.5*(1-q));c.lineWidth=2;c.beginPath();c.arc(0,0,Rr*.86+q*Rr*.14,0,7);c.stroke();}}
   var gl=chOf(who);c.fillStyle=ink;c.font="700 "+Math.round(Rr*(gl.length>1?.7:.95))+"px 'Noto Serif SC',serif";c.textAlign="center";c.textBaseline="middle";c.fillText(gl,0,Rr*.04+br*.5);
   if(P.seal){var sz=Rr*.34;c.fillStyle="#b23a2c";c.fillRect(Rr*.36,Rr*.4,sz,sz);c.fillStyle="#f6ead8";c.font="700 "+(sz*.42)+"px 'Noto Serif SC',serif";c.fillText(P.seal.slice(0,1),Rr*.36+sz/2,Rr*.4+sz*.3);c.fillText(P.seal.slice(1,2),Rr*.36+sz/2,Rr*.4+sz*.74);}}
-function buildCast(){[["l",C.left],["r",C.right]].forEach(function(side){var host=$(".actors."+side[0]);side[1].forEach(function(w){var d=el("button",{class:"actor",type:"button","data-who":w,"aria-label":w==="me"?"我":"和"+PEOPLE[w].name+"聊一聊"});d.innerHTML='<canvas width="220" height="220" aria-hidden="true"></canvas><span class="nm"></span>';$(".nm",d).textContent=nameOf(w);host.append(d);CV[w]=$("canvas",d);if(w!=="me")d.addEventListener("click",function(){if(!bChat.hidden&&!bChat.disabled)openChat(w);});});});}
+/* 立绘：人物配置里写 sprite:"qingxian"（清弦）/"changge"（长歌）/"me"（我＝学生在首页选的样子）。
+   图在网站根目录 chars/：{发型}_outfit_{衣服}.webp 是身体，{发型}_face_{表情}.webp 是只有眉眼嘴的表情补丁，叠在身体上。
+   说话时嘴在 talk 补丁和底模之间切换；隔几秒眨一次眼；“我”在作答时换成思考的表情。 */
+var CHARS=(SITE.home||"")+"chars/",SPR={};
+var FACES={qingxian:{blink:1,talk:1,think:1,idle:1},changge:{blink:1,talk:1,think:1,smile:1},g1:{blink:1,talk:1,think:1,idle:1},b1:{blink:1,talk:1,think:1,smile:1}};
+var HAIRS=["g1","g2","g3","g4","b1","b2","b3","b4"];
+function myLook(){var a=null;try{a=JSON.parse(localStorage.getItem("hora-avatar")||"null");}catch(e){}return a&&HAIRS.indexOf(a.hair)>=0?a:{hair:"g1"};}
+function spriteHair(w){var P=PEOPLE[w];return P.sprite==="me"?myLook().hair:P.sprite;}
+function spriteSrc(w,kind){return CHARS+spriteHair(w)+(kind?"_face_"+kind:"_outfit_"+(PEOPLE[w].outfit||L.outfit||"daily"))+".webp";}
+function buildCast(){[["l",C.left],["r",C.right]].forEach(function(side){var host=$(".actors."+side[0]);side[1].forEach(function(w){var P=PEOPLE[w],spr=!!P.sprite;
+  var d=el("button",{class:"actor"+(spr?" sprite":""),type:"button","data-who":w,"aria-label":w==="me"?"我（点一下换样子）":"和"+P.name+"聊一聊"});
+  d.innerHTML=spr?'<div class="spr"><img class="body" alt="" draggable="false"><img class="face" alt="" hidden draggable="false"></div><span class="nm"></span>':'<canvas width="220" height="220" aria-hidden="true"></canvas><span class="nm"></span>';
+  $(".nm",d).textContent=nameOf(w);host.append(d);
+  if(spr){var body=$(".body",d);body.onerror=function(){d.classList.remove("sprite");d.innerHTML='<canvas width="220" height="220" aria-hidden="true"></canvas><span class="nm"></span>';$(".nm",d).textContent=nameOf(w);CV[w]=$("canvas",d);delete SPR[w];};
+    body.src=spriteSrc(w);SPR[w]={el:d,face:$(".face",d),cur:"",blinkAt:performance.now()/1000+2+Math.random()*3};}
+  else CV[w]=$("canvas",d);
+  if(w==="me"){if(spr)d.addEventListener("click",pickLook);}else d.addEventListener("click",function(){if(!bChat.hidden&&!bChat.disabled)openChat(w);});});});}
+function spriteFrame(t){var thinking=!SPEAKER&&!!document.querySelector("#task input:not([type=checkbox]):not([type=radio]),#task textarea");
+  for(var w in SPR){var o=SPR[w],f=FACES[spriteHair(w)]||{},on=SPEAKER===w,want="";
+    o.el.classList.toggle("on",on);
+    if(on&&(TALK||VOICE.busy())&&!reduce&&f.talk)want=Math.floor(t*6.5)%2?"talk":"";
+    else if(f.blink&&t>o.blinkAt){want="blink";if(t>o.blinkAt+.14)o.blinkAt=t+2.5+Math.random()*3.5;}
+    else if(w==="me"&&thinking&&f.think)want="think";
+    if(want!==o.cur){o.cur=want;if(want){o.face.src=spriteSrc(w,want);o.face.hidden=false;}else o.face.hidden=true;}}}
+function pickLook(){var ov=$("#ovLook");if(!ov){ov=el("div",{class:"ov",id:"ovLook"},[el("div",{class:"sheet look",role:"dialog","aria-label":"选你的样子"})]);document.body.append(ov);}ov.hidden=false;var sh=$(".sheet",ov),cur=myLook().hair;
+  sh.innerHTML='<h3>选你的样子</h3><p class="note">在课文里，“我”就是这个样子。以后随时可以点“我”再换。</p><div class="looks"></div><div class="row"><button type="button" class="ghost" id="lk-x">关上</button></div>';
+  HAIRS.forEach(function(h){var b=el("button",{type:"button",class:"lk"+(h===cur?" on":""),"aria-label":(h[0]==="g"?"女生 ":"男生 ")+h.slice(1)});b.innerHTML='<span class="spr"><img src="'+CHARS+h+'_outfit_'+(PEOPLE.me.outfit||L.outfit||"daily")+'.webp" alt=""></span>';
+    b.addEventListener("click",function(){try{localStorage.setItem("hora-avatar",JSON.stringify({hair:h}));}catch(e){}var o=SPR.me;if(o){$(".body",o.el).src=spriteSrc("me");o.cur="x";}ov.hidden=true;});$(".looks",sh).append(b);});
+  $("#lk-x",sh).addEventListener("click",function(){ov.hidden=true;});}
 buildCast();
-function castLoop(){for(var w in CV){var on=SPEAKER===w;CV[w].parentElement.classList.toggle("on",on);drawActor(CV[w],w);}requestAnimationFrame(castLoop);}
+function castLoop(){for(var w in CV){var on=SPEAKER===w;CV[w].parentElement.classList.toggle("on",on);drawActor(CV[w],w);}spriteFrame(performance.now()/1000);requestAnimationFrame(castLoop);}
 requestAnimationFrame(castLoop);
 function refreshMe(){var b=$('.actor[data-who="me"] .nm');if(b)b.textContent=nameOf("me");}
 
@@ -266,7 +294,7 @@ var VOICE=(function(){var tts=!!(window.speechSynthesis&&window.SpeechSynthesisU
     $$("[data-dt]",panelEl).forEach(function(b){b.addEventListener("click",function(){stop();device(b.getAttribute("data-dt"),"这是设备自带的语音，用来读带名字的话和 AI 的回复。");});});}
   function paintBtn(){if(btnV){btnV.setAttribute("aria-pressed",String(!!V.on));btnV.textContent=V.on?"配音":"配音（关）";}}
   if(btnV){paintBtn();btnV.addEventListener("click",openPanel);}
-  return{say:say,stop:stop};})();
+  return{say:say,stop:stop,busy:function(){return !!(cur&&!cur.paused&&!cur.ended)||(tts&&speechSynthesis.speaking);}};})();
 
 /* ================= 对话框 ================= */
 var RUN={token:0};var CANCEL={};

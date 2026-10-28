@@ -261,7 +261,7 @@
       if (!m.cls) { c.focus(); return say("请写班级码。", 1); }
       if (!m.name) { n.focus(); return say("请写名字或昵称。", 1); }
       if (!/^\d{4}$/.test(m.pin)) { p.focus(); return say("请写 4 位数字。", 1); }
-      function ok() { me = m; put("hora-session", m, sessionStorage); put("hora-last", keep.checked ? m : { cls: m.cls, name: m.name }); pluck(392, .4); showShelf(); }
+      function ok() { me = m; put("hora-session", m, sessionStorage); put("hora-last", keep.checked ? m : { cls: m.cls, name: m.name }); pluck(392, .4); if (get("hora-avatar")) showShelf(); else showLook(showShelf); }
       if (!SITE.sheetUrl) return ok();
       btn.disabled = true; say("正在核对……");
       api("login", m).then(ok).catch(function (er) {
@@ -272,6 +272,20 @@
       });
     });
     document.getElementById("lg-t").addEventListener("click", function () { teacher = true; me = null; try { sessionStorage.setItem("hora-teacher", "1"); } catch (e) {} showShelf(); });
+  }
+
+  /* ---------- 选你的样子（课文里的“我”） ---------- */
+  function showLook(next) {
+    app.className = "screen login"; app.scrollTop = 0;
+    var cur = (get("hora-avatar") || {}).hair || "";
+    var h = '<div class="jian looksheet"><h2><span class="seal">弦歌</span>选你的样子</h2><p>读课文时，你会和伴学一起出现在书页边上。选一个像你的样子，以后在课文里点“我”还能换。</p>';
+    [["女生", "g"], ["男生", "b"]].forEach(function (grp) {
+      h += '<div class="lk-h">' + grp[0] + '</div><div class="looks">';
+      for (var i = 1; i <= 4; i++) { var id = grp[1] + i; h += '<button type="button" class="lk' + (id === cur ? " on" : "") + '" data-h="' + id + '" aria-label="' + grp[0] + ' ' + i + '"><span class="spr"><img src="chars/' + id + '_outfit_daily.webp" alt=""></span></button>'; }
+      h += '</div>';
+    });
+    app.innerHTML = h + '<p class="msg" id="lk-msg">点一个就选好了。</p></div>';
+    [].forEach.call(app.querySelectorAll(".lk"), function (b) { b.addEventListener("click", function () { put("hora-avatar", { hair: b.getAttribute("data-h") }); pluck(SCALE[[].indexOf.call(app.querySelectorAll(".lk"), b) + 2], .4); next(); }); });
   }
 
   /* ---------- 十二册 ---------- */
