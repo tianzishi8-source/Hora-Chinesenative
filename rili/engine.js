@@ -626,7 +626,7 @@ function sheetStart(){
   else{var ss=getSess();if(ss)autoLogin(ss);else if(HOME)location.replace(HOME);else showLogin();}
   addEventListener("hashchange",function(){if(location.hash==="#teacher"&&!BK.tpw)showTeacherLogin(!BK.me);});}
 function autoLogin(ss){var me={cls:normCls(ss.cls),name:normName(ss.name),pin:String(ss.pin)};var keep=false;try{keep=!!JSON.parse(localStorage.getItem("hora-last")||"{}").pin;}catch(e){}
-  setSaveSt("正在连接……");
+  setSaveSt("正在连接……");var dt=$("#dTxt");if(dt)dt.textContent="正在打开你上次读到的地方，稍等几秒……";
   api("login",me).then(function(j){enter(me,j.state,keep);}).catch(function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"){dropSess();if(HOME){location.replace(HOME);return;}showLogin();return;}enter(me,null,keep);setSaveSt("没连上，稍后自动再存",true);});}
 function confirmLeave(){return true;}
 function overlay(id){var o=$("#"+id);if(!o){o=el("div",{class:"ov login",id:id},[el("div",{class:"sheet login-s",role:"dialog"})]);document.body.append(o);}o.hidden=false;return $(".sheet",o);}
