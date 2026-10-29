@@ -30,7 +30,7 @@
   function go(l) {
     put("hora-lastLesson", l.id);
     if (SITE.preview) return toast("这是预览：上线后，这里会打开《" + l.title + "》");
-    location.href = l.folder.replace(/\/?$/, "/") + (teacher ? "#teacher" : "");
+    location.href = l.folder.replace(/\/?$/, "/") + (teacher && !l.static ? "#teacher" : "");
   }
 
   /* ---------- 声音：古琴的拨弦（Karplus–Strong）加一点泛音 ---------- */
@@ -426,7 +426,7 @@
         (pt ? '<div class="pp-top">' + esc(pt.top) + '</div><div class="pp-day">' + esc(pt.day) + '</div><div class="pp-lunar">' + esc(pt.lunar) + '</div><div class="pp-week">' + esc(pt.week) + '</div>' : "") + '</figure>' : '<span style="font-family:var(--f-brush);font-size:3rem">' + esc(l.title) + '</span>';
       h += '<section class="leaf" data-i="' + i + '"><div class="leaf-in"><div class="pic"><div class="wash"></div>' + pic + '</div>' +
         '<div class="colo"><h3>' + esc(l.title) + '</h3><span class="au">' + esc(l.author) + '</span><p>' + esc(l.blurb || "") + '</p>' + (dd ? '<span class="seal">已读' + NUM[Math.min(dd, 12)] + '日</span>' : "") + '</div></div>' +
-        '<div class="act"><button class="scrollbtn" type="button" data-go="' + i + '">' + (teacher ? "开　卷（老师）" : dd ? "接着读" : "开　卷") + '</button><span class="prog">已开放 ' + (l.open || "?") + ' / ' + (l.total || "?") + ' 天' + (dd ? "　·　你读完了 " + dd + " 天" : "") + '</span></div></section>';
+        '<div class="act"><button class="scrollbtn" type="button" data-go="' + i + '">' + (teacher ? "开　卷（老师）" : dd ? "接着读" : "开　卷") + '</button><span class="prog">' + (l.open >= l.total ? "共 " + l.total + " " + (l.unit || "天") : "已开放 " + (l.open || "?") + " / " + (l.total || "?") + " " + (l.unit || "天")) + (dd ? "　·　你读完了 " + dd + " 天" : "") + '</span></div></section>';
     });
     for (var k = 0; k < 2; k++) h += '<section class="leaf blank"><div class="leaf-in"><div class="pic"><span>待　续</span></div></div></section>';
     app.innerHTML = h + '</div><p class="swipe">← 翻　页 →</p></div>';
