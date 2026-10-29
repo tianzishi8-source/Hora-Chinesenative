@@ -30,7 +30,7 @@
   function go(l) {
     put("hora-lastLesson", l.id);
     if (SITE.preview) return toast("这是预览：上线后，这里会打开《" + l.title + "》");
-    location.href = l.folder.replace(/\/?$/, "/") + (teacher && !l.static ? "#teacher" : "");
+    location.href = l.folder.replace(/\/?$/, "/") + (teacher ? "#teacher" : "");
   }
 
   /* ---------- 声音：古琴的拨弦（Karplus–Strong）加一点泛音 ---------- */
@@ -331,7 +331,7 @@
       h += '</div>';
     }
     h += '<div class="wd-h">衣服</div><div class="wd-row">';
-    ["daily", "sport", "formal", "ancient"].forEach(function (o) { var lk = LOCKED[o];
+    ["daily", "sport", "formal", "ancient"].forEach(function (o) { var lk = o === "ancient" && get("hora-unlock-ancient") ? "" : LOCKED[o];
       h += '<button type="button" class="opt cloth' + (o === cur.outfit ? " on" : "") + (lk ? " locked" : "") + '" data-o="' + o + '"' + (lk ? ' aria-disabled="true"' : "") + ' aria-label="' + OUTFIT[o][0] + (lk ? "，" + lk : "") + '"><span class="th"><img class="tb" src="chars/' + hair + '_outfit_' + o + '.webp" alt="">' + restImg(hair, "", o) + '</span><span>' + OUTFIT[o][0] + '</span>' + (lk ? '<em>' + lk + '</em>' : "") + '</button>'; });
     h += '</div></div></div><div class="wd-act">' + (isMe ? '<span class="wd-step"><b>一　我</b>　·　二　伴学</span><button class="scrollbtn" id="wdNext" type="button">下一步：选伴学</button>' : '<button class="back" id="wdPrev" type="button">← 上一步</button><span class="wd-step">一　我　·　<b>二　伴学</b></span><button class="scrollbtn" id="wdDone" type="button">完　成</button>') + '</div></div>';
     app.innerHTML = h; wireTop();
@@ -425,8 +425,8 @@
       var dd = teacher ? 0 : doneDays(l), pt = l.picText, pic = l.pic ? '<figure class="photo"><img src="' + esc(l.pic) + '" alt="' + esc(l.picAlt || "《" + l.title + "》") + '" loading="lazy">' +
         (pt ? '<div class="pp-top">' + esc(pt.top) + '</div><div class="pp-day">' + esc(pt.day) + '</div><div class="pp-lunar">' + esc(pt.lunar) + '</div><div class="pp-week">' + esc(pt.week) + '</div>' : "") + '</figure>' : '<span style="font-family:var(--f-brush);font-size:3rem">' + esc(l.title) + '</span>';
       h += '<section class="leaf" data-i="' + i + '"><div class="leaf-in"><div class="pic"><div class="wash"></div>' + pic + '</div>' +
-        '<div class="colo"><h3>' + esc(l.title) + '</h3><span class="au">' + esc(l.author) + '</span><p>' + esc(l.blurb || "") + '</p>' + (dd ? '<span class="seal">已读' + NUM[Math.min(dd, 12)] + '日</span>' : "") + '</div></div>' +
-        '<div class="act"><button class="scrollbtn" type="button" data-go="' + i + '">' + (teacher ? "开　卷（老师）" : dd ? "接着读" : "开　卷") + '</button><span class="prog">' + (l.open >= l.total ? "共 " + l.total + " " + (l.unit || "天") : "已开放 " + (l.open || "?") + " / " + (l.total || "?") + " " + (l.unit || "天")) + (dd ? "　·　你读完了 " + dd + " 天" : "") + '</span></div></section>';
+        '<div class="colo"><h3>' + esc(l.title) + '</h3><span class="au">' + esc(l.author) + '</span><p>' + esc(l.blurb || "") + '</p>' + (dd ? '<span class="seal">' + (l.unit === "课时" ? "第" + NUM[Math.min(dd, 12)] + "课时" : "已读" + NUM[Math.min(dd, 12)] + "日") + '</span>' : "") + '</div></div>' +
+        '<div class="act"><button class="scrollbtn" type="button" data-go="' + i + '">' + (teacher ? "开　卷（老师）" : dd ? "接着读" : "开　卷") + '</button><span class="prog">' + (l.open >= l.total ? "共 " + l.total + " " + (l.unit || "天") : "已开放 " + (l.open || "?") + " / " + (l.total || "?") + " " + (l.unit || "天")) + (dd ? (l.unit === "课时" ? "　·　你学到了第 " + dd + " 课时" : "　·　你读完了 " + dd + " 天") : "") + '</span></div></section>';
     });
     for (var k = 0; k < 2; k++) h += '<section class="leaf blank"><div class="leaf-in"><div class="pic"><span>待　续</span></div></div></section>';
     app.innerHTML = h + '</div><p class="swipe">← 翻　页 →</p></div>';
