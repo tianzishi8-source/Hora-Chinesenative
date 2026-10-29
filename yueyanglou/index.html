@@ -2284,6 +2284,8 @@ if(!reduce){const loop=()=>{const t=performance.now()/1000;scenes.forEach(sc=>{i
 .actor.on .xg-circ{box-shadow:inset 0 0 0 2px rgba(46,106,108,.7),0 0 0 3px rgba(255,236,190,.9),0 0 18px 4px rgba(214,170,90,.55)}
 .actor.on[data-who="me"] .xg-circ{box-shadow:inset 0 0 0 2px rgba(163,56,42,.7),0 0 0 3px rgba(255,236,190,.9),0 0 18px 4px rgba(214,170,90,.55)}
 .actor[data-who="me"]{cursor:pointer}
+.actor:not(.on)[data-who="fan"] .xg-circ,.actor:not(.on)[data-who="du"] .xg-circ{box-shadow:inset 0 0 0 2px rgba(40,34,26,.35)}
+.xg-circ.xg-talk{animation:xgtalk .5s ease-in-out infinite alternate}@keyframes xgtalk{to{transform:scale(1.035)}}
 @media (max-width:700px){.xg-circ{width:52px;height:52px}}
 .xg-site [data-a=chat]{display:none!important}
 .xg-st{font-size:.78rem;color:var(--muted,#7a6f5f);white-space:nowrap}.xg-st.bad{color:#a3382a}
@@ -2354,16 +2356,18 @@ function dropSess(){try{sessionStorage.removeItem("hora-session")}catch(e){}var 
 
 /* ---------- 人物：清弦/长歌和“我”的立绘头像（古代装），眨眼、说话、思考 ---------- */
 var FACEOK={},FACEING={};function loadFace(src){if(FACEING[src])return;FACEING[src]=1;var im=new Image();im.onload=function(){FACEOK[src]=1};im.src=src}
-function hairOf(who){return who==="me"?HAIR:BID}
-function src(h,kind){return CH+h+(kind?"_"+OUTFIT+"_face_"+kind:"_outfit_"+OUTFIT)+".webp"}
+/* 作者立绘：一张全身图（chars/名字.webp），表情补丁 chars/名字_face_表情.webp（有了再在 FACES 里登记） */
+var AUTH={fan:"fanzhongyan"},AUTHS={fanzhongyan:1};HEAD.fanzhongyan=[480,190];var HBOX={fanzhongyan:340};
+function hairOf(who){return AUTH[who]||(who==="me"?HAIR:BID)}
+function src(h,kind){if(AUTHS[h])return CH+h+(kind?"_face_"+kind:"")+".webp";return CH+h+(kind?"_"+OUTFIT+"_face_"+kind:"_outfit_"+OUTFIT)+".webp"}
 function mk(cv,who){var h=hairOf(who),c=document.createElement("span");c.className="xg-circ";c.innerHTML='<img class="b" alt="" draggable="false"><img class="f" alt="" hidden draggable="false">';
   var o={c:c,b:c.firstChild,f:c.lastChild,h:h,box:0,cur:"",blinkAt:performance.now()/1000+1.5+Math.random()*3};
   o.b.onerror=function(){c.remove();cv.style.display="";cv._xg=false};o.b.src=src(h);
   var ff=FACES[h]||{};for(var k in ff)loadFace(src(h,k));cv.parentNode.insertBefore(c,cv);cv.style.display="none";return o}
-function place(o){var box=o.c.clientWidth;if(!box||box===o.box)return;o.box=box;var hc=HEAD[o.h]||HEAD[o.h.charAt(0)]||[480,300],sc=box/316;
+function place(o){var box=o.c.clientWidth;if(!box||box===o.box)return;o.box=box;var hc=HEAD[o.h]||HEAD[o.h.charAt(0)]||[480,300],sc=box/(HBOX[o.h]||316);
   [o.b,o.f].forEach(function(im){im.style.width=Math.round(1024*sc)+"px";im.style.left=Math.round(box/2-hc[0]*sc)+"px";im.style.top=Math.round(box/2-hc[1]*sc)+"px"})}
-function actor(cv,who,a,t){if(who!=="zhou"&&who!=="me")return false;if(cv._xg===false)return false;var o=cv._xg||(cv._xg=mk(cv,who));if(cv._xg===false)return false;place(o);
-  var f=FACES[o.h]||{},rest=f.idle?"idle":"",want=rest,talking=!!a.talk&&!reduce;
+function actor(cv,who,a,t){if(who!=="zhou"&&who!=="me"&&!AUTH[who])return false;if(cv._xg===false)return false;var o=cv._xg||(cv._xg=mk(cv,who));if(cv._xg===false)return false;place(o);
+  var f=FACES[o.h]||{},rest=f.idle?"idle":"",want=rest,talking=!!a.talk&&!reduce;o.c.classList.toggle("xg-talk",talking&&!f.talk);
   if(talking&&f.talk)want=Math.floor(t*6.5)%2?"talk":rest;
   else if(f.blink&&t>o.blinkAt){want="blink";if(t>o.blinkAt+.14)o.blinkAt=t+2.5+Math.random()*3.5}
   else if(who==="me"&&f.think&&document.activeElement&&/TEXTAREA|INPUT/.test(document.activeElement.tagName)&&document.activeElement.closest(".th-task"))want="think";
