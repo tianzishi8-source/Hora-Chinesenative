@@ -201,7 +201,10 @@ function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||"null");}catch(
 function myLook(){var a=lsGet("hora-avatar")||{};return {hair:HAIRS.indexOf(a.hair)>=0?a.hair:"g1",outfit:OUTFITS.indexOf(a.outfit)>=0?a.outfit:"daily"};}
 function myBuddy(){var b=lsGet("hora-buddy")||{};return {who:BUDDIES[b.who]?b.who:"qingxian",outfit:OUTFITS.indexOf(b.outfit)>=0?b.outfit:"daily"};}
 var BUDDYNAME=BUDDIES[myBuddy().who].name;
-for(var pw in PEOPLE){var pp=PEOPLE[pw];if(pp.sprite==="buddy"){pp.name=BUDDYNAME;var bv=BUDDIES[myBuddy().who].voice;if(pp.voices)pp.voices.sort(function(a,b){return (b.id===bv)-(a.id===bv);});}}
+/* 伴学的名字、声音跟着学生选的伴学；“我”的声音跟着学生选的样子（女生 g / 男生 b） */
+for(var pw in PEOPLE){var pp=PEOPLE[pw];
+  if(pp.sprite==="buddy"){pp.name=BUDDYNAME;if(pp.voicesBy)pp.voices=pp.voicesBy[myBuddy().who]||[];pp.voice=Object.assign({},pp.voice,{gender:myBuddy().who==="changge"?"male":"female",pitch:myBuddy().who==="changge"?.9:1.15});}
+  if(pp.sprite==="me"&&pp.voicesBy){var mg=myLook().hair.charAt(0);pp.voices=pp.voicesBy[mg]||[];pp.voice=Object.assign({},pp.voice,{gender:mg==="b"?"male":"female",pitch:mg==="b"?1.1:.95});pp.label=mg==="b"?"我（男）":"我（女）";}}
 function spriteHair(w){var P=PEOPLE[w];return P.sprite==="me"?myLook().hair:P.sprite==="buddy"?myBuddy().who:P.sprite;}
 function spriteOutfit(w){var P=PEOPLE[w];return L.outfit||P.outfit||(P.sprite==="me"?myLook().outfit:P.sprite==="buddy"?myBuddy().outfit:"daily");}
 function spriteSrc(w,kind){return CHARS+spriteHair(w)+(kind?"_face_"+kind:"_outfit_"+spriteOutfit(w))+".webp";}
@@ -296,15 +299,15 @@ var VOICE=(function(){var tts=!!(window.speechSynthesis&&window.SpeechSynthesisU
     var p=a.play();if(p&&p.catch)p.catch(function(){if(my===seq){SOUND.duck(false);}});}
   function say(w,text,kind,force){stop();if(!text||!(V.on||force))return;if(w==="me"&&!V.me&&!force)return;
     if(kind==="ai"){if(V.ai||force)device(w,text);return;}
-    var k=w==="me"?null:(clip(w,text)||(TPL[text]?clip(w,voiceText(TPL[text])):null));if(k){play(k,w,text,force);return;}(window.HORA.voiceMiss=window.HORA.voiceMiss||[]).push(w+"："+text);if(V.fb||force)device(w,text);}
+    var k=clip(w,text)||(TPL[text]?clip(w,voiceText(TPL[text])):null);if(k){play(k,w,text,force);return;}(window.HORA.voiceMiss=window.HORA.voiceMiss||[]).push(w+"："+text);if(V.fb||force)device(w,text);}
   /* 设置面板 */
   var panelEl=null;
   function openPanel(){if(panelEl&&!panelEl.hidden){panelEl.hidden=true;return;}if(!panelEl){panelEl=el("div",{class:"chat vpanel",role:"dialog","aria-label":"配音设置"});document.body.append(panelEl);}load();
-    var who=Object.keys(PEOPLE).filter(function(w){return w!=="me";});
+    var who=Object.keys(PEOPLE).filter(function(w){return w!=="me"||rec("me").length;});function lbl(w){return PEOPLE[w].label||PEOPLE[w].name;}
     var h='<div class="chat-h"><b>配音设置</b><span class="sp"></span><button type="button" class="dbtn" data-x>关上</button></div><div class="chat-b vb">'+
       '<label class="row"><input type="checkbox" id="vOn"'+(V.on?" checked":"")+'> <b>开启配音</b></label>'+
       '<label class="vrow"><span class="vn">语速</span><input type="range" min="0.8" max="1.25" step="0.05" value="'+V.rate+'" id="vRate" aria-label="语速"><span class="vv" id="vRateV"></span></label>'+
-      who.map(function(w){var r=rec(w);return '<div class="vrow"><span class="vn">'+esc(PEOPLE[w].name)+'</span>'+(r.length?'<span class="seg" role="group" aria-label="'+esc(PEOPLE[w].name)+'的音色">'+r.map(function(c){return '<button type="button" data-w="'+w+'" data-v="'+c.id+'" aria-pressed="'+(choice(w).id===c.id)+'">'+esc(c.name)+'</button>';}).join("")+'</span>':'<span class="note">设备语音</span>')+'<button type="button" class="dbtn" data-t="'+w+'">试听</button></div>';}).join("")+
+      who.map(function(w){var r=rec(w);return '<div class="vrow"><span class="vn">'+esc(lbl(w))+'</span>'+(r.length?'<span class="seg" role="group" aria-label="'+esc(lbl(w))+'的音色">'+r.map(function(c){return '<button type="button" data-w="'+w+'" data-v="'+c.id+'" aria-pressed="'+(choice(w).id===c.id)+'">'+esc(c.name)+'</button>';}).join("")+'</span>':'<span class="note">设备语音</span>')+'<button type="button" class="dbtn" data-t="'+w+'">试听</button></div>';}).join("")+
       '<details class="vmore"><summary>设备语音（读带名字的话、AI 的回复）</summary><p class="note">课文里的台词是提前录好的。带你名字、带你作答的台词，还有 AI 现场的回复，没法提前录，只能用这台设备自带的语音读，会生硬一些。</p>'+
       '<label class="row"><input type="checkbox" id="vFb"'+(V.fb?" checked":"")+'> 读带名字、带作答的台词</label>'+
       '<label class="row"><input type="checkbox" id="vAi"'+(V.ai?" checked":"")+'> 也读 AI 的回复</label>'+
@@ -316,8 +319,8 @@ var VOICE=(function(){var tts=!!(window.speechSynthesis&&window.SpeechSynthesisU
     $("[data-x]",panelEl).addEventListener("click",function(){panelEl.hidden=true;});
     $("#vOn",panelEl).addEventListener("change",function(e){V.on=e.target.checked;sv();paintBtn();if(!V.on)stop();});
     $("#vRate",panelEl).addEventListener("input",function(e){V.rate=+e.target.value;sv();rv();if(cur)cur.playbackRate=V.rate;});
-    $$("[data-v]",panelEl).forEach(function(b){b.addEventListener("click",function(){var w=b.getAttribute("data-w");V.pick[w]=b.getAttribute("data-v");sv();$$('[data-w="'+w+'"]',panelEl).forEach(function(x){x.setAttribute("aria-pressed",String(x===b));});say(w,PEOPLE[w].sample||"你好。",null,true);});});
-    $$("[data-t]",panelEl).forEach(function(b){b.addEventListener("click",function(){var w=b.getAttribute("data-t");say(w,PEOPLE[w].sample||"你好。",null,true);});});
+    $$("[data-v]",panelEl).forEach(function(b){b.addEventListener("click",function(){var w=b.getAttribute("data-w");V.pick[w]=b.getAttribute("data-v");sv();$$('[data-w="'+w+'"]',panelEl).forEach(function(x){x.setAttribute("aria-pressed",String(x===b));});say(w,fill(PEOPLE[w].sample||"你好。"),null,true);});});
+    $$("[data-t]",panelEl).forEach(function(b){b.addEventListener("click",function(){var w=b.getAttribute("data-t");say(w,fill(PEOPLE[w].sample||"你好。"),null,true);});});
     ["Fb","Ai","Me"].forEach(function(k){var x=$("#v"+k,panelEl);if(x)x.addEventListener("change",function(e){V[k.toLowerCase()]=e.target.checked;sv();});});
     $$("select[data-d]",panelEl).forEach(function(x){x.addEventListener("change",function(){V.dev[x.getAttribute("data-d")]=x.value;sv();});});
     $$("[data-dt]",panelEl).forEach(function(b){b.addEventListener("click",function(){stop();device(b.getAttribute("data-dt"),"这是设备自带的语音，用来读带名字的话和 AI 的回复。");});});}

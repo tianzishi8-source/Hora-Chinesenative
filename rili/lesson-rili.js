@@ -47,10 +47,19 @@ cast:{
   ri:{name:"那页日历",shape:"torn",img:"img/page1976-sm.webp",glyph:"28",top:"一九七六年 七月",foot:"丙辰年七月初二",ink:"--accent",voice:{gender:"male",pitch:.9,rate:.92},
       sample:"你好。我是一页日历：1976年7月28日，星期三，丙辰年七月初二。",
       voices:[{id:"a",name:"沉稳男声",gender:"male",tts:"zh-CN-YunyangNeural",rate:"-14%",pitch:"-6Hz"},{id:"b",name:"温和女声",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-10%",pitch:"-2Hz"}]},
-  zhou:{name:"清弦",sprite:"buddy",shape:"seal",glyph:"弦",seal:"伴学",ink:"--cool",voice:{gender:"male",pitch:1.1,rate:1},
+  zhou:{name:"清弦",sprite:"buddy",shape:"seal",glyph:"弦",seal:"伴学",ink:"--cool",voice:{gender:"female",pitch:1.15,rate:1},
       sample:"我是{buddy|清弦}。这几天，我和你一起读冯骥才的《日历》。",
-      voices:[{id:"k1",name:"同岳阳楼",gender:"female",engine:"kokoro",kvoice:"zf_xiaobei",speed:.88},{id:"k2",name:"男生",gender:"male",engine:"kokoro",kvoice:"zm_yunxi",speed:.95}]},
-  me:{name:"我",sprite:"me",shape:"seal",glyph:"我",seal:"同学",ink:"--warm"}
+      /* 伴学的声音跟着学生选的伴学：清弦用女声（比“我（女）”高一点），长歌用男声（比“我（男）”低一点） */
+      voicesBy:{
+        qingxian:[{id:"q1",name:"清亮",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-4%",pitch:"+14Hz"},{id:"q2",name:"温柔",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-10%",pitch:"+6Hz"},{id:"q3",name:"活泼",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-2%",pitch:"+10Hz"}],
+        changge:[{id:"c1",name:"沉稳",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-10%",pitch:"-18Hz"},{id:"c2",name:"低沉",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-8%",pitch:"-12Hz"},{id:"c3",name:"温和",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-6%",pitch:"-8Hz"}]}},
+  me:{name:"我",sprite:"me",shape:"seal",glyph:"我",seal:"同学",ink:"--warm",
+      sample:"这是我的声音。读到我的话时，就用这个声音。",
+      /* “我”的声音跟着学生选的样子：女生比清弦低一点，男生比长歌高一点。
+         写好的“我”的台词会预录；学生自己写的话没法预录，用设备语音读（配音设置里勾“也读‘我’的话”）。 */
+      voicesBy:{
+        g:[{id:"f1",name:"温和",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-6%",pitch:"-8Hz"},{id:"f2",name:"清爽",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-6%",pitch:"-6Hz"}],
+        b:[{id:"m1",name:"明朗",gender:"male",engine:"kokoro",kvoice:"zm_yunxi",speed:.95},{id:"m2",name:"清朗",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-2%",pitch:"+10Hz"},{id:"m3",name:"爽朗",gender:"male",tts:"zh-CN-YunjianNeural",rate:"+0%",pitch:"+8Hz"}]}}
  },
  hello:{ri:"我是1976年7月28日那一页。关于这篇文章，你想问什么都可以。",zhou:"我是{buddy|清弦}。哪里没读懂，我们一起想想。"},
  sys:{
