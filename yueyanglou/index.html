@@ -1517,7 +1517,7 @@ const VOICE=(()=>{const tts=!!(window.speechSynthesis&&window.SpeechSynthesisUtt
     $$("[data-d]",box).forEach(b=>b.onclick=async()=>{stop();load();const w=b.dataset.d,v=pick(w);if(!v)return;const u=new SpeechSynthesisUtterance("这是设备自带的语音，用来读 AI 的现场回复。");u.voice=v;u.lang=v.lang;u.pitch=TUNE[w].pitch;u.rate=TUNE[w].rate*CFG.rate;speechSynthesis.speak(u)});XG.panelExtra(box,say,SAMPLE);return box}
   const dlg=el("div","chat vdlg");dlg.hidden=true;dlg.setAttribute("role","dialog");dlg.setAttribute("aria-label","配音设置");document.body.append(dlg);
   $("#vBtn").onclick=()=>{if(!dlg.hidden){dlg.hidden=true;return}dlg.innerHTML='<div class="chat-h"><b>配音设置</b><span class="sp"></span><button type="button" class="dbtn" aria-label="关闭">×</button></div>';const b=el("div","chat-b");b.append(panel());dlg.append(b);$(".chat-h button",dlg).onclick=()=>dlg.hidden=true;dlg.hidden=false};
-  return{say,panel,stop,has,preload,SAMPLE,get on(){return CFG.on}}})();
+  return{say,panel,stop,has,preload,SAMPLE,get on(){return CFG.on},dur(who,text){if(!CFG.on||(who==="me"&&!CFG.me))return 0;const c=CL.c[VHASH(XG.vk(who),text)];return c?c[2]/CFG.rate:0}}})();
 
 /* ================= 原文栏（可拖动、可固定） ================= */
 const DOCK=(()=>{const d=el("aside","dock");d.id="dock";d.hidden=true;d.setAttribute("aria-label","原文与译文");
@@ -1588,9 +1588,9 @@ function theater(host,cast){host.classList.add("th");host.innerHTML=`<div class=
 function vis(T,name){$$(".pane",T.vis).forEach(p=>p.hidden=p.dataset.pane!==name);T.vis.hidden=!name;T.host.classList.toggle("has-vis",!!name);requestAnimationFrame(()=>scenes.forEach(fit))}
 function taskShow(T,node){T.task.innerHTML="";if(node){T.task.append(node);T.task.hidden=false}else T.task.hidden=true;T.host.classList.toggle("has-task",!!node)}
 async function speak(T,who,text,live=true){T.speaker=who;T.who.textContent=PEOPLE[who].name;T.who.style.background=PEOPLE[who].ink;lp(T,who,text,live);
-  if(!live){T.txt.textContent=text;return}act(who,"talk",true);VOICE.say(who,text);await typeText(T.txt,text);act(who,"talk",false)}
-function typeText(node,text){if(reduce){node.textContent=text;return Promise.resolve()}return new Promise(res=>{let i=0,skip=false;const k=()=>skip=true;node.addEventListener("click",k,{once:true});
-  const step=()=>{if(skip||i>=text.length){node.textContent=text;node.removeEventListener("click",k);return res()}i+=1;node.textContent=text.slice(0,i);setTimeout(step,/[，。！？；：]/.test(text[i-1])?160:38)};step()})}
+  if(!live){T.txt.textContent=text;return}act(who,"talk",true);const d=VOICE.dur(who,text)*1000,t0=performance.now();VOICE.say(who,text);const sk=await typeText(T.txt,text,d);if(d&&!sk){const rest=d-(performance.now()-t0);if(rest>0)await new Promise(r=>{const k=()=>r();T.txt.addEventListener("click",k,{once:true});setTimeout(()=>{T.txt.removeEventListener("click",k);r()},rest)})}act(who,"talk",false)}
+function typeText(node,text,ms){if(reduce){node.textContent=text;return Promise.resolve(false)}const per=ms?Math.max(25,ms*.82/Math.max(1,text.length)):0;return new Promise(res=>{let i=0,skip=false;const k=()=>skip=true;node.addEventListener("click",k,{once:true});
+  const step=()=>{if(skip||i>=text.length){node.textContent=text;node.removeEventListener("click",k);return res(skip)}i+=1;node.textContent=text.slice(0,i);setTimeout(step,per||(/[，。！？；：]/.test(text[i-1])?160:38))};step()})}
 function waitCont(T,label="继续"){return new Promise(res=>{const b=T.cont;b.hidden=false;b.textContent=label+" ▸";b.focus({preventScroll:true});
   const go=()=>{b.hidden=true;b.onclick=null;removeEventListener("keydown",kd);SOUND.sfx("page");res()},kd=e=>{if((e.key==="Enter"||e.key===" ")&&!/TEXTAREA|INPUT|SELECT/.test(document.activeElement.tagName)&&T.host.offsetParent){e.preventDefault();go()}};
   b.onclick=go;addEventListener("keydown",kd)})}
@@ -2431,7 +2431,7 @@ function start(){
   var ss=getSess();if(!ss){location.replace(HOME);return}
   ME={cls:String(ss.cls||"").replace(/\s+/g,"").toUpperCase(),name:String(ss.name||"").replace(/\s+/g," ").trim().slice(0,12),pin:String(ss.pin)};
   PRE="yyl:"+ME.cls+"|"+ME.name+":";
-  api("login",ME).then(function(j){hydrate(j.state);return "ok"},function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"){dropSess();location.replace(HOME);return "stop"}return "off"})
+  api("login",ME).then(function(j){hydrate(j.state);return "ok"},function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"||e.code==="new"||e.code==="roster"){dropSess();location.replace(HOME);return "stop"}return "off"})
     .then(function(r){if(r==="stop")return;lsSet(PRE+"tmode",false);syncOn=true;if(!store.get("myname",""))lsSet(PRE+"myname",ME.name);run();
       if(r==="off")st("没连上，稍后自动再存",true);else st("已连上");
       /* 首次进来没有作答也先存一行，老师那边能看到谁进来过 */

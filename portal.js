@@ -269,10 +269,14 @@
       '<label class="field"><span class="lab">名字或昵称</span><input id="lg-name" autocomplete="off" maxlength="12" placeholder="同学和老师认得出就行"></label>' +
       '<label class="field"><span class="lab">4 位数字</span><input id="lg-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••"></label>' +
       '<label class="keep"><input type="checkbox" id="lg-keep" checked> 在这台设备上记住我（公用电脑请不要勾）</label>' +
+      '<label class="field" id="lg-p2f" hidden><span class="lab">再输一遍 4 位数字（确认）</span><input id="lg-pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••"></label>' +
       '<button class="scrollbtn" id="lg-go" type="submit">入　学</button><p class="msg" id="lg-msg"></p>' +
       '<button class="tlink" id="lg-t" type="button">我是老师</button></form>';
     var c = document.getElementById("lg-cls"), n = document.getElementById("lg-name"), p = document.getElementById("lg-pin"),
-      btn = document.getElementById("lg-go"), msg = document.getElementById("lg-msg"), keep = document.getElementById("lg-keep");
+      btn = document.getElementById("lg-go"), msg = document.getElementById("lg-msg"), keep = document.getElementById("lg-keep"),
+      p2f = document.getElementById("lg-p2f"), p2 = document.getElementById("lg-pin2"), newFor = "";
+    /* 改了班级码或名字，就收起“确认数字”那一栏 */
+    [c, n].forEach(function (x) { x.addEventListener("input", function () { if (newFor) { newFor = ""; p2f.hidden = true; p2.value = ""; btn.textContent = "入　学"; say(""); } }); });
     c.value = last.cls || ""; n.value = last.name || ""; (c.value ? (n.value ? p : n) : c).focus();
     function say(t, err) { msg.textContent = t; msg.className = "msg" + (err ? " err" : ""); }
     document.getElementById("lg").addEventListener("submit", function (e) {
@@ -283,10 +287,18 @@
       if (!/^\d{4}$/.test(m.pin)) { p.focus(); return say("请写 4 位数字。", 1); }
       function ok() { me = m; put("hora-session", m, sessionStorage); put("hora-last", keep.checked ? m : { cls: m.cls, name: m.name }); pluck(392, .4); if (get("hora-avatar") && get("hora-buddy")) showShelf(); else showWardrobe(1, showShelf); }
       if (!SITE.sheetUrl) return ok();
+      var who = m.cls + "|" + m.name, isNew = newFor === who;
+      if (isNew && p2.value.trim() !== m.pin) { p2.focus(); return say("两次输入的数字不一样，请再输一遍。", 1); }
       btn.disabled = true; say("正在核对……");
-      api("login", m).then(ok).catch(function (er) {
-        btn.disabled = false;
-        if (er.code === "pin") say("这个班里已经有人用了这个名字，数字对不上。是你的话，再想想当初定的数字；不是你，就换个名字（比如加上姓）。", 1);
+      if (isNew) m.isNew = true;
+      api("login", m).then(function () { delete m.isNew; ok(); }).catch(function (er) {
+        btn.disabled = false; delete m.isNew;
+        if (er.code === "new") {
+          newFor = who; p2f.hidden = false; p2.value = ""; p2.focus(); btn.textContent = "确认入学";
+          say("没有找到“" + m.cls + " · " + m.name + "”的签到记录。\n第一次来：请在上面再输一遍你定的 4 位数字，点“确认入学”。\n来过的同学：请检查班级码和名字，要和第一次写的一模一样。", 1);
+        }
+        else if (er.code === "roster") say("老师的名单里没有“" + m.name + "”这个名字。请写老师登记的名字（比如中文全名），或者问一下老师。", 1);
+        else if (er.code === "pin") say("数字不对。请想想你第一次签到时定的 4 位数字；实在想不起来，请找老师帮你重置。", 1);
         else if (er.code === "cls") say("没有这个班级码，请问一下老师。", 1);
         else say("连不上老师的表格，可能是网络问题，请稍后再试。", 1);
       });
