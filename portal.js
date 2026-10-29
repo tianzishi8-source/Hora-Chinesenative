@@ -325,7 +325,10 @@
       } else { var B = BUDDY[who];
         card.innerHTML = '<h3>' + B.name + ' <small>伴学 · 和你同龄</small></h3><p class="d">' + B.look + '</p><dl><dt>性格</dt><dd>' + B.mood + '</dd><dt>特点</dt><dd>' + B.trait + '</dd><dt>说话</dt><dd>' + B.talk + '</dd></dl><p class="motto">“' + B.motto + '”</p>'; }
       [].forEach.call(app.querySelectorAll(".opt.cloth"), function (b) { var o = b.getAttribute("data-o"), th = b.querySelector(".th"); b.classList.toggle("on", o === cur.outfit); th.innerHTML = '<img class="tb" src="chars/' + who + '_outfit_' + o + '.webp" alt="">' + restImg(who); });
-      fimg.src = rest(who) ? "chars/" + who + "_face_idle.webp" : ""; fimg.hidden = !rest(who);
+      /* 新的身体图加载好了再叠表情，避免一瞬间新脸叠在旧身体上 */
+      fimg.hidden = true; var rw = rest(who);
+      function showFace() { if (rw) { fimg.src = "chars/" + who + "_face_idle.webp"; fimg.hidden = false; } }
+      if (bimg.complete && bimg.naturalWidth && bimg.getAttribute("src") === "chars/" + who + "_outfit_" + cur.outfit + ".webp") showFace(); else bimg.onload = showFace;
       [].forEach.call(app.querySelectorAll(".opt.hair,.opt.buddy"), function (b) { b.classList.toggle("on", (b.getAttribute("data-h") || b.getAttribute("data-b")) === who); });
       fig.classList.remove("swap"); void fig.offsetWidth; fig.classList.add("swap");
       if (isMe) put("hora-avatar", { hair: cur.hair, outfit: cur.outfit }); else put("hora-buddy", { who: cur.who, outfit: cur.outfit });

@@ -332,9 +332,10 @@ body.figs-on .actors .actor.sprite{display:none}
 .figs.half .fbox{overflow:hidden;-webkit-mask-image:linear-gradient(#000 82%,transparent);mask-image:linear-gradient(#000 82%,transparent)}
 .fnm{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);font-size:.74rem;font-weight:700;color:var(--muted);background:color-mix(in srgb,var(--page) 80%,transparent);padding:0 8px;border-radius:999px;white-space:nowrap}
 @media (prefers-reduced-motion:no-preference){
-  .fbox img{animation:breathe-s 4.2s ease-in-out infinite}
+  .fbox{animation:breathe-s 4.2s ease-in-out infinite}
   .fig.talking .fbox{animation:talk-s .5s ease-in-out infinite}
 }
-@keyframes breathe-s{50%{transform:translateY(2px)}}
+/* 身体和表情补丁一起动（动的是外框），不会错位 */
+@keyframes breathe-s{50%{translate:0 2px}}
 @keyframes talk-s{50%{translate:0 -3px}}
 @media (max-width:860px){.circ{width:56px;height:56px}.actor.sprite .nm{display:none}}

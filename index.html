@@ -129,11 +129,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .wd-grid{display:grid;grid-template-columns:auto minmax(180px,240px) minmax(0,1fr);gap:28px 32px;align-items:start}
 .wd-stage{display:contents}
 .wd-fig{position:sticky!important;top:70px}
-.wd-fig{position:relative;height:min(calc(100vh - 310px),620px);mix-blend-mode:multiply;aspect-ratio:2/3;max-width:100%;background:radial-gradient(42% 5% at 50% 97%,rgba(40,48,46,.22),transparent 75%)}
+.wd-fig{position:relative;height:max(360px,min(calc(100vh - 370px),620px));mix-blend-mode:multiply;aspect-ratio:2/3;max-width:100%;background:radial-gradient(42% 5% at 50% 97%,rgba(40,48,46,.22),transparent 75%)}
 .wd-fig img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:saturate(.75) sepia(.06) contrast(.97)}
-@media (prefers-reduced-motion:no-preference){.wd-fig img{animation:breathe-w 4.2s ease-in-out infinite}.wd-fig.swap{animation:swap .45s cubic-bezier(.2,.8,.2,1)}}
-@keyframes breathe-w{50%{transform:translateY(3px)}}
-@keyframes swap{0%{transform:translateY(8px) scale(.98);opacity:.4}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:no-preference){.wd-fig{animation:breathe-w 4.2s ease-in-out infinite}.wd-fig.swap{animation:swap .35s ease-out,breathe-w 4.2s ease-in-out infinite}}
+@keyframes breathe-w{50%{translate:0 3px}}
+@keyframes swap{0%{opacity:.55}100%{opacity:1}}
 .wd-card{padding:24px 0 18px;min-width:0;max-width:22em;position:sticky;top:70px}
 .wd-card h3{font-family:var(--f-brush);font-weight:400;font-size:2.2rem;margin:0;line-height:1.2}
 .wd-card h3 small{font-family:var(--f-ui);font-size:.85rem;color:var(--ink-soft);margin-left:6px}
