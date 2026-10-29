@@ -302,30 +302,30 @@ textarea:focus,input[type=text]:focus,input[type=password]:focus{border-color:va
 .savest{font-size:.78rem;color:var(--muted);align-self:center;margin-right:4px}
 .savest.bad{color:var(--accent)}
 
-/* ===== 立绘（清弦、长歌、“我”） =====
-   图是动漫风的半身立绘；为了和宣纸、水墨放在一起：降一点饱和、略暖，用 multiply 叠在纸上（白衣服透出纸色），脚下衬一抹淡墨。
-   只截头到腰：box 里显示原图 x 245–780、y 30–815 那一块。 */
-.actor.sprite{opacity:.86;transform:none;cursor:pointer}
+/* ===== 立绘（伴学清弦/长歌、“我”） =====
+   为了和宣纸、水墨放在一起：降一点饱和、略暖，用 multiply 叠在纸上（白衣服透出纸色）。
+   空白少：底栏里的头像圈（.circ）；空白多：右下角的大图（.figs，半身或全身）。 */
+.actor.sprite{opacity:.8;transform:none;cursor:pointer}
 .actor.sprite.on{opacity:1}
-.hush .actor.sprite{opacity:.55}
-.spr{position:relative;display:block;width:120px;height:176px;overflow:hidden;
-  background:radial-gradient(70% 26% at 50% 100%,rgba(55,62,60,.16),transparent 72%);
-  -webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
-.spr img{position:absolute;width:229px;max-width:none;left:-55px;top:-7px;filter:saturate(.72) sepia(.07) contrast(.97);mix-blend-mode:multiply;user-select:none;-webkit-user-drag:none}
-.actor.sprite .spr{transition:transform .35s ease}
-.actor.sprite.on .spr{transform:translateY(-3px)}
-@media (prefers-reduced-motion:no-preference){.actor.sprite .spr img{animation:breathe-s 4.2s ease-in-out infinite}}
-@keyframes breathe-s{50%{transform:translateY(1px)}}
-.actor.sprite .nm{margin-top:2px}
-.look{max-width:560px}
-.looks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:10px 0 14px}
-.lk{border:1px solid var(--line);background:var(--page);border-radius:12px;padding:6px 0 0;display:grid;place-items:center}
-.lk .spr{width:96px;height:140px;background:none}
-.lk .spr img{width:183px;left:-44px;top:-5px}
-.lk.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
-@media (max-width:860px){
-  .spr{width:70px;height:103px}
-  .spr img{width:134px;left:-32px;top:-4px}
-  .actor.sprite .nm{display:none}
-  .lk .spr{width:64px;height:94px}.lk .spr img{width:122px;left:-29px;top:-3px}
+.hush .actor.sprite{opacity:.5}
+.circ{position:relative;display:block;width:76px;height:76px;border-radius:50%;overflow:hidden;background:var(--page);
+  box-shadow:inset 0 0 0 2px var(--line),0 0 0 3px var(--page),0 6px 14px -8px rgba(60,40,20,.5)}
+.actor.sprite.on .circ{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 3px var(--page),0 6px 14px -8px rgba(60,40,20,.5)}
+.circ img,.fbox img{position:absolute;max-width:none;filter:saturate(.72) sepia(.07) contrast(.97);mix-blend-mode:multiply;user-select:none;-webkit-user-drag:none}
+.figs{position:fixed;z-index:3;display:none;align-items:flex-end;justify-content:flex-end;pointer-events:none}
+.figs.half,.figs.full{display:flex}
+body.figs-on .actors .actor.sprite{display:none}
+.fig{position:relative;pointer-events:auto;opacity:.86;transition:opacity .3s}
+.fig+.fig{margin-left:-6%}
+.fig.on{opacity:1}
+.fig[data-who="me"]{cursor:pointer}
+.fbox{position:relative;overflow:hidden;background:radial-gradient(60% 9% at 50% 98%,rgba(55,62,60,.2),transparent 75%)}
+.figs.half .fbox{-webkit-mask-image:linear-gradient(#000 82%,transparent);mask-image:linear-gradient(#000 82%,transparent)}
+.fnm{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);font-size:.74rem;font-weight:700;color:var(--muted);background:color-mix(in srgb,var(--page) 80%,transparent);padding:0 8px;border-radius:999px;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){
+  .fbox img{animation:breathe-s 4.2s ease-in-out infinite}
+  .fig.talking .fbox{animation:talk-s .5s ease-in-out infinite}
 }
+@keyframes breathe-s{50%{transform:translateY(2px)}}
+@keyframes talk-s{50%{transform:translateY(-3px)}}
+@media (max-width:860px){.circ{width:56px;height:56px}.actor.sprite .nm{display:none}}

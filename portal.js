@@ -222,7 +222,7 @@
     var who = teacher ? "老师" : (me ? esc(me.cls) + " · " + esc(me.name) : "");
     return '<header class="top">' + (back ? '<button class="back" id="bBack" type="button">← ' + back + '</button>' : "") +
       '<button class="brand" id="bHome" type="button" aria-label="回到开场"><span class="seal">弦歌</span><b>弦歌</b><small>HORA 语文</small></button><span class="sp"></span>' +
-      (!teacher && me ? '<button class="chip" id="bTie" type="button">我的字帖</button>' : "") +
+      (!teacher && me ? '<button class="chip" id="bWd" type="button">换装间</button><button class="chip" id="bTie" type="button">我的字帖</button>' : "") +
       '<button class="chip" id="bSnd" type="button" aria-pressed="' + sndOn + '">' + (sndOn ? "琴声 开" : "琴声 关") + '</button>' +
       (who ? '<span class="who">' + who + '</span><button class="chip" id="bOut" type="button">换人</button>' : "") + '</header>';
   }
@@ -232,6 +232,7 @@
     document.getElementById("bHome").addEventListener("click", showOpen);
     document.getElementById("bSnd").addEventListener("click", function () { sndOn = !sndOn; put("hora-snd", sndOn); this.setAttribute("aria-pressed", sndOn); this.textContent = sndOn ? "琴声 开" : "琴声 关"; if (sndOn) pluck(392, .4); });
     if ((b = document.getElementById("bTie"))) b.addEventListener("click", showTie);
+    if ((b = document.getElementById("bWd"))) b.addEventListener("click", function () { showWardrobe(1); });
     if ((b = document.getElementById("bOut"))) b.addEventListener("click", function () {
       try { sessionStorage.removeItem("hora-session"); sessionStorage.removeItem("hora-teacher"); } catch (e) {}
       var l = get("hora-last"); if (l) { delete l.pin; put("hora-last", l); }
@@ -261,7 +262,7 @@
       if (!m.cls) { c.focus(); return say("请写班级码。", 1); }
       if (!m.name) { n.focus(); return say("请写名字或昵称。", 1); }
       if (!/^\d{4}$/.test(m.pin)) { p.focus(); return say("请写 4 位数字。", 1); }
-      function ok() { me = m; put("hora-session", m, sessionStorage); put("hora-last", keep.checked ? m : { cls: m.cls, name: m.name }); pluck(392, .4); if (get("hora-avatar")) showShelf(); else showLook(showShelf); }
+      function ok() { me = m; put("hora-session", m, sessionStorage); put("hora-last", keep.checked ? m : { cls: m.cls, name: m.name }); pluck(392, .4); if (get("hora-avatar") && get("hora-buddy")) showShelf(); else showWardrobe(1, showShelf); }
       if (!SITE.sheetUrl) return ok();
       btn.disabled = true; say("正在核对……");
       api("login", m).then(ok).catch(function (er) {
@@ -274,18 +275,77 @@
     document.getElementById("lg-t").addEventListener("click", function () { teacher = true; me = null; try { sessionStorage.setItem("hora-teacher", "1"); } catch (e) {} showShelf(); });
   }
 
-  /* ---------- 选你的样子（课文里的“我”） ---------- */
-  function showLook(next) {
-    app.className = "screen login"; app.scrollTop = 0;
-    var cur = (get("hora-avatar") || {}).hair || "";
-    var h = '<div class="jian looksheet"><h2><span class="seal">弦歌</span>选你的样子</h2><p>读课文时，你会和伴学一起出现在书页边上。选一个像你的样子，以后在课文里点“我”还能换。</p>';
-    [["女生", "g"], ["男生", "b"]].forEach(function (grp) {
-      h += '<div class="lk-h">' + grp[0] + '</div><div class="looks">';
-      for (var i = 1; i <= 4; i++) { var id = grp[1] + i; h += '<button type="button" class="lk' + (id === cur ? " on" : "") + '" data-h="' + id + '" aria-label="' + grp[0] + ' ' + i + '"><span class="spr"><img src="chars/' + id + '_outfit_daily.webp" alt=""></span></button>'; }
+  /* ---------- 换装间：先给“我”选发型和衣服，再选伴学（清弦或长歌）和伴学的衣服 ---------- */
+  var HAIR = { g1: "齐肩短发", g2: "长直发", g3: "低马尾", g4: "戴眼镜的中长发", b1: "自然短发", b2: "侧分短发", b3: "微刘海短发", b4: "戴细框眼镜的短发" };
+  var OPEN_HAIR = { g1: 1, b1: 1 };   /* 第一阶段只有 G1、B1 有表情，其余发型待开放 */
+  var OUTFIT = { daily: ["日常装", "外套、连帽卫衣、球鞋，背着双肩包。"], sport: ["运动装", "白色和深蓝拼色的运动外套、运动裤。"], formal: ["正式装", "学校制服：藏蓝西装外套、白衬衫、领带。"], ancient: ["古代装", "宋代学子穿的襕衫：交领宽袖，长及脚面。"] };
+  var LOCKED = { ancient: "学完《岳阳楼记》解锁" };
+  var BUDDY = {
+    qingxian: { name: "清弦", look: "瓜子脸，棕褐色自然卷发扎高马尾，棕色眼睛。", mood: "细心、温暖、善于倾听", trait: "喜欢阅读和观察；关注细节，喜欢分析人物情感；乐于分享，也会给你鼓励。", motto: "慢慢来，我们一起把书读懂。", talk: "常说“我注意到……”“你是怎么想的？”" },
+    changge: { name: "长歌", look: "偏长脸，棕褐色微卷发，棕色眼睛，圆框眼镜。", mood: "理性、开朗、擅长分析", trait: "逻辑思维强，善于分析；喜欢讨论和思考不同观点；鼓励你从不同角度看问题。", motto: "不同的角度，会看到更完整的世界。", talk: "常说“我觉得……”“等等，那……”" }
+  };
+  var FACE = { qingxian: { blink: 1 }, changge: { blink: 1 }, g1: { blink: 1 }, b1: { blink: 1 } };
+  var HEADC = { qingxian: [478, 362], changge: [492, 232], g: [477, 332], b: [466, 232] };
+  function look() { var a = get("hora-avatar") || {}; return { hair: OPEN_HAIR[a.hair] ? a.hair : "g1", outfit: OUTFIT[a.outfit] && !LOCKED[a.outfit] ? a.outfit : "daily" }; }
+  function buddy() { var b = get("hora-buddy") || {}; return { who: BUDDY[b.who] ? b.who : "qingxian", outfit: OUTFIT[b.outfit] && !LOCKED[b.outfit] ? b.outfit : "daily" }; }
+  function headImg(h, outfit, box) { var c = HEADC[h] || HEADC[h.charAt(0)], sc = box / 330;
+    return '<span class="hd" style="width:' + box + 'px;height:' + box + 'px"><img src="chars/' + h + '_outfit_' + outfit + '.webp" alt="" style="width:' + Math.round(1024 * sc) + 'px;left:' + Math.round(box / 2 - c[0] * sc) + 'px;top:' + Math.round(box / 2 - c[1] * sc) + 'px"></span>'; }
+  function showWardrobe(step, done) {
+    app.className = "screen"; app.scrollTop = 0; location.hash = "wardrobe";
+    var L1 = look(), B1 = buddy(), isMe = step !== 2;
+    var cur = isMe ? L1 : B1, hair = isMe ? L1.hair : B1.who;
+    var h = top() + '<div class="page wd"><h1 class="h1">换装间</h1><p class="lead">' + (isMe ? "第一步：选“我”的样子和衣服。在课文里，“我”就是你。" : "第二步：选一位伴学和他的衣服。伴学陪你读完所有课文。") + '</p>' +
+      '<div class="wd-grid"><div class="wd-stage"><div class="wd-fig" id="wdFig"><img class="b" src="chars/' + hair + '_outfit_' + cur.outfit + '.webp" alt=""><img class="f" alt="" hidden></div><div class="wd-card" id="wdCard"></div></div><div class="wd-opts">';
+    if (isMe) {
+      [["女生", "g"], ["男生", "b"]].forEach(function (grp) {
+        h += '<div class="wd-h">' + grp[0] + '</div><div class="wd-row">';
+        for (var i = 1; i <= 4; i++) { var id = grp[1] + i, open = OPEN_HAIR[id];
+          h += '<button type="button" class="opt hair' + (id === hair ? " on" : "") + (open ? "" : " locked") + '" data-h="' + id + '"' + (open ? "" : ' aria-disabled="true"') + ' aria-label="' + grp[0] + ' ' + HAIR[id] + (open ? "" : "，待开放") + '">' + headImg(id, "daily", 64) + '<span>' + HAIR[id] + '</span>' + (open ? "" : '<em>待开放</em>') + '</button>'; }
+        h += '</div>';
+      });
+    } else {
+      h += '<div class="wd-h">伴学</div><div class="wd-row two">';
+      ["qingxian", "changge"].forEach(function (id) { h += '<button type="button" class="opt buddy' + (id === hair ? " on" : "") + '" data-b="' + id + '">' + headImg(id, cur.outfit, 72) + '<span>' + BUDDY[id].name + '</span><small>' + BUDDY[id].mood + '</small></button>'; });
       h += '</div>';
+    }
+    h += '<div class="wd-h">衣服</div><div class="wd-row">';
+    ["daily", "sport", "formal", "ancient"].forEach(function (o) { var lk = LOCKED[o];
+      h += '<button type="button" class="opt cloth' + (o === cur.outfit ? " on" : "") + (lk ? " locked" : "") + '" data-o="' + o + '"' + (lk ? ' aria-disabled="true"' : "") + ' aria-label="' + OUTFIT[o][0] + (lk ? "，" + lk : "") + '"><span class="th"><img src="chars/' + hair + '_outfit_' + o + '.webp" alt=""></span><span>' + OUTFIT[o][0] + '</span>' + (lk ? '<em>' + lk + '</em>' : "") + '</button>'; });
+    h += '</div><div class="wd-act">' + (isMe ? '<button class="scrollbtn" id="wdNext" type="button">下一步：选伴学</button>' : '<button class="back" id="wdPrev" type="button">← 上一步</button><button class="scrollbtn" id="wdDone" type="button">完　成</button>') + '</div></div></div></div>';
+    app.innerHTML = h; wireTop();
+    var fig = document.getElementById("wdFig"), bimg = fig.querySelector(".b"), fimg = fig.querySelector(".f"), card = document.getElementById("wdCard");
+    function paint() {
+      var who = isMe ? cur.hair : cur.who;
+      bimg.src = "chars/" + who + "_outfit_" + cur.outfit + ".webp";
+      if (isMe) { var girl = who.charAt(0) === "g";
+        card.innerHTML = '<h3>我 <small>' + esc(me ? me.name : "") + '</small></h3><p>' + HAIR[who] + ' · ' + OUTFIT[cur.outfit][0] + '</p><p class="d">' + (girl ? "独立、好奇、爱思考，自然随和、有亲和力。" : "独立、沉稳、喜欢探索，好奇心强。") + '</p><p class="d">' + OUTFIT[cur.outfit][1] + '</p>';
+      } else { var B = BUDDY[who];
+        card.innerHTML = '<h3>' + B.name + ' <small>伴学 · 和你同龄</small></h3><p class="d">' + B.look + '</p><dl><dt>性格</dt><dd>' + B.mood + '</dd><dt>特点</dt><dd>' + B.trait + '</dd><dt>说话</dt><dd>' + B.talk + '</dd></dl><p class="motto">“' + B.motto + '”</p>'; }
+      [].forEach.call(app.querySelectorAll(".opt.cloth"), function (b) { var o = b.getAttribute("data-o"); b.classList.toggle("on", o === cur.outfit); b.querySelector("img").src = "chars/" + who + "_outfit_" + o + ".webp"; });
+      [].forEach.call(app.querySelectorAll(".opt.hair,.opt.buddy"), function (b) { b.classList.toggle("on", (b.getAttribute("data-h") || b.getAttribute("data-b")) === who); });
+      fig.classList.remove("swap"); void fig.offsetWidth; fig.classList.add("swap");
+      if (isMe) put("hora-avatar", { hair: cur.hair, outfit: cur.outfit }); else put("hora-buddy", { who: cur.who, outfit: cur.outfit });
+    }
+    function lockedTip(b, t) { var e = b.querySelector("em"); if (e) { e.textContent = t; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); } }
+    [].forEach.call(app.querySelectorAll(".opt"), function (b, i) {
+      b.addEventListener("click", function () {
+        if (b.classList.contains("locked")) return lockedTip(b, b.classList.contains("cloth") ? LOCKED[b.getAttribute("data-o")] : "以后开放");
+        if (b.getAttribute("data-h")) cur.hair = b.getAttribute("data-h");
+        if (b.getAttribute("data-b")) cur.who = b.getAttribute("data-b");
+        if (b.getAttribute("data-o")) cur.outfit = b.getAttribute("data-o");
+        pluck(SCALE[(i + 3) % 12], .35); paint();
+      });
     });
-    app.innerHTML = h + '<p class="msg" id="lk-msg">点一个就选好了。</p></div>';
-    [].forEach.call(app.querySelectorAll(".lk"), function (b) { b.addEventListener("click", function () { put("hora-avatar", { hair: b.getAttribute("data-h") }); pluck(SCALE[[].indexOf.call(app.querySelectorAll(".lk"), b) + 2], .4); next(); }); });
+    var blinkT = setInterval(function () { if (!document.body.contains(fig)) return clearInterval(blinkT); var who = isMe ? cur.hair : cur.who; if (!FACE[who] || reduce) return;
+      fimg.src = "chars/" + who + "_face_blink.webp"; fimg.hidden = false; setTimeout(function () { fimg.hidden = true; }, 140); }, 3200);
+    var nx = document.getElementById("wdNext"), pv = document.getElementById("wdPrev"), dn = document.getElementById("wdDone");
+    if (nx) nx.addEventListener("click", function () { showWardrobe(2, done); });
+    if (pv) pv.addEventListener("click", function () { showWardrobe(1, done); });
+    if (dn) dn.addEventListener("click", function () {
+      var back = null; try { back = sessionStorage.getItem("hora-return"); sessionStorage.removeItem("hora-return"); } catch (e) {}
+      if (back) { location.href = back; return; } (done || showShelf)();
+    });
+    paint();
   }
 
   /* ---------- 十二册 ---------- */
@@ -369,7 +429,8 @@
   me = teacher ? null : sess();
   if (me) put("hora-session", me, sessionStorage);
   var g0 = get("hora-grade");
-  if ((me || teacher) && /^#(album|map)$/.test(location.hash) && g0 && byGrade(g0).length) showAlbum(g0);
+  if (me && location.hash === "#wardrobe") showWardrobe(1);
+  else if ((me || teacher) && /^#(album|map)$/.test(location.hash) && g0 && byGrade(g0).length) showAlbum(g0);
   else showOpen();
   try { document.fonts.load('150px "Ma Shan Zheng"', "弦歌"); } catch (e) {}
 })();
