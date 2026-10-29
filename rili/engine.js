@@ -19,7 +19,7 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
 var C=L.cast,PEOPLE=C.people;
-var MSG=Object.assign({keyOut:"这一句不在这一层里，在这一层的那几段里找。",ladderEmpty:"还有一级空着，先把它写完。"},L.msgs||{});
+var MSG=Object.assign({keyOut:"这一句不在这一层的段落里。关键句要在这一层的几段里找。",ladderEmpty:"还有一级空着，先把它写完。"},L.msgs||{});
 function lead(){return C.lead;}
 function coach(){return C.coach||C.lead;}
 
@@ -219,7 +219,7 @@ function buildCast(){[["l",C.left],["r",C.right]].forEach(function(side){var hos
     if(w==="me")fig.addEventListener("click",goWardrobe);
     var o={el:d,fig:fig,circle:$(".circ",d),cb:$(".cb",d),cf:$(".cf",d),fb:$(".fb",fig),ff:$(".ff",fig),cur:"",blinkAt:performance.now()/1000+2+Math.random()*3};SPR[w]=o;
     o.cb.onerror=function(){d.classList.remove("sprite");d.innerHTML='<canvas width="220" height="220" aria-hidden="true"></canvas><span class="nm"></span>';$(".nm",d).textContent=nameOf(w);CV[w]=$("canvas",d);fig.remove();delete SPR[w];};
-    o.cb.src=o.fb.src=spriteSrc(w);applyHead(o,w);}
+    o.cb.src=o.fb.src=spriteSrc(w);applyHead(o,w);var ff=FACES[spriteHair(w)]||{};for(var fk in ff)loadFace(spriteSrc(w,fk));}
   else CV[w]=$("canvas",d);
   if(w==="me"){if(spr)d.addEventListener("click",goWardrobe);}else d.addEventListener("click",function(){if(!bChat.hidden&&!bChat.disabled)openChat(w);});});});
   if(FIGS){addEventListener("resize",layoutFigs);setInterval(layoutFigs,400);requestAnimationFrame(layoutFigs);}}
@@ -244,7 +244,9 @@ function spriteFrame(t){var thinking=!SPEAKER&&!!document.querySelector("#task i
     else if(f.blink&&t>o.blinkAt){want="blink";if(t>o.blinkAt+.14)o.blinkAt=t+2.5+Math.random()*3.5;}
     else if(w==="me"&&thinking&&f.think)want="think";
     else want=rest;
-    if(want!==o.cur){o.cur=want;[o.cf,o.ff].forEach(function(im){if(want){im.src=spriteSrc(w,want);im.hidden=false;}else im.hidden=true;});}}}
+    if(want!==o.cur){o.cur=want;var src=want?spriteSrc(w,want):"";if(!src||FACEOK[src])[o.cf,o.ff].forEach(function(im){if(src){im.src=src;im.hidden=false;}else im.hidden=true;});else{loadFace(src);o.cur="";}}}}
+/* 表情图先预加载，加载好之前不换（避免闪出别的五官） */
+var FACEOK={},FACEING={};function loadFace(src){if(FACEING[src])return;FACEING[src]=1;var im=new Image();im.onload=function(){FACEOK[src]=1;};im.src=src;}
 /* 换装间在首页（所有课文共用）；没有首页（claude.ai 版）时就地提示 */
 function goWardrobe(){if(HOME){try{sessionStorage.setItem("hora-return",location.pathname+location.search);}catch(e){}leaveTo(HOME+"#wardrobe");}}
 buildCast();
@@ -464,11 +466,13 @@ H.layering=function(s,tok){var who=s.feedbackWho||coach();return new Promise(fun
   R.onPick=function(id){if(keyMode==null)return;var r=LS()[keyMode];if(SENT[id].p<r[0]||SENT[id].p>r[1]){logStep(s.obs,{miss:"keyOut"});sayQ(MSG.keyOut,who,tok);return;}info[keyMode].key=SENT[id].t;keyMode=null;setMode("cut",cutLabel);render();closeReaderIfNarrow();};
   render();
   doneB.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);var ls=LS();var empty=info.filter(function(x){return !x.sum.trim();}).length;tries++;logStep(s.obs,{try:1});
+    /* 一层都没分：不能交（这一步就是分层）；层数偏少、偏多：提醒一次，再按就算数；有层没写：一定要写完 */
+    if(ls.length<2){logStep(s.obs,{miss:"none"});sayQ(s.none||"还没有分层。在左边原文两段之间点一下，就分出一层。",who,tok);return;}
     if(ls.length<s.min&&tries<2){logStep(s.obs,{miss:"few"});sayQ(fill(s.few,{n:ls.length}),who,tok);return;}
     if(ls.length>s.max&&tries<2){logStep(s.obs,{miss:"many"});sayQ(s.many,who,tok);return;}
-    if(empty&&tries<3){sayQ(fill(s.empty,{n:empty}),who,tok);return;}
+    if(empty){logStep(s.obs,{miss:"empty"});sayQ(fill(s.empty,{n:empty}),who,tok);var fi=info.findIndex(function(x){return !x.sum.trim();});var fe=$("#in-layer-"+fi);if(fe)fe.focus();return;}
     keep();set(s.key+".at",new Date().toISOString());logStep(s.obs,{answer:info.map(function(x,i){return (i+1)+"．"+rng(ls[i])+" "+(x.sum||"")+(x.key?"（关键句："+x.key+"）":"");}).join("\n")});commit();R.onCut=null;R.onPick=null;setMode("none");
-    doneB.parentNode.remove();if(s.topQuote)task.append(el("blockquote",{class:"quote",text:s.topQuote}));
+    doneB.parentNode.remove();if(s.topQuote)task.append(el("div",{class:"topq"},[el("span",{class:"topl",text:s.topLabel||"台阶的顶"}),el("blockquote",{class:"quote",text:s.topQuote})]));
     SOUND.sfx("ok");line(fill(s.done,{n:ls.length}),s.who||lead(),tok).then(function(){res();}).catch(function(){});});});};
 
 H.ladder=function(s,tok){var who=s.feedbackWho||coach();return say(fill(s.ask),s.who,tok).then(function(){return new Promise(function(res,rej){clearTask();if(s.q)task.append(q(s.q));var st=get(s.key)||[];var box=el("div",{class:"stairs"});var tas=[];var hinted={};

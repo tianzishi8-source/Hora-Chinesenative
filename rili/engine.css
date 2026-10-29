@@ -339,3 +339,5 @@ body.figs-on .actors .actor.sprite{display:none}
 @keyframes breathe-s{50%{translate:0 2px}}
 @keyframes talk-s{50%{translate:0 -3px}}
 @media (max-width:860px){.circ{width:56px;height:56px}.actor.sprite .nm{display:none}}
+
+.topq{margin-top:12px}.topq .topl{display:block;font-size:.82rem;color:var(--accent);font-weight:700;letter-spacing:.06em;margin:0 0 4px 4px}

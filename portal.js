@@ -317,6 +317,10 @@
     h += '</div></div></div><div class="wd-act">' + (isMe ? '<span class="wd-step"><b>一　我</b>　·　二　伴学</span><button class="scrollbtn" id="wdNext" type="button">下一步：选伴学</button>' : '<button class="back" id="wdPrev" type="button">← 上一步</button><span class="wd-step">一　我　·　<b>二　伴学</b></span><button class="scrollbtn" id="wdDone" type="button">完　成</button>') + '</div></div>';
     app.innerHTML = h; wireTop();
     var fig = document.getElementById("wdFig"), bimg = fig.querySelector(".b"), fimg = fig.querySelector(".f"), card = document.getElementById("wdCard");
+    /* 表情图先在后台加载好再换上；还没加载好时不显示，免得把上一位的五官闪在新人物身上 */
+    var faceWant = "";
+    function setFace(src) { faceWant = src || ""; if (!src) { fimg.hidden = true; return; }
+      var pre = new Image(); pre.onload = function () { if (faceWant !== src) return; fimg.src = src; fimg.hidden = false; }; pre.src = src; }
     function paint() {
       var who = isMe ? cur.hair : cur.who;
       bimg.src = "chars/" + who + "_outfit_" + cur.outfit + ".webp";
@@ -326,8 +330,8 @@
         card.innerHTML = '<h3>' + B.name + ' <small>伴学 · 和你同龄</small></h3><p class="d">' + B.look + '</p><dl><dt>性格</dt><dd>' + B.mood + '</dd><dt>特点</dt><dd>' + B.trait + '</dd><dt>说话</dt><dd>' + B.talk + '</dd></dl><p class="motto">“' + B.motto + '”</p>'; }
       [].forEach.call(app.querySelectorAll(".opt.cloth"), function (b) { var o = b.getAttribute("data-o"), th = b.querySelector(".th"); b.classList.toggle("on", o === cur.outfit); th.innerHTML = '<img class="tb" src="chars/' + who + '_outfit_' + o + '.webp" alt="">' + restImg(who, "", o); });
       /* 新的身体图加载好了再叠表情，避免一瞬间新脸叠在旧身体上 */
-      fimg.hidden = true; var rw = rest(who);
-      function showFace() { if (rw) { fimg.src = "chars/" + who + "_" + cur.outfit + "_face_idle.webp"; fimg.hidden = false; } }
+      setFace(""); var rw = rest(who);
+      function showFace() { if (rw) setFace("chars/" + who + "_" + cur.outfit + "_face_idle.webp"); }
       if (bimg.complete && bimg.naturalWidth && bimg.getAttribute("src") === "chars/" + who + "_outfit_" + cur.outfit + ".webp") showFace(); else bimg.onload = showFace;
       [].forEach.call(app.querySelectorAll(".opt.hair,.opt.buddy"), function (b) { b.classList.toggle("on", (b.getAttribute("data-h") || b.getAttribute("data-b")) === who); });
       fig.classList.remove("swap"); void fig.offsetWidth; fig.classList.add("swap");
@@ -344,7 +348,9 @@
       });
     });
     var blinkT = setInterval(function () { if (!document.body.contains(fig)) return clearInterval(blinkT); var who = isMe ? cur.hair : cur.who; if (!FACE[who] || reduce) return;
-      fimg.src = "chars/" + who + "_" + cur.outfit + "_face_blink.webp"; fimg.hidden = false; setTimeout(function () { var r = rest(isMe ? cur.hair : cur.who); if (r) fimg.src = "chars/" + (isMe ? cur.hair : cur.who) + "_" + cur.outfit + "_face_idle.webp"; else fimg.hidden = true; }, 140); }, 3200);
+      if (!bimg.complete || bimg.getAttribute("src") !== "chars/" + who + "_outfit_" + cur.outfit + ".webp") return;
+      var wb = who, ob = cur.outfit; setFace("chars/" + wb + "_" + ob + "_face_blink.webp");
+      setTimeout(function () { if ((isMe ? cur.hair : cur.who) !== wb || cur.outfit !== ob) return; setFace(rest(wb) ? "chars/" + wb + "_" + ob + "_face_idle.webp" : ""); }, 160); }, 3200);
     var nx = document.getElementById("wdNext"), pv = document.getElementById("wdPrev"), dn = document.getElementById("wdDone");
     if (nx) nx.addEventListener("click", function () { showWardrobe(2, done); });
     if (pv) pv.addEventListener("click", function () { showWardrobe(1, done); });
