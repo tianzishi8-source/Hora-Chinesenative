@@ -187,7 +187,7 @@ function drawActor(cv,who){var c=cv.getContext("2d"),W=cv.width,H=cv.height,P=PE
   var gl=chOf(who);c.fillStyle=ink;c.font="700 "+Math.round(Rr*(gl.length>1?.7:.95))+"px 'Noto Serif SC',serif";c.textAlign="center";c.textBaseline="middle";c.fillText(gl,0,Rr*.04+br*.5);
   if(P.seal){var sz=Rr*.34;c.fillStyle="#b23a2c";c.fillRect(Rr*.36,Rr*.4,sz,sz);c.fillStyle="#f6ead8";c.font="700 "+(sz*.42)+"px 'Noto Serif SC',serif";c.fillText(P.seal.slice(0,1),Rr*.36+sz/2,Rr*.4+sz*.3);c.fillText(P.seal.slice(1,2),Rr*.36+sz/2,Rr*.4+sz*.74);}}
 /* 立绘（纸娃娃）：人物配置里写 sprite:"me"（我＝学生在换装间选的样子）或 sprite:"buddy"（伴学＝学生选的清弦或长歌）。
-   图在网站根目录 chars/：{发型}_outfit_{衣服}.webp 是身体，{发型}_face_{表情}.webp 是只有眉眼嘴的表情补丁，叠在身体上。
+   图在网站根目录 chars/：{发型}_outfit_{衣服}.webp 是身体，{发型}_{衣服}_face_{表情}.webp 是只有眼睛和嘴的表情补丁（每套衣服一份，tools/mask_face_patches.py 生成），叠在身体上。
    说话时嘴在 talk 补丁和底模之间切换；隔几秒眨一次眼；“我”在作答时换成思考的表情。
    两种摆法，按页面空白自动切换：任务下面空白多，人物在右下角站成半身或全身的大图；空白少，就在底栏里把头像圈在圆里。
    课文配置可写 L.outfit（如 "ancient"）让“我”和伴学这一课都穿这套。 */
@@ -207,7 +207,7 @@ for(var pw in PEOPLE){var pp=PEOPLE[pw];
   if(pp.sprite==="me"&&pp.voicesBy){var mg=myLook().hair.charAt(0);pp.voices=pp.voicesBy[mg]||[];pp.voice=Object.assign({},pp.voice,{gender:mg==="b"?"male":"female",pitch:mg==="b"?1.1:.95});pp.label=mg==="b"?"我（男）":"我（女）";}}
 function spriteHair(w){var P=PEOPLE[w];return P.sprite==="me"?myLook().hair:P.sprite==="buddy"?myBuddy().who:P.sprite;}
 function spriteOutfit(w){var P=PEOPLE[w];return L.outfit||P.outfit||(P.sprite==="me"?myLook().outfit:P.sprite==="buddy"?myBuddy().outfit:"daily");}
-function spriteSrc(w,kind){return CHARS+spriteHair(w)+(kind?"_face_"+kind:"_outfit_"+spriteOutfit(w))+".webp";}
+function spriteSrc(w,kind){return CHARS+spriteHair(w)+(kind?"_"+spriteOutfit(w)+"_face_"+kind:"_outfit_"+spriteOutfit(w))+".webp";}
 function headPos(w,box){var h=spriteHair(w),c=HEAD[h]||HEAD[h.charAt(0)]||[480,300],sc=box/316;return {w:Math.round(1024*sc),l:Math.round(box/2-c[0]*sc),t:Math.round(box/2-c[1]*sc)};}
 function applyHead(o,w){var box=o.circle.clientWidth||76,p=headPos(w,box);[o.cb,o.cf].forEach(function(im){im.style.width=p.w+"px";im.style.left=p.l+"px";im.style.top=p.t+"px";});}
 function buildCast(){[["l",C.left],["r",C.right]].forEach(function(side){var host=$(".actors."+side[0]);side[1].forEach(function(w){var P=PEOPLE[w],spr=!!P.sprite;
