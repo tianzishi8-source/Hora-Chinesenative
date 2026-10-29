@@ -141,7 +141,8 @@
   function showOpen() {
     app.scrollTop = 0;
     app.className = "screen open";
-    app.innerHTML = '<canvas id="ink" aria-hidden="true"></canvas><div id="hillsBox"></div>' +
+    app.innerHTML = '<div class="scene" id="scene" aria-hidden="true"><img src="img/open-paper-clean.webp" alt=""><img class="mt" id="mt" src="img/open-paper.webp" alt=""><div class="beam"></div>' +
+      '<div class="mist"></div><div class="mist m2"></div><canvas id="dust"></canvas>' + birdsSVG() + '</div><canvas id="ink" aria-hidden="true"></canvas>' +
       '<div class="stage"><div class="title" id="ttl">' + titleSVG() + '<span class="seal">HORA</span></div>' +
       '<div class="sub" id="sub">HORA 语文</div>' +
       '<svg class="qin" id="qin" viewBox="0 0 1000 120" role="button" tabindex="0" aria-label="拨一下琴弦">' +
@@ -166,7 +167,7 @@
         done = true; document.getElementById("hint").hidden = true;
         var cv = document.getElementById("ink"), sr = sheet.getBoundingClientRect();
         inkRings(cv, r.left - sr.left + r.width * at, r.top - sr.top + r.height / 2);
-        var hb = document.getElementById("hillsBox"); hb.innerHTML = hillsSVG(); hb.firstChild.style.setProperty("--mx", (at * 100).toFixed(1) + "%"); hb.firstChild.classList.add("bleed");
+        var mt = document.getElementById("mt"); mt.style.setProperty("--mx", (at * 100).toFixed(1) + "%"); mt.classList.add("on"); document.getElementById("scene").classList.add("awake");
         inkTitle(at);
         ["ttl", "sub", "quote", "bIn"].forEach(function (id) { document.getElementById(id).classList.add("show"); });
       }
@@ -174,7 +175,25 @@
     qin.addEventListener("pointerdown", play);
     qin.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); play(); } });
     document.getElementById("bIn").addEventListener("click", function () { ac(); if (me || teacher) showShelf(); else showLogin(); });
+    dust(document.getElementById("dust"));
     if (reduce) play();
+  }
+  /* 光里的浮尘：在窗格光那几条斜带里慢慢往上飘 */
+  function dust(cv) {
+    if (!cv || reduce) return; var ctx = cv.getContext("2d"), dpr = Math.min(2, devicePixelRatio || 1), W, H, P = [];
+    function size() { var r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+    size(); addEventListener("resize", size);
+    for (var i = 0; i < 70; i++) P.push({ x: Math.random(), y: Math.random(), r: .6 + Math.random() * 1.6, v: .00004 + Math.random() * .00012, ph: Math.random() * 6.28 });
+    (function f(t) { if (!document.body.contains(cv)) return; ctx.clearRect(0, 0, W, H);
+      P.forEach(function (p) { p.y -= p.v * 16; p.x += Math.sin(t / 2400 + p.ph) * .00012; if (p.y < -.02) { p.y = 1.02; p.x = Math.random(); }
+        var band = Math.sin((p.x * 1.6 + p.y * .85) * 9) , a = Math.max(0, band) * .55 * (1 - p.x * .6);
+        if (a < .04) return; ctx.fillStyle = "rgba(255,246,222," + a.toFixed(3) + ")"; ctx.beginPath(); ctx.arc(p.x * W, p.y * H, p.r, 0, 6.3); ctx.fill(); });
+      requestAnimationFrame(f); })(0);
+  }
+  function birdsSVG() {
+    var b = ""; [[0, 0, 1], [26, 10, .8], [48, -4, .9], [70, 14, .7], [90, 4, .75]].forEach(function (q, i) {
+      b += '<g transform="translate(' + q[0] + ' ' + q[1] + ') scale(' + q[2] + ')"><path class="bird" style="animation-delay:' + (i * .17) + 's;transform-origin:7px 0" d="M0 0 q7 -7 7 0 q0 -7 7 0"/></g>'; });
+    return '<svg class="birds" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><g transform="translate(1500 330)"><g class="flock">' + b + '</g></g></svg>';
   }
   /* 题字：墨点落在纸上，一团团洇开，洇满笔画就成了“弦歌”两个字 */
   function titleSVG() {
@@ -366,7 +385,7 @@
     app.scrollTop = 0;
     app.className = "screen"; history.replaceState(null, "", location.pathname);
     var mine = me ? guessGrade(me.cls) : 0;
-    var tiers = [["小学", "一至六年级", 1, 6, "--silk-1"], ["初中", "七至九年级", 7, 9, "--silk-2"], ["高中", "十至十二年级", 10, 12, "--silk-3"]];
+    var tiers = [["小学", "一至六年级", 1, 6, "green"], ["初中", "七至九年级", 7, 9, "indigo"], ["高中", "十至十二年级", 10, 12, "ochre"]];
     var h = top() + '<div class="page"><h1 class="h1">十二册</h1><p class="lead">' + (teacher ? "老师：选一册，再选课文；进课文后输老师密码，就能看全班的作答。" : "一个年级一册。手指或鼠标划过书脊，听听琴弦。") + '</p><div class="shelf">';
     var rows = [[tiers[0]], [tiers[1], tiers[2]]];
     rows.forEach(function (row, ri) {
@@ -374,7 +393,7 @@
       row.forEach(function (t) {
         for (var g = t[2]; g <= t[3]; g++) {
           var n = byGrade(g).length;
-          h += '<button type="button" class="book' + (n ? "" : " none") + (g === mine && n ? " mine" : "") + '" data-g="' + g + '" style="--silk:var(' + t[4] + ')"' +
+          h += '<button type="button" class="book' + (n ? "" : " none") + (g === mine && n ? " mine" : "") + '" data-g="' + g + '" style="--cover:url(img/cover-' + t[4] + '.webp)"' +
             (n ? ' aria-label="' + NUM[g] + '年级，' + n + ' 篇课文"' : ' aria-label="' + NUM[g] + '年级，待开放"') + '>' +
             '<span class="slip">' + NUM[g] + '年级</span>' + (n ? '<span class="seal">弦歌</span>' : "") + '<span class="count">' + (n ? n + " 篇" : "待开放") + '</span></button>';
         }
