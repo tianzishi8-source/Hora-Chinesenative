@@ -285,10 +285,10 @@
     changge: { name: "长歌", look: "偏长脸，棕褐色微卷发，棕色眼睛，圆框眼镜。", mood: "理性、开朗、擅长分析", trait: "逻辑思维强，善于分析；喜欢讨论和思考不同观点；鼓励你从不同角度看问题。", motto: "不同的角度，会看到更完整的世界。", talk: "常说“我觉得……”“等等，那……”" }
   };
   var FACE = { qingxian: { blink: 1 }, changge: { blink: 1 }, g1: { blink: 1 }, b1: { blink: 1 } };
-  var HEADC = { qingxian: [478, 362], changge: [492, 232], g: [477, 332], b: [466, 232] };
+  var HEADC = { qingxian: [488, 346], changge: [493, 214], g: [480, 318], b: [470, 214] };
   function look() { var a = get("hora-avatar") || {}; return { hair: OPEN_HAIR[a.hair] ? a.hair : "g1", outfit: OUTFIT[a.outfit] && !LOCKED[a.outfit] ? a.outfit : "daily" }; }
   function buddy() { var b = get("hora-buddy") || {}; return { who: BUDDY[b.who] ? b.who : "qingxian", outfit: OUTFIT[b.outfit] && !LOCKED[b.outfit] ? b.outfit : "daily" }; }
-  function headImg(h, outfit, box) { var c = HEADC[h] || HEADC[h.charAt(0)], sc = box / 330;
+  function headImg(h, outfit, box) { var c = HEADC[h] || HEADC[h.charAt(0)], sc = box / 316;
     return '<span class="hd" style="width:' + box + 'px;height:' + box + 'px"><img src="chars/' + h + '_outfit_' + outfit + '.webp" alt="" style="width:' + Math.round(1024 * sc) + 'px;left:' + Math.round(box / 2 - c[0] * sc) + 'px;top:' + Math.round(box / 2 - c[1] * sc) + 'px"></span>'; }
   function showWardrobe(step, done) {
     app.className = "screen"; app.scrollTop = 0; location.hash = "wardrobe";
@@ -300,18 +300,18 @@
       [["女生", "g"], ["男生", "b"]].forEach(function (grp) {
         h += '<div class="wd-h">' + grp[0] + '</div><div class="wd-row">';
         for (var i = 1; i <= 4; i++) { var id = grp[1] + i, open = OPEN_HAIR[id];
-          h += '<button type="button" class="opt hair' + (id === hair ? " on" : "") + (open ? "" : " locked") + '" data-h="' + id + '"' + (open ? "" : ' aria-disabled="true"') + ' aria-label="' + grp[0] + ' ' + HAIR[id] + (open ? "" : "，待开放") + '">' + headImg(id, "daily", 64) + '<span>' + HAIR[id] + '</span>' + (open ? "" : '<em>待开放</em>') + '</button>'; }
+          h += '<button type="button" class="opt hair' + (id === hair ? " on" : "") + (open ? "" : " locked") + '" data-h="' + id + '"' + (open ? "" : ' aria-disabled="true"') + ' aria-label="' + grp[0] + ' ' + HAIR[id] + (open ? "" : "，待开放") + '">' + headImg(id, "daily", 92) + '<span>' + HAIR[id] + '</span>' + (open ? "" : '<em>待开放</em>') + '</button>'; }
         h += '</div>';
       });
     } else {
       h += '<div class="wd-h">伴学</div><div class="wd-row two">';
-      ["qingxian", "changge"].forEach(function (id) { h += '<button type="button" class="opt buddy' + (id === hair ? " on" : "") + '" data-b="' + id + '">' + headImg(id, cur.outfit, 72) + '<span>' + BUDDY[id].name + '</span><small>' + BUDDY[id].mood + '</small></button>'; });
+      ["qingxian", "changge"].forEach(function (id) { h += '<button type="button" class="opt buddy' + (id === hair ? " on" : "") + '" data-b="' + id + '">' + headImg(id, cur.outfit, 110) + '<span>' + BUDDY[id].name + '</span><small>' + BUDDY[id].mood + '</small></button>'; });
       h += '</div>';
     }
     h += '<div class="wd-h">衣服</div><div class="wd-row">';
     ["daily", "sport", "formal", "ancient"].forEach(function (o) { var lk = LOCKED[o];
       h += '<button type="button" class="opt cloth' + (o === cur.outfit ? " on" : "") + (lk ? " locked" : "") + '" data-o="' + o + '"' + (lk ? ' aria-disabled="true"' : "") + ' aria-label="' + OUTFIT[o][0] + (lk ? "，" + lk : "") + '"><span class="th"><img src="chars/' + hair + '_outfit_' + o + '.webp" alt=""></span><span>' + OUTFIT[o][0] + '</span>' + (lk ? '<em>' + lk + '</em>' : "") + '</button>'; });
-    h += '</div><div class="wd-act">' + (isMe ? '<button class="scrollbtn" id="wdNext" type="button">下一步：选伴学</button>' : '<button class="back" id="wdPrev" type="button">← 上一步</button><button class="scrollbtn" id="wdDone" type="button">完　成</button>') + '</div></div></div></div>';
+    h += '</div></div></div><div class="wd-act">' + (isMe ? '<span class="wd-step"><b>一　我</b>　·　二　伴学</span><button class="scrollbtn" id="wdNext" type="button">下一步：选伴学</button>' : '<button class="back" id="wdPrev" type="button">← 上一步</button><span class="wd-step">一　我　·　<b>二　伴学</b></span><button class="scrollbtn" id="wdDone" type="button">完　成</button>') + '</div></div>';
     app.innerHTML = h; wireTop();
     var fig = document.getElementById("wdFig"), bimg = fig.querySelector(".b"), fimg = fig.querySelector(".f"), card = document.getElementById("wdCard");
     function paint() {

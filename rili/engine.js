@@ -195,8 +195,8 @@ var CHARS=(SITE.home||"")+"chars/",SPR={},FIGS=null,FIGMODE="";
 var FACES={qingxian:{blink:1,talk:1,think:1,idle:1},changge:{blink:1,talk:1,think:1,smile:1},g1:{blink:1,talk:1,think:1,idle:1},b1:{blink:1,talk:1,think:1,smile:1}};
 var HAIRS=["g1","g2","g3","g4","b1","b2","b3","b4"],OUTFITS=["daily","sport","formal","ancient"];
 var BUDDIES={qingxian:{name:"清弦",voice:"k1"},changge:{name:"长歌",voice:"k2"}};
-/* 头像圈：每个人脸的中心（原图坐标），圈的直径对应原图 330 像素 */
-var HEAD={qingxian:[478,362],changge:[492,232],g:[477,332],b:[466,232]};
+/* 头像圈：每个人头的中心（原图坐标），圈的直径对应原图 316 像素，头正好在圈中间 */
+var HEAD={qingxian:[488,346],changge:[493,214],g:[480,318],b:[470,214]};
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||"null");}catch(e){return null;}}
 function myLook(){var a=lsGet("hora-avatar")||{};return {hair:HAIRS.indexOf(a.hair)>=0?a.hair:"g1",outfit:OUTFITS.indexOf(a.outfit)>=0?a.outfit:"daily"};}
 function myBuddy(){var b=lsGet("hora-buddy")||{};return {who:BUDDIES[b.who]?b.who:"qingxian",outfit:OUTFITS.indexOf(b.outfit)>=0?b.outfit:"daily"};}
@@ -205,7 +205,7 @@ for(var pw in PEOPLE){var pp=PEOPLE[pw];if(pp.sprite==="buddy"){pp.name=BUDDYNAM
 function spriteHair(w){var P=PEOPLE[w];return P.sprite==="me"?myLook().hair:P.sprite==="buddy"?myBuddy().who:P.sprite;}
 function spriteOutfit(w){var P=PEOPLE[w];return L.outfit||P.outfit||(P.sprite==="me"?myLook().outfit:P.sprite==="buddy"?myBuddy().outfit:"daily");}
 function spriteSrc(w,kind){return CHARS+spriteHair(w)+(kind?"_face_"+kind:"_outfit_"+spriteOutfit(w))+".webp";}
-function headPos(w,box){var h=spriteHair(w),c=HEAD[h]||HEAD[h.charAt(0)]||[480,300],sc=box/330;return {w:Math.round(1024*sc),l:Math.round(box/2-c[0]*sc),t:Math.round(box/2-c[1]*sc)};}
+function headPos(w,box){var h=spriteHair(w),c=HEAD[h]||HEAD[h.charAt(0)]||[480,300],sc=box/316;return {w:Math.round(1024*sc),l:Math.round(box/2-c[0]*sc),t:Math.round(box/2-c[1]*sc)};}
 function applyHead(o,w){var box=o.circle.clientWidth||76,p=headPos(w,box);[o.cb,o.cf].forEach(function(im){im.style.width=p.w+"px";im.style.left=p.l+"px";im.style.top=p.t+"px";});}
 function buildCast(){[["l",C.left],["r",C.right]].forEach(function(side){var host=$(".actors."+side[0]);side[1].forEach(function(w){var P=PEOPLE[w],spr=!!P.sprite;
   var d=el("button",{class:"actor"+(spr?" sprite":""),type:"button","data-who":w,"aria-label":w==="me"?"我（点一下去换装间）":"和"+P.name+"聊一聊"});
@@ -229,15 +229,18 @@ function layoutFigs(){if(!FIGS)return;var work=$(".work"),cast=$("#cast"),task=$
   if(mode!==FIGMODE){FIGMODE=mode;document.body.classList.toggle("figs-on",mode!=="circle");FIGS.className="figs "+mode;}
   if(mode==="circle"){for(var w in SPR)applyHead(SPR[w],w);return;}
   FIGS.style.right=Math.max(16,innerWidth-wr.right)+"px";FIGS.style.bottom=Math.round(innerHeight-cr.top+4)+"px";FIGS.style.maxWidth=Math.round(wr.width)+"px";
-  /* 全身：原图 x40–990、y60–1530；半身：x150–860、y40–900 */
-  var R=mode==="full"?[40,60,990,1530]:[150,40,860,900],sc=h/(R[3]-R[1]),bw=Math.round((R[2]-R[0])*sc);
+  /* 全身：原图 x20–1004、y30–1530；半身：x130–880、y20–900（四周留出发光的位置） */
+  var R=mode==="full"?[20,30,1004,1530]:[130,20,880,900],sc=h/(R[3]-R[1]),bw=Math.round((R[2]-R[0])*sc);
   for(var w2 in SPR){var o=SPR[w2];o.fig.querySelector(".fbox").style.cssText="width:"+bw+"px;height:"+Math.round(h)+"px";[o.fb,o.ff].forEach(function(im){im.style.width=Math.round(1024*sc)+"px";im.style.left=Math.round(-R[0]*sc)+"px";im.style.top=Math.round(-R[1]*sc)+"px";});}}
 function spriteFrame(t){var thinking=!SPEAKER&&!!document.querySelector("#task input:not([type=checkbox]):not([type=radio]),#task textarea");
   for(var w in SPR){var o=SPR[w],f=FACES[spriteHair(w)]||{},on=SPEAKER===w,want="",talking=on&&(TALK||VOICE.busy())&&!reduce;
     o.el.classList.toggle("on",on);o.fig.classList.toggle("on",on);o.fig.classList.toggle("talking",talking&&!f.talk);
-    if(talking&&f.talk)want=Math.floor(t*6.5)%2?"talk":"";
+    /* 不说话时：闭嘴微笑（有 idle 补丁的用 idle；长歌、B1 的底模本身就是闭嘴的）＋眨眼 */
+    var rest=f.idle?"idle":"";
+    if(talking&&f.talk)want=Math.floor(t*6.5)%2?"talk":rest;
     else if(f.blink&&t>o.blinkAt){want="blink";if(t>o.blinkAt+.14)o.blinkAt=t+2.5+Math.random()*3.5;}
     else if(w==="me"&&thinking&&f.think)want="think";
+    else want=rest;
     if(want!==o.cur){o.cur=want;[o.cf,o.ff].forEach(function(im){if(want){im.src=spriteSrc(w,want);im.hidden=false;}else im.hidden=true;});}}}
 /* 换装间在首页（所有课文共用）；没有首页（claude.ai 版）时就地提示 */
 function goWardrobe(){if(HOME){try{sessionStorage.setItem("hora-return",location.pathname+location.search);}catch(e){}leaveTo(HOME+"#wardrobe");}}
