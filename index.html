@@ -129,8 +129,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .wd-grid{display:grid;grid-template-columns:auto minmax(180px,240px) minmax(0,1fr);gap:28px 32px;align-items:start}
 .wd-stage{display:contents}
 .wd-fig{position:sticky!important;top:70px}
-.wd-fig{position:relative;height:min(72vh,620px);aspect-ratio:2/3;max-width:100%;background:radial-gradient(42% 5% at 50% 97%,rgba(40,48,46,.22),transparent 75%)}
-.wd-fig img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:saturate(.75) sepia(.06) contrast(.97);mix-blend-mode:multiply}
+.wd-fig{position:relative;height:min(calc(100vh - 310px),620px);mix-blend-mode:multiply;aspect-ratio:2/3;max-width:100%;background:radial-gradient(42% 5% at 50% 97%,rgba(40,48,46,.22),transparent 75%)}
+.wd-fig img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:saturate(.75) sepia(.06) contrast(.97)}
 @media (prefers-reduced-motion:no-preference){.wd-fig img{animation:breathe-w 4.2s ease-in-out infinite}.wd-fig.swap{animation:swap .45s cubic-bezier(.2,.8,.2,1)}}
 @keyframes breathe-w{50%{transform:translateY(3px)}}
 @keyframes swap{0%{transform:translateY(8px) scale(.98);opacity:.4}100%{transform:none;opacity:1}}
@@ -159,7 +159,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hd{position:relative;display:block;border-radius:50%;overflow:hidden;background:var(--xuan);box-shadow:0 0 0 1px rgba(120,90,50,.18);transition:box-shadow .2s}
 .opt.on .hd{box-shadow:0 0 0 3px var(--xuan),0 0 0 5px var(--cinnabar)}
 .opt.on>span:not(.hd):not(.th){color:var(--cinnabar);font-weight:500}
-.hd img,.opt .th img{position:absolute;max-width:none;filter:saturate(.75) sepia(.06);mix-blend-mode:multiply}
+.hd img,.opt .th img{position:absolute;max-width:none;filter:saturate(.75) sepia(.06)}
+.hd,.opt .th{mix-blend-mode:multiply}
 @media (max-width:1100px){.hd{transform:scale(.85)}}
 /* 衣服：大框、全身 */
 .opt.cloth{border:1px solid rgba(120,90,50,.22);background:rgba(255,252,244,.6);border-radius:10px;padding:8px 4px 10px}
