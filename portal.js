@@ -264,10 +264,10 @@
     app.scrollTop = 0;
     app.className = "screen login"; history.replaceState(null, "", location.pathname);
     var last = get("hora-last") || {};
-    app.innerHTML = '<form class="jian" id="lg" novalidate><h2><span class="seal">弦歌</span>签到</h2><p>第一次来，自己定一个 4 位数字记住它。换电脑、换手机时写同样的三项，就从上次读到的地方接着读。</p>' +
+    app.innerHTML = '<form class="jian" id="lg" novalidate><h2><span class="seal">弦歌</span>签到</h2><p>班级码、名字、4 位数字都照老师发给你的写。换电脑、换手机时写同样的三项，就从上次读到的地方接着读。</p>' +
       '<label class="field"><span class="lab">班级码（老师给的）</span><input id="lg-cls" autocomplete="off" autocapitalize="characters" placeholder="比如 G8A"></label>' +
-      '<label class="field"><span class="lab">名字或昵称</span><input id="lg-name" autocomplete="off" maxlength="12" placeholder="同学和老师认得出就行"></label>' +
-      '<label class="field"><span class="lab">4 位数字</span><input id="lg-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••"></label>' +
+      '<label class="field"><span class="lab">名字（照老师给的写）</span><input id="lg-name" autocomplete="off" maxlength="12" placeholder="比如 王小明"></label>' +
+      '<label class="field"><span class="lab">4 位数字（老师发的）</span><input id="lg-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••"></label>' +
       '<label class="keep"><input type="checkbox" id="lg-keep" checked> 在这台设备上记住我（公用电脑请不要勾）</label>' +
       '<label class="field" id="lg-p2f" hidden><span class="lab">再输一遍 4 位数字（确认）</span><input id="lg-pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••"></label>' +
       '<button class="scrollbtn" id="lg-go" type="submit">入　学</button><p class="msg" id="lg-msg"></p>' +
@@ -297,7 +297,7 @@
           newFor = who; p2f.hidden = false; p2.value = ""; p2.focus(); btn.textContent = "确认入学";
           say("没有找到“" + m.cls + " · " + m.name + "”的签到记录。\n第一次来：请在上面再输一遍你定的 4 位数字，点“确认入学”。\n来过的同学：请检查班级码和名字，要和第一次写的一模一样。", 1);
         }
-        else if (er.code === "roster") say("老师的名单里没有“" + m.name + "”这个名字。请写老师登记的名字（比如中文全名），或者问一下老师。", 1);
+        else if (er.code === "roster") say("班级码、名字或数字不对。请照老师发给你的三项，一字不差地写；还是不行，请问老师。", 1);
         else if (er.code === "pin") say("数字不对。请想想你第一次签到时定的 4 位数字；实在想不起来，请找老师帮你重置。", 1);
         else if (er.code === "cls") say("没有这个班级码，请问一下老师。", 1);
         else say("连不上老师的表格，可能是网络问题，请稍后再试。", 1);
