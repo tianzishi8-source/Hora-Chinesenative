@@ -291,7 +291,7 @@
       if (isNew && p2.value.trim() !== m.pin) { p2.focus(); return say("两次输入的数字不一样，请再输一遍。", 1); }
       btn.disabled = true; say("正在核对……");
       if (isNew) m.isNew = true;
-      api("login", m).then(function () { delete m.isNew; ok(); }).catch(function (er) {
+      api("login", m).then(function (j) { delete m.isNew; if (j && j.name) m.name = j.name; ok(); }).catch(function (er) {
         btn.disabled = false; delete m.isNew;
         if (er.code === "new") {
           newFor = who; p2f.hidden = false; p2.value = ""; p2.focus(); btn.textContent = "确认入学";
