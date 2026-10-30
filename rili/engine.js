@@ -229,8 +229,12 @@ function buildCast(){[["l",C.left],["r",C.right]].forEach(function(side){var hos
   if(FIGS){addEventListener("resize",layoutFigs);setInterval(layoutFigs,400);requestAnimationFrame(layoutFigs);}}
 /* 摆法：量一下任务卡下面到底栏之间还有多高 */
 function layoutFigs(){if(!FIGS)return;var work=$(".work"),cast=$("#cast"),task=$("#task");if(!work||!cast)return;
-  var wr=work.getBoundingClientRect(),cr=cast.getBoundingClientRect(),last=task.lastElementChild,bottom=Math.max(($(".work .head")||work).getBoundingClientRect().bottom,last?last.getBoundingClientRect().bottom:0);
+  var wr=work.getBoundingClientRect(),cr=cast.getBoundingClientRect(),bottom=($(".work .head")||work).getBoundingClientRect().bottom;
+  /* 任务卡里所有看得见的内容的最下沿（藏起来的元素量出来是 0，不能只看最后一个） */
+  [].forEach.call(task.querySelectorAll("*"),function(e){var r=e.getBoundingClientRect();if(r.height>0&&r.bottom>bottom)bottom=r.bottom;});
   var free=cr.top-bottom-14,wide=innerWidth>860&&wr.width>=380,mode;
+  /* 内容已经要往下滑才看得完：不放大图，只用头像圈，免得挡字 */
+  if(work.scrollHeight>work.clientHeight+4)free=0;
   if(!wide||free<280)mode="circle";else if(free<320&&FIGMODE==="circle")mode="circle";else mode=free>=470?"full":"half";
   var h=Math.min(free,mode==="full"?600:420);
   if(mode!==FIGMODE){FIGMODE=mode;document.body.classList.toggle("figs-on",mode!=="circle");FIGS.className="figs "+mode;}
