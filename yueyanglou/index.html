@@ -2342,16 +2342,17 @@ function api(action,body){var q={action:action,lesson:LESSON,lessonTitle:TITLE};
 function cred(){return {cls:ME.cls,name:ME.name,pin:ME.pin}}
 var saveT=null,dirty=false,stEl=null,leaving=false;
 function st(t,bad){if(!stEl)return;stEl.textContent=t;stEl.classList.toggle("bad",!!bad)}
-function later(){dirty=true;clearTimeout(saveT);saveT=setTimeout(saveNow,1500)}
-function saveNow(){if(!ME||!syncOn)return Promise.resolve();clearTimeout(saveT);var p=payload();st("保存中…");progress(p);
-  return api("save",Object.assign(cred(),{payload:p,summary:summary(p.kv)})).then(function(){dirty=false;st("已保存")})
-    .catch(function(e){st(e.code==="pin"?"没保存：数字不对":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)saveNow()},20000)})}
+var SV=0,INFL=null;   /* 同一时间只发一个保存请求；发送期间又有改动，回来后再存一次 */
+function later(){dirty=true;SV++;clearTimeout(saveT);saveT=setTimeout(saveNow,2500)}
+function saveNow(){if(!ME||!syncOn)return Promise.resolve();clearTimeout(saveT);if(INFL)return INFL.then(function(){if(dirty)return saveNow()});var v=SV,p=payload();st("保存中…");progress(p);
+  return INFL=api("save",Object.assign(cred(),{payload:p,summary:summary(p.kv)})).then(function(){INFL=null;if(SV===v){dirty=false;st("已保存")}else return saveNow()})
+    .catch(function(e){INFL=null;st(e.code==="pin"||e.code==="roster"?"没保存：请重新签到":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)saveNow()},15000)})}
 /* 首页册页用：学到第几课时；学到第 8 课时，换装间解锁古代装 */
 function progress(p){var pos=(p.kv&&p.kv.pos)||[0,0],n=(pos[0]||0)+1,key="hora-"+LESSON+"-"+ME.cls+"|"+ME.name,old=lsGet(key)||{},best=Math.max(n,old.best||0),done={};
   for(var i=1;i<=best;i++)done[i]=1;lsSet(key,{done:done,best:best});if(best>=8)lsSet("hora-unlock-ancient",true)}
 function leave(url){leaving=true;if(!dirty||!ME){location.href=url;return}var gone=false;function go(){if(!gone){gone=true;location.href=url}}saveNow().then(go,go);setTimeout(go,4000)}
 addEventListener("beforeunload",function(e){if(site&&dirty&&!leaving&&ME){e.preventDefault();e.returnValue=""}});
-function getSess(){try{var a=JSON.parse(sessionStorage.getItem("hora-session")||"null");if(a&&a.pin)return a}catch(e){}var b=lsGet("hora-last")||{};return b.pin?b:null}
+function getSess(){try{var a=JSON.parse(sessionStorage.getItem("hora-session")||"null");if(a&&a.pin)return a}catch(e){}return null}
 function dropSess(){try{sessionStorage.removeItem("hora-session")}catch(e){}var lm=lsGet("hora-last")||{};delete lm.pin;lsSet("hora-last",lm)}
 
 /* ---------- 人物：清弦/长歌和“我”的立绘头像（古代装），眨眼、说话、思考 ---------- */
@@ -2428,10 +2429,10 @@ function start(){
   document.documentElement.classList.add("xg-site");lsSet("hora-grade",9);lsSet("hora-lastLesson",LESSON);
   if(location.hash==="#teacher"){teacherOnly=true;PRE="yyl:teacher:";var ld=document.getElementById("xgLoad");if(ld)ld.hidden=true;
     askPw(true).then(function(ok){if(!ok){location.href=HOME;return}lsSet(PRE+"tmode",true);try{history.replaceState(null,"",location.pathname)}catch(e){}run()});return}
-  var ss=getSess();if(!ss){location.replace(HOME);return}
+  var ss=getSess();if(!ss){location.replace(HOME+"#login");return}
   ME={cls:String(ss.cls||"").replace(/\s+/g,"").toUpperCase(),name:String(ss.name||"").replace(/\s+/g," ").trim().slice(0,12),pin:String(ss.pin)};
   PRE="yyl:"+ME.cls+"|"+ME.name+":";
-  api("login",ME).then(function(j){hydrate(j.state);return "ok"},function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"||e.code==="new"||e.code==="roster"){dropSess();location.replace(HOME);return "stop"}return "off"})
+  api("login",ME).then(function(j){hydrate(j.state);return "ok"},function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"||e.code==="new"||e.code==="roster"){dropSess();location.replace(HOME+"#login");return "stop"}return "off"})
     .then(function(r){if(r==="stop")return;lsSet(PRE+"tmode",false);syncOn=true;if(!store.get("myname",""))lsSet(PRE+"myname",ME.name);run();
       if(r==="off")st("没连上，稍后自动再存",true);else st("已连上");
       /* 首次进来没有作答也先存一行，老师那边能看到谁进来过 */

@@ -16,7 +16,8 @@
   function put(k, v, store) { try { (store || localStorage).setItem(k, JSON.stringify(v)); } catch (e) {} }
   function normCls(v) { return String(v || "").replace(/\s+/g, "").toUpperCase(); }
   function normName(v) { return String(v || "").replace(/\s+/g, " ").trim(); }
-  function sess() { var a = get("hora-session", sessionStorage); if (a && a.pin) return a; var b = get("hora-last"); if (b && b.pin) return b; return null; }
+  /* 只在这个标签页里记住签到；关掉网页、换人，都要重新签到（不再“记住我”） */
+  function sess() { var a = get("hora-session", sessionStorage); if (a && a.pin) return a; return null; }
   function api(action, body) {
     var q = { action: action, lesson: "_home", lessonTitle: "首页" }; for (var k in body) q[k] = body[k];
     return fetch(SITE.sheetUrl, { method: "POST", body: JSON.stringify(q) }).then(function (r) { return r.json(); })
@@ -260,7 +261,7 @@
   }
 
   /* ---------- 签到 ---------- */
-  function showLogin() {
+  function showLogin(note) {
     app.scrollTop = 0;
     app.className = "screen login"; history.replaceState(null, "", location.pathname);
     var last = get("hora-last") || {};
@@ -268,7 +269,6 @@
       '<label class="field"><span class="lab">班级码（老师给的）</span><input id="lg-cls" autocomplete="off" autocapitalize="characters" placeholder="比如 G8A"></label>' +
       '<label class="field"><span class="lab">名字（照老师给的写）</span><input id="lg-name" autocomplete="off" maxlength="12" placeholder="比如 王小明"></label>' +
       '<label class="field"><span class="lab">4 位数字（老师发的）</span><input id="lg-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••"></label>' +
-      '<label class="keep"><input type="checkbox" id="lg-keep" checked> 在这台设备上记住我（公用电脑请不要勾）</label>' +
       '<label class="field" id="lg-p2f" hidden><span class="lab">再输一遍 4 位数字（确认）</span><input id="lg-pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••"></label>' +
       '<button class="scrollbtn" id="lg-go" type="submit">入　学</button><p class="msg" id="lg-msg"></p>' +
       '<button class="tlink" id="lg-t" type="button">我是老师</button></form>';
@@ -277,7 +277,8 @@
       p2f = document.getElementById("lg-p2f"), p2 = document.getElementById("lg-pin2"), newFor = "";
     /* 改了班级码或名字，就收起“确认数字”那一栏 */
     [c, n].forEach(function (x) { x.addEventListener("input", function () { if (newFor) { newFor = ""; p2f.hidden = true; p2.value = ""; btn.textContent = "入　学"; say(""); } }); });
-    c.value = last.cls || ""; n.value = last.name || ""; (c.value ? (n.value ? p : n) : c).focus();
+    c.value = last.cls || ""; (c.value ? n : c).focus();
+    if (note) say(note, 1);
     function say(t, err) { msg.textContent = t; msg.className = "msg" + (err ? " err" : ""); }
     document.getElementById("lg").addEventListener("submit", function (e) {
       e.preventDefault();
@@ -285,7 +286,7 @@
       if (!m.cls) { c.focus(); return say("请写班级码。", 1); }
       if (!m.name) { n.focus(); return say("请写名字或昵称。", 1); }
       if (!/^\d{4}$/.test(m.pin)) { p.focus(); return say("请写 4 位数字。", 1); }
-      function ok() { me = m; put("hora-session", m, sessionStorage); put("hora-last", keep.checked ? m : { cls: m.cls, name: m.name }); pluck(392, .4); if (get("hora-avatar") && get("hora-buddy")) showShelf(); else showWardrobe(1, showShelf); }
+      function ok() { me = m; put("hora-session", m, sessionStorage); put("hora-last", { cls: m.cls }); pluck(392, .4); if (get("hora-avatar") && get("hora-buddy")) showShelf(); else showWardrobe(1, showShelf); }
       if (!SITE.sheetUrl) return ok();
       var who = m.cls + "|" + m.name, isNew = newFor === who;
       if (isNew && p2.value.trim() !== m.pin) { p2.focus(); return say("两次输入的数字不一样，请再输一遍。", 1); }
@@ -470,11 +471,13 @@
 
   /* ---------- 开始 ---------- */
   try { teacher = sessionStorage.getItem("hora-teacher") === "1"; } catch (e) {}
+  (function () { var l0 = get("hora-last"); if (l0 && (l0.pin || l0.name)) put("hora-last", { cls: l0.cls }); })();   /* 旧版存过的数字、名字清掉 */
   me = teacher ? null : sess();
   if (me) put("hora-session", me, sessionStorage);
   var g0 = get("hora-grade");
   if (me && location.hash === "#wardrobe") showWardrobe(1);
   else if ((me || teacher) && /^#(album|map)$/.test(location.hash) && g0 && byGrade(g0).length) showAlbum(g0);
+  else if (location.hash === "#login") { me = null; showLogin("请重新签到：班级码、名字、4 位数字都照老师发给你的写。"); }
   else showOpen();
   try { document.fonts.load('150px "Ma Shan Zheng"', "弦歌"); } catch (e) {}
 })();

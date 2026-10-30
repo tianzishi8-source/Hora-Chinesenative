@@ -86,9 +86,13 @@ function cred(){var m=BK.me||{};return {cls:m.cls,name:m.name,pin:m.pin};}
 var saveT=null,dirty=false,saveSt=null;
 function setSaveSt(t,bad){if(!saveSt){saveSt=el("span",{class:"savest",id:"saveSt"});$(".tools").prepend(saveSt);}saveSt.textContent=t;saveSt.classList.toggle("bad",!!bad);}
 function sync(){
-  if(BK.mode==="sheet"){if(!BK.me)return;dirty=true;clearTimeout(saveT);saveT=setTimeout(function(){var p=JSON.parse(JSON.stringify(payload()));setSaveSt("保存中…");
-      api("save",Object.assign(cred(),{payload:p,summary:studentText(p)})).then(function(){dirty=false;setSaveSt("已保存");}).catch(function(e){setSaveSt(e.code==="pin"?"没保存：数字不对":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)sync();},20000);});},1200);return;}
+  if(BK.mode==="sheet"){if(!BK.me)return;dirty=true;SV++;clearTimeout(saveT);saveT=setTimeout(sheetSave,2500);return;}
   if(!DB||!UID||syncOK===false)return;if(writing){pending=true;return;}writing=true;DB.doc("answers/"+UID).set(JSON.parse(JSON.stringify(payload()))).then(function(){syncOK=true;}).catch(function(e){if(e&&e.code==="invalid_argument")syncOK=false;}).then(function(){writing=false;if(pending){pending=false;sync();}});}
+/* 存表格：同一时间只发一个请求；发送期间又有改动，回来后再存一次（全班同时用时不挤） */
+var SV=0,INFL=false;
+function sheetSave(){if(INFL||!BK.me)return;INFL=true;var v=SV,p=JSON.parse(JSON.stringify(payload()));setSaveSt("保存中…");
+  api("save",Object.assign(cred(),{payload:p,summary:studentText(p)})).then(function(){INFL=false;if(SV===v){dirty=false;setSaveSt("已保存");}else sheetSave();})
+    .catch(function(e){INFL=false;setSaveSt(e.code==="pin"||e.code==="roster"?"没保存：请重新签到":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)sheetSave();},15000);});}
 function commit(){save();sync();}
 var leaving=false;
 function leaveTo(url){leaving=true;if(BK.mode!=="sheet"||!dirty||!BK.me){location.href=url;return;}clearTimeout(saveT);setSaveSt("保存中…");var done=false;function go(){if(!done){done=true;location.href=url;}}
@@ -678,7 +682,7 @@ else{if(S.day>DAYS.length)S.day=1;runFrom(S.day,Math.min(S.beat[S.day]||0,DAYS[S
 function normCls(v){return String(v||"").replace(/\s+/g,"").toUpperCase();}
 function normName(v){return String(v||"").replace(/\s+/g," ").trim();}
 var HOME;
-function getSess(){try{var a=JSON.parse(sessionStorage.getItem("hora-session")||"null");if(a&&a.pin)return a;}catch(e){}try{var b=JSON.parse(localStorage.getItem("hora-last")||"{}");if(b.pin)return b;}catch(e){}return null;}
+function getSess(){try{var a=JSON.parse(sessionStorage.getItem("hora-session")||"null");if(a&&a.pin)return a;}catch(e){}return null;}
 function dropSess(){try{sessionStorage.removeItem("hora-session");}catch(e){}try{var lm=JSON.parse(localStorage.getItem("hora-last")||"{}");delete lm.pin;localStorage.setItem("hora-last",JSON.stringify(lm));}catch(e){}}
 function sheetStart(){
   HOME=SITE.home||"";var tools=$(".tools");
@@ -687,11 +691,11 @@ function sheetStart(){
   var bT=el("button",{class:"tbtn",type:"button",id:"bTLogin",text:"老师"});bT.addEventListener("click",function(){if(BK.tpw){openTeacher();return;}showTeacherLogin();});
   tools.append(bWho,bT);
   if(location.hash==="#teacher")showTeacherLogin(true);
-  else{var ss=getSess();if(ss)autoLogin(ss);else if(HOME)location.replace(HOME);else showLogin();}
+  else{var ss=getSess();if(ss)autoLogin(ss);else if(HOME)location.replace(HOME+"#login");else showLogin();}
   addEventListener("hashchange",function(){if(location.hash==="#teacher"&&!BK.tpw)showTeacherLogin(!BK.me);});}
 function autoLogin(ss){var me={cls:normCls(ss.cls),name:normName(ss.name),pin:String(ss.pin)};var keep=false;try{keep=!!JSON.parse(localStorage.getItem("hora-last")||"{}").pin;}catch(e){}
   setSaveSt("正在连接……");var dt=$("#dTxt");if(dt)dt.textContent="正在打开你上次读到的地方，稍等几秒……";
-  api("login",me).then(function(j){enter(me,j.state,keep);}).catch(function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"||e.code==="new"||e.code==="roster"){dropSess();if(HOME){location.replace(HOME);return;}showLogin();return;}enter(me,null,keep);setSaveSt("没连上，稍后自动再存",true);});}
+  api("login",me).then(function(j){enter(me,j.state,keep);}).catch(function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"||e.code==="new"||e.code==="roster"){dropSess();if(HOME){location.replace(HOME+"#login");return;}showLogin();return;}enter(me,null,keep);setSaveSt("没连上，稍后自动再存",true);});}
 function confirmLeave(){return true;}
 function overlay(id){var o=$("#"+id);if(!o){o=el("div",{class:"ov login",id:id},[el("div",{class:"sheet login-s",role:"dialog"})]);document.body.append(o);}o.hidden=false;return $(".sheet",o);}
 function showLogin(){var sh=overlay("ovLogin");var last={};try{last=JSON.parse(localStorage.getItem("hora-last")||"{}");}catch(e){}
@@ -711,7 +715,7 @@ function showLogin(){var sh=overlay("ovLogin");var last={};try{last=JSON.parse(l
       if(e.code==="pin")msg.textContent="这个班里已经有人用了这个名字，数字对不上。是你的话，再想想当初定的数字；不是你，就换个名字（比如加上姓）。";
       else if(e.code==="cls")msg.textContent="没有这个班级码，请问一下老师。";
       else{msg.innerHTML="";msg.append("连不上老师的表格（可能是网络问题）。 ");var off=el("button",{type:"button",class:"ghost",text:"先在这台设备上做"});off.addEventListener("click",function(){enter(me,null,keep.checked);setSaveSt("没连上，稍后自动再存",true);});msg.append(off);}});});}
-function enter(me,state,keep){BK.me=me;try{localStorage.setItem("hora-last",JSON.stringify(keep?me:{cls:me.cls,name:me.name}));}catch(e){}try{sessionStorage.setItem("hora-session",JSON.stringify(me));}catch(e){}
+function enter(me,state,keep){BK.me=me;if(!HOME)try{localStorage.setItem("hora-last",JSON.stringify(keep?me:{cls:me.cls,name:me.name}));}catch(e){}try{sessionStorage.setItem("hora-session",JSON.stringify(me));}catch(e){}
   KEY="hora-"+L.id+"-"+me.cls+"|"+me.name;S={day:1,beat:{},done:{},data:{},log:{},chats:[]};try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);for(var k in o)S[k]=o[k];}}catch(e){}
   mergeRemote(state);S.data.name=me.name;save();if($("#ovLogin"))$("#ovLogin").hidden=true;$("#bWho").hidden=false;if(state!==null)setSaveSt("已连上");restart();}
 function showTeacherLogin(fromHash){var sh=overlay("ovTLogin");
