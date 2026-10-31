@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>岳阳楼记 · 课堂投屏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;700&display=swap">
+<link rel="stylesheet" href="proj.css?v=20261031">
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <header class="top">
+    <div class="ttl"></div>
+    <nav class="segs" aria-label="课堂环节"></nav>
+    <div class="tclock" aria-live="polite"></div>
+    <div class="tbtns">
+      <button id="auto" type="button">自动播放</button>
+      <button id="snd" type="button">声音</button>
+      <button id="set" type="button">声音设置</button>
+      <button id="sheet" type="button">作答单</button>
+      <button id="full" type="button">全屏</button>
+    </div>
+  </header>
+
+  <section class="vis" aria-label="画面"></section>
+  <section class="resp" hidden aria-label="助教按钮"></section>
+
+  <div class="right-cast">
+    <div class="actor cg"><div class="por"></div><span class="nm"></span></div>
+    <div class="actor qx"><div class="por"></div><span class="nm"></span></div>
+  </div>
+  <div class="fan away"><div class="seal"></div><span class="nm"></span></div>
+
+  <section class="dlg" aria-live="polite">
+    <span class="who"></span>
+    <div class="txt"></div>
+    <div class="ctl">
+      <span class="tip"></span>
+      <span class="extra"></span>
+      <button class="btn ghost" id="prev" type="button">◀ 上一步</button>
+      <button class="btn" id="next" type="button">继续 ▶</button>
+    </div>
+  </section>
+
+  <div class="cover">
+    <h1></h1>
+    <p class="sub"></p>
+    <p>助教：连接投影后点“开始上课”。<br>之后只需点“继续”（或按空格键、翻页遥控器）。</p>
+    <div class="row"><button class="btn" id="begin" type="button">开始上课</button><button class="btn ghost" id="resume" type="button" hidden></button></div>
+  </div>
+  <div class="dialog" hidden><div class="box"></div></div>
+  <div class="toast" hidden></div>
+</div></div>
+<script src="yyl-1.js?v=20261031"></script>
+<script src="voice/index.js" onerror="window.PROJ_VOICE={}"></script>
+<script src="proj.js?v=20261031"></script>
+</body>
+</html>
