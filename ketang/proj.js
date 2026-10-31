@@ -22,6 +22,7 @@
   /* ---------- 画布与缩放 ---------- */
   var stage = $("#stage");
   stage.style.setProperty("--paper-img", "url(" + A.paper + ")");
+  var vis = $(".vis");
   function fit() {
     var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
     stage.style.transform = "scale(" + s + ")";
@@ -43,23 +44,22 @@
     segBox.appendChild(b);
   });
 
-  /* ---------- 人物 ---------- */
-  var actors = {};
-  ["cg", "qx"].forEach(function (k) {
-    var c = CAST[k], el = $(".actor." + k);
-    var por = el.querySelector(".por");
-    var W = 300, s = 0.62, cx = c.head[0], cy = c.head[1];
-    var base = new Image(); base.src = A.chars + c.sprite + "_outfit_" + c.outfit + ".webp";
-    var face = new Image();
+  /* ---------- 人物：三张全身立绘同一比例（原图都是 1024×1536、脚底同一条线），所以高矮自然 ---------- */
+  var actors = {}, SC = 0.62, TOP = 1110 - 1536 * SC;
+  var castBox = $(".cast");
+  ["fan", "cg", "qx"].forEach(function (k) {
+    var c = CAST[k], el = document.createElement("div");
+    el.className = "actor " + k + (k === "fan" ? " away" : "");
+    var body = document.createElement("div"); body.className = "body"; el.appendChild(body);
+    var base = new Image(), face = new Image();
+    base.src = A.chars + c.sprite + "_outfit_" + c.outfit + ".webp";
     [base, face].forEach(function (im) {
-      im.style.width = Math.round(1024 * s) + "px";
-      im.style.left = Math.round(W / 2 - cx * s) + "px";
-      im.style.top = Math.round(150 - cy * s) + "px";
-      im.alt = ""; por.appendChild(im);
+      im.style.width = Math.round(1024 * SC) + "px"; im.style.left = c.x + "px"; im.style.top = Math.round(TOP) + "px";
+      im.alt = ""; body.appendChild(im);
     });
-    el.querySelector(".nm").textContent = c.name;
+    castBox.appendChild(el);
     var fs = {};
-    Object.keys(c.face).forEach(function (f) {
+    Object.keys(c.face || {}).forEach(function (f) {
       if (c.face[f]) { fs[f] = A.chars + c.sprite + "_" + c.outfit + "_face_" + c.face[f] + ".webp"; var p = new Image(); p.src = fs[f]; }
     });
     actors[k] = { el: el, face: face, fs: fs, mood: "idle", talking: false, blinkAt: 0 };
@@ -72,27 +72,25 @@
     else a.face.style.visibility = "hidden";
   }
   function moodFace(k) { var a = actors[k]; return a.mood === "think" ? "think" : a.mood === "happy" ? "happy" : "idle"; }
-  // 眨眼和说话动嘴
+  // 眨眼和说话动嘴（有表情图的人物）
   setInterval(function () {
     var now = Date.now();
     Object.keys(actors).forEach(function (k) {
-      var a = actors[k];
+      var a = actors[k]; if (!Object.keys(a.fs).length) return;
       if (a.talking) { a.tick = !a.tick; setFace(k, a.tick ? "talk" : moodFace(k)); return; }
       if (!a.blinkAt) a.blinkAt = now + 2500 + Math.random() * 3500;
       if (now >= a.blinkAt && now < a.blinkAt + 160) setFace(k, "blink");
       else if (now >= a.blinkAt + 160) { a.blinkAt = now + 3000 + Math.random() * 3500; setFace(k, moodFace(k)); }
     });
   }, 150);
-  $(".fan .seal").textContent = CAST.fan.seal;
-  $(".fan .nm").textContent = CAST.fan.name;
 
   function spotlight(who) {
-    ["cg", "qx"].forEach(function (k) { var e = actors[k].el; e.classList.toggle("on", who === k); e.classList.toggle("off", !!who && who !== k && who !== "all"); if (!who) e.classList.remove("off"); });
-    $(".fan").classList.toggle("on", who === "fan");
+    Object.keys(actors).forEach(function (k) { actors[k].el.classList.toggle("off", !!who && who !== k); });
   }
   function talking(who, on) {
-    if (who === "fan") $(".fan").classList.toggle("talk", on);
-    else if (actors[who]) { actors[who].talking = on; if (!on) setFace(who, moodFace(who)); }
+    var a = actors[who]; if (!a) return;
+    a.talking = on; a.el.classList.toggle("talk", on);
+    if (!on) setFace(who, moodFace(who));
   }
 
   /* ---------- 声音 ---------- */
@@ -179,7 +177,6 @@
   }
 
   /* ---------- 画面 ---------- */
-  var vis = $(".vis");
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function rubyfy(s) {
     var h = esc(s);
@@ -195,27 +192,47 @@
     });
     return html;
   }
-  var curVisKey = "", curBoardKey = "";
+  var curVisKey = "", curBoardKey = "", curScene = "";
+  var sceneEl = $(".scene"), heroEl = $(".heroover"), picEl = $(".picover");
+  function setScene(img, soft) {
+    var key = img + (soft ? "|soft" : "");
+    if (key === curScene) return; curScene = key;
+    sceneEl.style.backgroundImage = "url(" + A.img + img + ")";
+    sceneEl.classList.toggle("soft", !!soft);
+  }
   function renderVis(v, board, corner, force) {
     var key = JSON.stringify(v) + "|" + (corner || "");
-    var hasBoard = board && board.length && v && /^(text|pic|map)$/.test(v.type);
+    var hasBoard = !!(board && board.length && v && /^(text|map)$/.test(v.type));
     var bkey = hasBoard ? JSON.stringify(board) : "";
     if (key === curVisKey && bkey === curBoardKey && !force) return;
-    var sameBase = curVisKey && v && curVisKey.split("|")[0] && JSON.parse(curVisKey.split("|")[0] || "null");
+    var prev = curVisKey ? JSON.parse(curVisKey.slice(0, curVisKey.lastIndexOf("|")) || "null") : null;
     curVisKey = key; curBoardKey = bkey;
-    vis.innerHTML = "";
-    vis.classList.toggle("withboard", !!hasBoard);
+    vis.innerHTML = ""; heroEl.innerHTML = ""; picEl.innerHTML = "";
     if (!v) return;
-    var p = document.createElement("div"); p.className = "pane";
-    if (sameBase && sameBase.type === v.type && (v.type === "text" || v.type === "map" || v.type === "pic")) p.style.animation = "none";
     if (v.type === "hero" || v.type === "end") {
-      p.className += " hero"; p.style.backgroundImage = "url(" + A.img + (v.type === "end" ? "lake.webp" : "tower.webp") + ")";
-      p.innerHTML = v.type === "end" ? '<div class="bye">下次见</div>' : '<div class="vt">' + esc(L.title) + '</div><div class="vs">北宋 · 范仲淹</div>';
-    } else if (v.type === "text") {
-      p.className += " textpane shrink";
+      setScene(v.type === "end" ? "lake.webp" : "tower.webp", false);
+      heroEl.innerHTML = v.type === "end" ? '<div class="bye">下次见</div>'
+        : '<div class="vt">' + esc(L.title) + '</div><div class="vs">北宋　范仲淹</div><div class="seal">弦歌</div>';
+      return;
+    }
+    if (v.type === "pic") {
+      setScene(v.img, false);
+      var h = '<div class="cap">' + esc((v.cap || "").replace(/（示意）/, "")) + (/示意/.test(v.cap || "") ? "<b>示意</b>" : "") + "</div>";
+      if (v.big) h += '<div class="big">' + v.big.map(function (c) { return "<span>" + esc(c) + "</span>"; }).join("") + "</div>";
+      if (v.line) { var ln = esc(v.line); (v.big || []).forEach(function (c) { ln = ln.split(c).join("<b>" + c + "</b>"); }); h += '<div class="line">' + ln + "</div>"; }
+      picEl.innerHTML = h;
+      return;
+    }
+    setScene(v.scene || (v.type === "map" ? "lake.webp" : "tower.webp"), true);
+    vis.innerHTML = '<div class="rod"></div><div class="silk"><div class="paper' + (hasBoard ? " withboard" : "") + '"></div></div><div class="rod"></div>';
+    var paper = vis.querySelector(".paper");
+    var p = document.createElement("div"); p.className = "pane";
+    if (prev && prev.type === v.type && v.type !== "task") p.classList.add("still");
+    if (v.type === "text") {
+      p.className += " textpane";
       v.paras.forEach(function (pk) {
         var d = document.createElement("div"); d.className = "para" + (v.paras.length > 1 ? " sm" : "");
-        var lab = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段" }[pk] || "";
+        var lab = { p1: "第一段", p2: "第二段", p3: "第三段", p4: "第四段", p5: "第五段" }[pk] || "";
         var html = '<span class="pl">' + lab + (v.from ? "（后半）" : "") + "</span>";
         L.paras[pk].forEach(function (s, i) {
           if (v.from && i < v.from) return;
@@ -225,31 +242,25 @@
         });
         d.innerHTML = html; p.appendChild(d);
       });
-    } else if (v.type === "pic") {
-      p.className += " pic shrink"; p.style.backgroundImage = "url(" + A.img + v.img + ")";
-      var h = '<div class="cap">' + esc(v.cap || "") + "</div>";
-      if (v.big) h += '<div class="big">' + v.big.map(function (c) { return "<span>" + esc(c) + "</span>"; }).join("") + "</div>";
-      if (v.line) { var ln = esc(v.line); (v.big || []).forEach(function (c) { ln = ln.split(c).join("<b>" + c + "</b>"); }); h += '<div class="line">' + ln + "</div>"; }
-      p.innerHTML = h;
     } else if (v.type === "map") {
-      p.className += " mappane shrink"; p.innerHTML = MAP.svg(v.layers || [], v.zoom, hasBoard ? 910 : 1380) + (corner ? '<div class="corner">' + esc(corner) + "</div>" : "");
-    } else if (v.type === "task" || v.type === "retell" || v.type === "quiz") {
+      p.className += " mappane"; p.innerHTML = MAP.svg(v.layers || [], v.zoom, hasBoard ? 590 : 924) + (corner ? '<div class="corner">' + esc(corner) + "</div>" : "");
+    } else {
       p.className += " taskpane";
       var head = v.type === "task" ? esc(v.n || "") + (v.pen ? ' <span class="pen ' + v.pen + '"><i></i>' + { black: "黑笔", blue: "蓝笔", red: "红笔" }[v.pen] + "</span>" : "")
                : v.type === "retell" ? "同桌复述" : '小测 <span class="pen black"><i></i>黑笔</span>';
       var items = v.q || v.items || [];
       p.innerHTML = '<div class="tn">' + head + "</div>" +
-        (v.type === "quiz" ? '<div style="font-family:var(--f-text);font-size:38px;line-height:1.75">' + items.map(function (x) { return "<div>" + esc(x) + "</div>"; }).join("") + "</div>"
+        (v.type === "quiz" ? '<div class="quiz">' + items.map(function (x) { return "<div>" + esc(x) + "</div>"; }).join("") + "</div>"
                            : "<ol>" + items.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol>") +
         '<div class="big-clock" hidden><span class="num">0:00</span><span class="lab"></span><span class="bar"><i></i></span></div>';
     }
-    vis.appendChild(p);
+    paper.appendChild(p);
     if (hasBoard) {
       var b = document.createElement("div"); b.className = "board";
-      b.innerHTML = '<div class="bt">黑　板</div>' + board.map(function (x) {
+      b.innerHTML = '<div class="bt">黑板</div>' + board.map(function (x) {
         var i = x.indexOf("＝"); return "<p>" + (i > 0 ? "<b>" + esc(x.slice(0, i)) + "</b>" + esc(x.slice(i)) : esc(x)) + "</p>";
       }).join("");
-      vis.appendChild(b);
+      paper.appendChild(b);
     }
   }
   function highlight(id, cls) {
@@ -264,7 +275,7 @@
     var box = { n: 35.6, s: 25.6, w: 108.2, e: 116.2 }; // 全图
     var south = { n: 31.8, s: 25.8, w: 108.6, e: 115.4 }; // 洞庭湖附近
     var W = 910;
-    function P(lon, lat, b) { var H = 668; var sx = W / (b.e - b.w), sy = H / (b.n - b.s); var k = Math.min(sx, sy);
+    function P(lon, lat, b) { var H = 564; var sx = W / (b.e - b.w), sy = H / (b.n - b.s); var k = Math.min(sx, sy);
       var ox = (W - (b.e - b.w) * k) / 2, oy = (H - (b.n - b.s) * k) / 2; return [ox + (lon - b.w) * k, oy + (b.n - lat) * k]; }
     // 平滑曲线（Catmull-Rom 转三次贝塞尔）
     function path(pts, b, closed) {
@@ -292,8 +303,8 @@
     function svg(layers, zoom, width) {
       W = width || 910;
       var b = zoom === "south" ? south : box, has = function (k) { return layers.indexOf(k) >= 0; };
-      var o = '<svg viewBox="0 0 ' + W + ' 668" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="示意地图">';
-      o += '<rect width="' + W + '" height="668" fill="#efe6d0"/>';
+      var o = '<svg viewBox="0 0 ' + W + ' 564" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="示意地图">';
+      o += '<rect width="' + W + '" height="564" fill="#f3ead6"/>';
       o += '<path d="' + path(huang, b) + '" fill="none" stroke="#c9b98f" stroke-width="7" stroke-linecap="round"/>';
       o += '<path d="' + path(yangtze, b) + '" fill="none" stroke="#7fa8b5" stroke-width="' + (zoom ? 12 : 8) + '" stroke-linecap="round" stroke-linejoin="round"/>';
       o += '<path d="' + path(xiang, b) + '" fill="none" stroke="#8fb3bd" stroke-width="' + (zoom ? 8 : 5) + '" stroke-linecap="round"/>';
@@ -325,7 +336,7 @@
       o += '<defs><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#a3382a"/></marker></defs>';
       // 指北针与说明
       o += '<g transform="translate(' + (W - 50) + ',60)"><path d="M0 -30 L10 6 L0 0 L-10 6 Z" fill="#2a241b"/><text y="34" text-anchor="middle" font-size="22" font-family="Noto Sans SC,sans-serif" fill="#2a241b">北</text></g>';
-      o += '<text x="20" y="650" font-size="18" font-family="Noto Sans SC,sans-serif" fill="#8a7f6c">示意图，位置为近似</text>';
+      o += '<text x="16" y="550" font-size="16" font-family="Noto Sans SC,sans-serif" fill="#8a7f6c">示意图，位置为近似</text>';
       return o + "</svg>";
     }
     return { svg: svg };
@@ -405,7 +416,7 @@
     var sg = STEPS[n]._seg, v = null, board = [], corner = "", fanIn = false;
     for (var i = 0; i <= n; i++) {
       var s = STEPS[i];
-      if (s.who === "fan") fanIn = true;
+      if (s.who === "fan" || s.enter === "fan" || s.read) fanIn = true;
       if (s._seg !== sg) continue;
       if (s.vis) v = s.vis;
       if (s.board) board = s.board;
@@ -423,7 +434,7 @@
     // 顶栏
     segBox.querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === st._seg); b.classList.toggle("done", i < st._seg); });
     renderVis(S.v, S.board, S.corner);
-    $(".fan").classList.toggle("away", !S.fanIn);
+    actors.fan.el.classList.toggle("away", !S.fanIn);
     respEl.hidden = true;
     $("#next").classList.remove("pulse");
     setTip(st.tip || "");
@@ -539,6 +550,7 @@
     loadVoices();
     go(Math.max(0, startAt));
   }
+  setScene("tower.webp", false);
   var startAt = 0;
   var saved = store.get("pos", 0);
   var resumeBtn = $("#resume");

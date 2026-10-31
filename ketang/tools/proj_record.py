@@ -5,14 +5,21 @@
 需要：pip install edge-tts mutagen ；能连上 Edge 朗读服务（这个服务用 WebSocket，有的网络环境连不上）。
 已录过的不重录；台词一改，编号就变，旧录音自动不再使用。
 """
-import asyncio, json, os, sys
-import edge_tts
+import asyncio, json, os, ssl, sys
+import edge_tts, edge_tts.communicate as _C
 from mutagen.mp3 import MP3
+
+# 经过有证书的代理时（如 Claude 的工作环境）：用代理的证书和代理地址
+CA = os.environ.get("SSL_CERT_FILE") or ("/root/.ccr/ca-bundle.crt" if os.path.exists("/root/.ccr/ca-bundle.crt") else None)
+if CA:
+    for _n in dir(_C):
+        if isinstance(getattr(_C, _n), ssl.SSLContext): setattr(_C, _n, ssl.create_default_context(cafile=CA))
+PROXY = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
 
 # 声音按人物分配（参数取自声音库）
 VOICES = {
     "fan": ("zh-CN-YunyangNeural", "-14%", "-6Hz"),   # 范仲淹：云扬·沉稳
-    "cg":  ("zh-CN-YunjianNeural", "-2%", "+10Hz"),   # 长歌：云健·清朗（新人设，更明亮）
+    "cg":  ("zh-CN-YunxiNeural", "-6%", "-8Hz"),      # 长歌：云希·温和（原网站长歌的声音之一）
     "qx":  ("zh-CN-XiaoxiaoNeural", "-4%", "+14Hz"),  # 清弦：晓晓·清亮
 }
 
@@ -20,7 +27,11 @@ async def rec(item, out):
     path = os.path.join(out, item["hash"] + ".mp3")
     if not os.path.exists(path) or os.path.getsize(path) == 0:
         v, rate, pitch = VOICES[item["who"]]
-        await edge_tts.Communicate(item["text"], v, rate=rate, pitch=pitch).save(path)
+        for t in range(3):
+            try:
+                await edge_tts.Communicate(item["text"], v, rate=rate, pitch=pitch, proxy=PROXY).save(path); break
+            except Exception as e:
+                print("重试", item["hash"], e); await asyncio.sleep(2)
     return item["hash"], round(MP3(path).info.length, 2)
 
 async def main():

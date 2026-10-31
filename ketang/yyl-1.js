@@ -30,11 +30,11 @@ window.PROJ_LESSON = {
     sheet: "yyl-1-sheet.html"
   },
   cast: {
-    fan: { name: "范仲淹", seal: "范", side: "left",
+    fan: { name: "范仲淹", sprite: "fanzhongyan", outfit: "ancient", x: -150,
            voice: { prefer: ["Yunyang", "Kangkang", "Yunjian", "Yunxi", "男"], rate: 0.88, pitch: 0.8 } },
-    cg:  { name: "长歌", sprite: "changge", outfit: "ancient", head: [493, 214], face: { idle: null, talk: "talk", blink: "blink", think: "think", happy: "smile" },
+    cg:  { name: "长歌", sprite: "changge", outfit: "ancient", x: 1218, face: { idle: null, talk: "talk", blink: "blink", think: "think", happy: "smile" },
            voice: { prefer: ["Yunjian", "Yunxi", "Kangkang", "Yunyang", "男"], rate: 1.05, pitch: 1.15 } },
-    qx:  { name: "清弦", sprite: "qingxian", outfit: "ancient", head: [488, 346], face: { idle: "idle", talk: "talk", blink: "blink", think: "think", happy: null },
+    qx:  { name: "清弦", sprite: "qingxian", outfit: "ancient", x: 1470, face: { idle: "idle", talk: "talk", blink: "blink", think: "think", happy: null },
            voice: { prefer: ["Xiaoxiao", "Xiaoyi", "Huihui", "Yaoyao", "Tingting", "女"], rate: 0.95, pitch: 1.05 } }
   },
   /* 原文：按句切开，句子编号 p1-0、p2-3 …… */
@@ -50,14 +50,24 @@ window.PROJ_LESSON = {
     ["朝晖", "招晖"], ["谪守", "折守"], ["谪", "折"]
   ],
   segments: [
-    { t: "开场", s: "开场", min: 3, steps: [
-      { vis: { type: "hero" }, who: "cg", say: "同学们好！今天我们要去一个……嗯，九百多年前的地方。" },
-      { who: "qx", say: "我好像已经闻到湖水的味道了。" },
-      { who: "cg", say: "来了来了！" },
-      { who: "fan", say: "诸位好。我姓范，名仲淹，字希文。今天，我想给你们讲一位老朋友，和一篇我欠了他很久、刚刚写成的文章。" }
+    { t: "开场", s: "开场", min: 4, steps: [
+      { vis: { type: "hero" }, who: "qx", say: "诶？长歌，你看我们身上……", face: "think" },
+      { who: "cg", say: "哇，我们怎么穿成这样了？难道……我们走进书里了？", face: "happy" },
+      { who: "qx", say: "同学们，你们知道我们穿的是哪个朝代的衣服吗？" },
+      { who: "cg", say: "等等等等，先别说！你们看那边——" },
+      { enter: "fan", who: "cg", say: "那位老先生的帽子，两边有两根长长的“翅膀”！看帽子，就知道是哪个朝代了。" },
+      { note: "知道的同学，举手说一说：这是哪个朝代？", hold: true, tip: "请一两位同学说，然后点“继续”。" },
+      { who: "qx", say: "我猜……是宋朝？" },
+      { who: "fan", say: "（笑）没错。这叫幞头，我们大宋做官的人都这样戴。现在是庆历六年，也就是公元1046年。" },
+      { who: "cg", say: "差不多一千年前！那您是……" },
+      { who: "fan", say: "我姓范，名仲淹，字希文。" },
+      { who: "qx", say: "范仲淹？！我们的课本上有您！", face: "happy" },
+      { who: "fan", say: "（一愣）课本？……那我今天可要好好讲，别讲错了。" },
+      { who: "fan", say: "今天，我想给你们讲一位老朋友，和一篇我欠了他很久、刚刚写成的文章。" }
     ]},
     { t: "两个被贬的人", s: "两个被贬的人", min: 5, steps: [
-      { vis: { type: "map", layers: ["kaifeng"] }, who: "fan", say: "我和滕子京，是同一年考中进士的。后来，我在朝中想推行新政，子京在边疆做官。" },
+      { vis: { type: "map", layers: ["kaifeng"] }, who: "qx", say: "老朋友？是谁呀？" },
+      { who: "fan", say: "他叫滕子京。我和他，是同一年考中进士的。后来，我在朝中想推行新政，子京在边疆做官。" },
       { who: "cg", say: "新政？我懂了，就像我们班改班规那种！", face: "happy" },
       { who: "fan", say: "（笑）比那难一些。先说子京：庆历四年春天，他被人弹劾，贬到了巴陵郡。",
         vis: { type: "map", layers: ["kaifeng", "baling", "lineB"] }, corner: "庆历四年＝1044年" },
@@ -70,7 +80,8 @@ window.PROJ_LESSON = {
       { who: "fan", say: "这个问题，我们以后再说。今天，先说子京。" }
     ]},
     { t: "听读第1、2段", s: "听读", min: 4, steps: [
-      { vis: { type: "text", paras: ["p1", "p2"] }, board: [], who: "fan", say: "先听我读一遍，再跟我读一遍。" },
+      { vis: { type: "text", paras: ["p1", "p2"] }, board: [], who: "qx", say: "范公，那篇文章写的是什么呀？能读给我们听吗？" },
+      { who: "fan", say: "好。先听我读一遍，再跟我读一遍。" },
       { read: { paras: ["p1", "p2"], mode: "listen" }, who: "fan" },
       { id: "echo", note: "请全班跟着范公，一句一句读。", read: { paras: ["p1", "p2"], mode: "echo" }, who: "fan" },
       { who: "cg", say: "（跟读完）范公，“浩浩汤汤”我读成了tāng，是读shāng吗？", v: "范公，浩浩汤汤，我读成了汤，是读商吗？" },
@@ -78,8 +89,9 @@ window.PROJ_LESSON = {
         btns: [{ label: "再读一遍", go: "echo" }], tip: "跟读不齐，点“再读一遍”；读齐了，点“继续”。" }
     ]},
     { t: "第1段：他请我写一篇记", s: "第1段", min: 6, steps: [
+      { vis: { type: "text", paras: ["p1"] }, who: "cg", say: "读是读完了……可好多字，我都不太懂。", face: "think" },
       { vis: { type: "text", paras: ["p1"], hi: ["p1-0"], mark: ["谪守"] }, who: "fan",
-        say: "“庆历四年春，滕子京谪守巴陵郡。”“谪”，就是被贬；“谪守”，就是被贬到那里做地方长官。" },
+        say: "不急，我们一句一句来。“庆历四年春，滕子京谪守巴陵郡。”“谪”，就是被贬；“谪守”，就是被贬到那里做地方长官。" },
       { vis: { type: "text", paras: ["p1"], hi: ["p1-1"], mark: ["越明年", "百废具兴"] }, who: "fan", say: "你们看他到了巴陵以后：“越明年，政通人和，百废具兴。”" },
       { who: "cg", say: "越明年……越过明年？那是后年？" },
       { who: "fan", say: "是“到了第二年”。" },
@@ -129,6 +141,7 @@ window.PROJ_LESSON = {
         note: "请用红笔，在第1题下面写一句：我现在明白的是……", timer: { s: 60, label: "订正 · 红笔" } }
     ]},
     { t: "第2段后半：迁客骚人", s: "迁客骚人", min: 7, steps: [
+      { vis: { type: "text", paras: ["p2"], from: 2 }, who: "qx", say: "原来这片湖这么大……那后面，您还写了什么？" },
       { vis: { type: "text", paras: ["p2"], hi: ["p2-2"], from: 2 }, who: "fan",
         say: "“朝晖夕阴，气象万千。”早上阳光灿烂，傍晚阴云沉沉，景象千变万化。" },
       { vis: { type: "text", paras: ["p2"], hi: ["p2-3"], from: 2, mark: ["前人之述备矣"] }, who: "fan", say: "“此则岳阳楼之大观也，前人之述备矣。”" },
