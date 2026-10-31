@@ -205,3 +205,34 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .now-txt .qs{margin:6px 0 0;padding:10px 14px 10px 2.1em;font-family:var(--f-text);font-size:26px;line-height:1.7;background:rgba(255,255,255,.55);border-left:4px solid rgba(38,34,28,.2)}
 .sheet{width:170px;height:240px;flex:0 0 auto;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18));transform:rotate(2deg)}
 .pens3 .big-clock .num{font-size:64px}
+
+/* 场景缓慢推移（镜头感） */
+.scene{animation:kb 38s ease-in-out infinite alternate}
+@keyframes kb{from{transform:scale(1.02) translate(0,0)}to{transform:scale(1.09) translate(-26px,-12px)}}
+/* 人物入场、跳一下 */
+.actor{transition:opacity .7s,filter .4s,transform .7s}
+.actor.fan.away{transform:translateX(-90px)}
+.actor.hop .body{animation:hop .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes hop{0%{transform:none}35%{transform:translateY(-26px)}70%{transform:translateY(3px)}100%{transform:none}}
+/* 地图：线画出来、点弹出 */
+.mappane .draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.8s .2s ease-in-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.mappane .popin{transform-box:fill-box;transform-origin:center;animation:popin .7s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes popin{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+/* 全班互动大提示 */
+.cue{position:absolute;left:372px;top:250px;width:960px;z-index:6;display:flex;align-items:center;gap:26px;padding:26px 34px;
+  background:rgba(246,241,227,.97);border:3px solid var(--zhu);box-shadow:0 20px 50px -18px rgba(38,34,28,.6)}
+.cue.in{animation:cuein .55s cubic-bezier(.3,1.5,.5,1)}
+@keyframes cuein{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:none}}
+.cue .seal{flex:0 0 auto;width:118px;height:118px;background:var(--zhu);color:#f6f1e3;font-family:var(--f-brush);font-size:84px;line-height:1;display:grid;place-items:center;
+  box-shadow:inset 0 0 0 5px rgba(246,241,227,.55);animation:sealb 1.6s ease-in-out infinite}
+@keyframes sealb{50%{transform:rotate(-4deg) scale(1.05)}}
+.cue .ct{font-family:var(--f-brush);font-size:52px;line-height:1.3;color:var(--ink)}
+.cue .ct small{display:block;font-family:var(--f-ui);font-size:24px;font-weight:700;color:var(--zhu);letter-spacing:.2em}
+#stage.cueing .vis,#stage.cueing .picover{opacity:.35;transition:opacity .4s}
+/* 下节课预告 */
+.tease{position:absolute;left:372px;top:84px;width:960px;height:600px;display:flex;gap:14px}
+.tease>div{flex:1;background-size:cover;background-position:center;position:relative;box-shadow:0 14px 30px -14px rgba(0,0,0,.6);animation:ink .9s ease-out both}
+.tease>div:nth-child(2){animation-delay:.5s}
+.tease span{position:absolute;left:16px;bottom:16px;background:rgba(246,241,227,.92);padding:6px 16px;font-family:var(--f-brush);font-size:32px}
+.tease b{position:absolute;left:50%;top:-6px;transform:translate(-50%,-50%);background:var(--zhu);color:#f6f1e3;font-family:var(--f-brush);font-weight:400;font-size:30px;padding:4px 18px}

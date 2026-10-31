@@ -184,6 +184,42 @@
     });
   }
 
+  /* ---------- 音效（全部现场合成，不用文件）：古琴、翻纸、磬、木鱼 ---------- */
+  function ac() { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); return actx; }
+  function pluck(c, f, t0, gain, dur) {   // Karplus-Strong 拨弦
+    var sr = c.sampleRate, n = Math.floor(sr * dur), buf = c.createBuffer(1, n, sr), d = buf.getChannelData(0), N = Math.round(sr / f);
+    for (var i = 0; i < N; i++) d[i] = Math.random() * 2 - 1;
+    for (var j = N; j < n; j++) d[j] = 0.4985 * (d[j - N] + d[j - N + 1 < j ? j - N + 1 : j - N]);
+    var s = c.createBufferSource(), g = c.createGain(), lp = c.createBiquadFilter();
+    lp.type = "lowpass"; lp.frequency.value = 2200; s.buffer = buf; s.connect(lp); lp.connect(g); g.connect(c.destination);
+    g.gain.setValueAtTime(gain, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); s.start(t0);
+  }
+  function sfx(kind) {
+    if (!soundOn) return;
+    try {
+      var c = ac(), t = c.currentTime + 0.02;
+      if (kind === "qin") { pluck(c, 196, t, 0.5, 2.6); pluck(c, 293.7, t + 0.22, 0.38, 2.4); pluck(c, 392, t + 0.5, 0.3, 2.2); }
+      else if (kind === "page" || kind === "roll") {
+        var n = Math.floor(c.sampleRate * 0.45), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+        for (var i = 0; i < n; i++) { var e = i / n; d[i] = (Math.random() * 2 - 1) * Math.pow(Math.sin(Math.PI * e), 2) * (0.6 + 0.4 * Math.sin(e * 40)); }
+        var s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+        f.type = "bandpass"; f.frequency.value = kind === "page" ? 3200 : 1400; f.Q.value = 0.7;
+        s.buffer = b; s.connect(f); f.connect(g); g.connect(c.destination); g.gain.value = kind === "page" ? 0.22 : 0.15; s.start(t);
+      } else if (kind === "qing") {
+        [[1046, 0.22], [1568 * 1.01, 0.12], [2637, 0.06]].forEach(function (q) {
+          var o = c.createOscillator(), g = c.createGain(); o.type = "sine"; o.frequency.value = q[0];
+          o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(q[1], t + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6); o.start(t); o.stop(t + 2.7);
+        });
+      } else if (kind === "block") {
+        var o = c.createOscillator(), g = c.createGain(); o.type = "triangle"; o.frequency.setValueAtTime(820, t); o.frequency.exponentialRampToValueAtTime(520, t + 0.08);
+        o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); o.start(t); o.stop(t + 0.2);
+        var o2 = c.createOscillator(), g2 = c.createGain(); o2.type = "triangle"; o2.frequency.value = 660; o2.connect(g2); g2.connect(c.destination);
+        g2.gain.setValueAtTime(0.25, t + 0.16); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.32); o2.start(t + 0.16); o2.stop(t + 0.34);
+      }
+    } catch (e) {}
+  }
+
   /* ---------- 提示音 ---------- */
   var actx = null;
   function chime(n) {
@@ -241,6 +277,12 @@
         : '<div class="vt">' + esc(L.title) + '</div><div class="vs">北宋　范仲淹</div><div class="seal">弦歌</div>';
       return;
     }
+    if (v.type === "tease") {
+      setScene("lake.webp", true);
+      picEl.innerHTML = '<div class="tease"><div style="background-image:url(' + A.img + 'rain.webp)"><span>下雨的日子</span></div>' +
+        '<div style="background-image:url(' + A.img + 'spring.webp)"><span>天晴的日子</span></div><b>下节课</b></div>';
+      return;
+    }
     if (v.type === "pic") {
       setScene(v.img, false);
       var h = '<div class="cap">' + esc((v.cap || "").replace(/（示意）/, "")) + (/示意/.test(v.cap || "") ? "<b>示意</b>" : "") + "</div>";
@@ -269,7 +311,8 @@
         d.innerHTML = html; p.appendChild(d);
       });
     } else if (v.type === "map") {
-      p.className += " mappane"; p.innerHTML = MAP.svg(v.layers || [], v.zoom, hasBoard ? 590 : 924) + (corner ? '<div class="corner">' + esc(corner) + "</div>" : "");
+      var fresh = (v.layers || []).filter(function (k) { return !(prev && prev.type === "map" && prev.zoom === v.zoom && (prev.layers || []).indexOf(k) >= 0); });
+      p.className += " mappane"; p.innerHTML = MAP.svg(v.layers || [], v.zoom, hasBoard ? 590 : 924, fresh) + (corner ? '<div class="corner">' + esc(corner) + "</div>" : "");
     } else if (v.type === "task" && v.pen) {
       // 三色笔：一眼看出现在第几步、用哪支笔、写在哪里
       p.className += " taskpane pens3";
@@ -293,6 +336,7 @@
         '<div class="big-clock" hidden><span class="num">0:00</span><span class="lab"></span><span class="bar"><i></i></span></div>';
     }
     paper.appendChild(p);
+    if (!p.classList.contains("still")) sfx(v.type === "text" ? "page" : "roll");
     if (hasBoard) {
       var b = document.createElement("div"); b.className = "board";
       b.innerHTML = '<div class="bt">黑板</div>' + board.map(function (x) {
@@ -356,8 +400,10 @@
         '<text x="' + (p[0] + (dx || 18)) + '" y="' + (p[1] + (dy || 10)) + '" text-anchor="' + ((dx || 18) < 0 ? "end" : "start") + '" font-family="WenKai,KaiTi,serif" font-size="36" fill="' + color + '" stroke="#efe6d0" stroke-width="6" paint-order="stroke">' + label +
         (sub ? '<tspan font-size="22" font-family="Noto Sans SC,sans-serif" fill="#6f6455" dx="8">' + sub + "</tspan>" : "") + "</text></g>";
     }
-    function svg(layers, zoom, width) {
-      W = width || 910;
+    function svg(layers, zoom, width, fresh) {
+      W = width || 910; fresh = fresh || [];
+      var nw = function (k) { return fresh.indexOf(k) >= 0 ? ' class="draw"' : ""; };
+      var np2 = function (k) { return fresh.indexOf(k) >= 0 ? ' class="popin"' : ""; };
       var b = zoom === "south" ? south : box, has = function (k) { return layers.indexOf(k) >= 0; };
       var o = '<svg viewBox="0 0 ' + W + ' 564" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="示意地图">';
       o += '<rect width="' + W + '" height="564" fill="#f3ead6"/>';
@@ -371,22 +417,22 @@
       var yp = P(zoom ? 111.0 : 115.2, zoom ? 31.0 : 30.75, b);
       o += '<text x="' + yp[0] + '" y="' + yp[1] + '" font-family="WenKai,KaiTi,serif" font-size="28" fill="#4f7f8b" stroke="#efe6d0" stroke-width="5" paint-order="stroke">长江</text>';
       if (!zoom) { var hp = P(110.6, 35.15, b); o += '<text x="' + hp[0] + '" y="' + hp[1] + '" font-family="WenKai,KaiTi,serif" font-size="24" fill="#a8956a">黄河</text>'; }
-      if (has("lineB")) { var a = P(C.kaifeng[0], C.kaifeng[1], b), z = P(C.baling[0], C.baling[1], b); o += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + z[0] + '" y2="' + z[1] + '" stroke="#a3382a" stroke-width="5" stroke-dasharray="14 10"/>'; }
+      if (has("lineB")) { var a = P(C.kaifeng[0], C.kaifeng[1], b), z = P(C.baling[0], C.baling[1], b); o += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + z[0] + '" y2="' + z[1] + '" stroke="#a3382a" stroke-width="5" stroke-linecap="round" pathLength="1"' + nw("lineB") + '/>'; }
       if (has("lineD")) { var a2 = P(C.kaifeng[0], C.kaifeng[1], b), z2 = P(C.dengzhou[0], C.dengzhou[1], b); o += '<line x1="' + a2[0] + '" y1="' + a2[1] + '" x2="' + z2[0] + '" y2="' + z2[1] + '" stroke="#a3382a" stroke-width="5" stroke-dasharray="14 10"/>'; }
-      if (has("kaifeng")) o += dot(C.kaifeng, b, "开封", "北宋京城", "#2a241b");
-      if (has("baling")) o += dot(C.baling, b, "巴陵", "今湖南岳阳", "#a3382a");
-      if (has("dengzhou")) o += dot(C.dengzhou, b, "邓州", "今河南邓州", "#a3382a", -20, 10);
+      if (has("kaifeng")) o += dot(C.kaifeng, b, "开封", "北宋京城", "#2a241b").replace("<g>", "<g" + np2("kaifeng") + ">");
+      if (has("baling")) o += dot(C.baling, b, "巴陵", "今湖南岳阳", "#a3382a").replace("<g>", "<g" + np2("baling") + ">");
+      if (has("dengzhou")) o += dot(C.dengzhou, b, "邓州", "今河南邓州", "#a3382a", -20, 10).replace("<g>", "<g" + np2("dengzhou") + ">");
       if (has("wuxia")) {
         o += dot(C.wuxia, b, "巫峡", "", "#a3382a", 10, -26);
         var seg = yangtze.slice(2, 8).reverse();
-        o += '<path d="' + path(seg, b) + '" fill="none" stroke="#a3382a" stroke-width="6" stroke-dasharray="4 12" stroke-linecap="round" marker-end="url(#ar)"/>';
+        o += '<path d="' + path(seg, b) + '" fill="none" stroke="#a3382a" stroke-width="5" stroke-linecap="round" pathLength="1" marker-end="url(#ar)"' + nw("wuxia") + '/>';
         var wp = P(110.2, 30.35, b); o += '<text x="' + wp[0] + '" y="' + wp[1] + '" font-family="Noto Sans SC,sans-serif" font-size="24" fill="#a3382a" stroke="#efe6d0" stroke-width="5" paint-order="stroke">北通：经长江西上</text>';
       }
       if (has("xiaoxiang")) {
         var xp = P(113.05, 27.4, b), sp = P(110.55, 25.95, b);
         o += '<text x="' + xp[0] + '" y="' + xp[1] + '" font-family="WenKai,KaiTi,serif" font-size="32" fill="#a3382a" stroke="#efe6d0" stroke-width="5" paint-order="stroke">湘水</text>';
         o += '<text x="' + sp[0] + '" y="' + sp[1] + '" font-family="WenKai,KaiTi,serif" font-size="32" fill="#a3382a" stroke="#efe6d0" stroke-width="5" paint-order="stroke">潇水</text>';
-        o += '<path d="' + path(xiang.slice(1), b) + '" fill="none" stroke="#a3382a" stroke-width="6" stroke-dasharray="4 12" stroke-linecap="round" marker-end="url(#ar)"/>';
+        o += '<path d="' + path(xiang.slice(1), b) + '" fill="none" stroke="#a3382a" stroke-width="5" stroke-linecap="round" pathLength="1" marker-end="url(#ar)"' + nw("xiaoxiang") + '/>';
         var np = P(112.2, 26.55, b); o += '<text x="' + np[0] + '" y="' + np[1] + '" font-family="Noto Sans SC,sans-serif" font-size="24" fill="#a3382a" stroke="#efe6d0" stroke-width="5" paint-order="stroke" text-anchor="end">南极：从南面流进湖</text>';
       }
       o += '<defs><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#a3382a"/></marker></defs>';
@@ -444,6 +490,18 @@
   }
   function finishTyping() { if (typing) { clearInterval(typing); typing = null; var st = STEPS[cur]; if (st && st.say) txtEl.innerHTML = esc(st.say).replace(/（([^）]*)）/g, '<span class="sd">（$1）</span>'); } }
 
+  /* ---------- 全班互动大提示 ---------- */
+  var CUE = { say: ["说", "全班一起说"], hand: ["举", "举手"], stand: ["站", "站队"], gesture: ["比", "比划"], catch: ["错", "抓错"], race: ["赛", "比赛读"] };
+  function showCue(c) {
+    var el = $(".cue");
+    stage.classList.toggle("cueing", !!c);
+    if (!c) { el.hidden = true; return; }
+    var k = CUE[c.k] || ["！", ""];
+    el.innerHTML = '<div class="seal">' + k[0] + '</div><div class="ct"><small>' + k[1] + "</small>" + esc(c.t) + "</div>";
+    el.hidden = false; el.classList.remove("in"); void el.offsetWidth; el.classList.add("in");
+    sfx("block");
+  }
+
   /* ---------- 助教回应按钮 ---------- */
   var respEl = $(".resp");
   function showRespond(r, token) {
@@ -486,7 +544,12 @@
     TOKEN++; var token = TOKEN;
     stopVoice(); stopTimer(); clearTimeout(autoTimer);
     ["cg", "qx", "fan"].forEach(function (k) { talking(k, false); });
+    var prevSeg = cur >= 0 ? STEPS[cur]._seg : -1;
     cur = n; var st = STEPS[n], S = stateAt(n);
+    if (st._seg !== prevSeg && n === SEGSTART[st._seg]) sfx("qin");
+    if (st.sfx) sfx(st.sfx);
+    showCue(st.cue);
+    if (st.hop && actors[st.hop]) { var he = actors[st.hop].el; he.classList.remove("hop"); void he.offsetWidth; he.classList.add("hop"); }
     // 顶栏
     segBox.querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === st._seg); b.classList.toggle("done", i < st._seg); });
     renderVis(S.v, S.board, S.corner);
