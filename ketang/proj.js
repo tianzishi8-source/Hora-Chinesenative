@@ -51,9 +51,10 @@
     var c = CAST[k], el = document.createElement("div");
     el.className = "actor " + k + (k === "fan" ? " away" : "");
     var body = document.createElement("div"); body.className = "body"; el.appendChild(body);
-    var base = new Image(), face = new Image();
+    var base = new Image(), face = new Image(), mouth = new Image();
     base.src = A.chars + c.sprite + "_outfit_" + c.outfit + ".webp";
-    [base, face].forEach(function (im) {
+    mouth.className = "mouth";
+    [base, face, mouth].forEach(function (im) {
       im.style.width = Math.round(1024 * SC) + "px"; im.style.left = c.x + "px"; im.style.top = Math.round(TOP) + "px";
       im.alt = ""; body.appendChild(im);
     });
@@ -62,35 +63,54 @@
     Object.keys(c.face || {}).forEach(function (f) {
       if (c.face[f]) { fs[f] = A.chars + c.sprite + "_" + c.outfit + "_face_" + c.face[f] + ".webp"; var p = new Image(); p.src = fs[f]; }
     });
-    actors[k] = { el: el, face: face, fs: fs, mood: "idle", talking: false, blinkAt: 0 };
+    if (fs.talk) mouth.src = fs.talk; else mouth.style.display = "none";
+    actors[k] = { el: el, face: face, mouth: mouth, fs: fs, mood: "idle", talking: false, blinkAt: 0, open: 0, holdTo: 0 };
     setFace(k, "idle");
   });
   function setFace(k, f) {
     var a = actors[k]; if (!a) return;
-    var src = a.fs[f] || (f === "idle" ? null : a.fs.idle) || null;
+    var src = a.fs[f] || null;
     if (src) { if (a.face.dataset.src !== src) { a.face.src = src; a.face.dataset.src = src; } a.face.style.visibility = "visible"; }
     else a.face.style.visibility = "hidden";
   }
-  function moodFace(k) { var a = actors[k]; return a.mood === "think" ? "think" : a.mood === "happy" ? "happy" : "idle"; }
-  // 眨眼和说话动嘴（有表情图的人物）
+  // 不说话时才用心情表情（思考、开心）；说话时用平常的脸，嘴巴另外一层慢慢开合
+  function restFace(k) { var a = actors[k]; return a.talking ? "idle" : a.mood === "think" ? "think" : a.mood === "happy" ? "happy" : "idle"; }
+  function setMouth(a, open) { if (a.open !== open) { a.open = open; a.mouth.style.opacity = open ? 1 : 0; } }
+  // 嘴型：有录音时跟着声音大小开合（停顿时闭嘴）；没有录音时慢慢地开合
+  var analyser = null, abuf = null;
+  function level() {
+    if (!analyser) return -1;
+    analyser.getByteTimeDomainData(abuf);
+    var sum = 0; for (var i = 0; i < abuf.length; i++) { var v = (abuf[i] - 128) / 128; sum += v * v; }
+    return Math.sqrt(sum / abuf.length);
+  }
+  var lipUsesAudio = false;
   setInterval(function () {
-    var now = Date.now();
+    var now = Date.now(), lv = lipUsesAudio ? level() : -1;
     Object.keys(actors).forEach(function (k) {
-      var a = actors[k]; if (!Object.keys(a.fs).length) return;
-      if (a.talking) { a.tick = !a.tick; setFace(k, a.tick ? "talk" : moodFace(k)); return; }
+      var a = actors[k]; if (!a.fs.talk) return;
+      if (a.talking) {
+        if (now < a.holdTo) return;
+        var open = lv >= 0 ? lv > 0.035 : !a.open;
+        setMouth(a, open);
+        a.holdTo = now + (lv >= 0 ? (open ? 170 : 120) : (open ? 200 + Math.random() * 120 : 160 + Math.random() * 220));
+        return;
+      }
+      setMouth(a, false);
       if (!a.blinkAt) a.blinkAt = now + 2500 + Math.random() * 3500;
       if (now >= a.blinkAt && now < a.blinkAt + 160) setFace(k, "blink");
-      else if (now >= a.blinkAt + 160) { a.blinkAt = now + 3000 + Math.random() * 3500; setFace(k, moodFace(k)); }
+      else if (now >= a.blinkAt + 160) { a.blinkAt = now + 3000 + Math.random() * 3500; setFace(k, restFace(k)); }
     });
-  }, 150);
+  }, 60);
 
   function spotlight(who) {
     Object.keys(actors).forEach(function (k) { actors[k].el.classList.toggle("off", !!who && who !== k); });
   }
   function talking(who, on) {
     var a = actors[who]; if (!a) return;
-    a.talking = on; a.el.classList.toggle("talk", on);
-    if (!on) setFace(who, moodFace(who));
+    a.talking = on; a.el.classList.toggle("talk", on); a.holdTo = 0;
+    if (!on) setMouth(a, false);
+    setFace(who, restFace(who));
   }
 
   /* ---------- 声音 ---------- */
@@ -135,6 +155,11 @@
       var h = hash(who + "|" + text);
       if (VOICE_IDX[h]) {
         var au = new Audio("voice/" + h + ".mp3"); curAudio = au; au.playbackRate = speed;
+        try {
+          actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+          if (!analyser) { analyser = actx.createAnalyser(); analyser.fftSize = 512; abuf = new Uint8Array(analyser.fftSize); analyser.connect(actx.destination); }
+          actx.createMediaElementSource(au).connect(analyser); lipUsesAudio = true;
+        } catch (e) { lipUsesAudio = false; }
         au.onended = fin; au.onerror = function () { speakTTS(); };
         au.play().catch(function () { speakTTS(); });
         setTimeout(fin, (VOICE_IDX[h] / speed + 3) * 1000);
@@ -142,6 +167,7 @@
       }
       speakTTS();
       function speakTTS() {
+        lipUsesAudio = false;
         if (!("speechSynthesis" in window) || !zhVoices.length) { setTimeout(fin, est * 1000); return; }
         var v = pickVoice(who), cv = (CAST[who] && CAST[who].voice) || {};
         var parts = text.split(/(?<=[。！？；])/).filter(function (x) { return x.trim(); });
@@ -244,6 +270,18 @@
       });
     } else if (v.type === "map") {
       p.className += " mappane"; p.innerHTML = MAP.svg(v.layers || [], v.zoom, hasBoard ? 590 : 924) + (corner ? '<div class="corner">' + esc(corner) + "</div>" : "");
+    } else if (v.type === "task" && v.pen) {
+      // 三色笔：一眼看出现在第几步、用哪支笔、写在哪里
+      p.className += " taskpane pens3";
+      var PEN = { black: ["黑笔", "自己写"], blue: ["蓝笔", "同桌补充"], red: ["红笔", "听完订正"] }, order = ["black", "blue", "red"], at = order.indexOf(v.pen);
+      var strip = '<div class="strip">' + order.map(function (k, i) {
+        return '<div class="st ' + k + (i === at ? " now" : i < at ? " done" : "") + '"><span class="dot"></span><b>' + PEN[k][0] + "</b><small>" + PEN[k][1] + "</small></div>" + (i < 2 ? '<i class="arr"></i>' : "");
+      }).join("") + "</div>";
+      var sheet = SHEET(v.pen);
+      p.innerHTML = strip +
+        '<div class="now-row"><div class="now-txt ' + v.pen + '"><div class="do">' + esc(v.do || "") + '</div><div class="where">' + esc(v.where || "") + "</div>" +
+        '<ol class="qs">' + (v.q || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol></div>" + sheet + "</div>" +
+        '<div class="big-clock" hidden><span class="num">0:00</span><span class="lab"></span><span class="bar"><i></i></span></div>';
     } else {
       p.className += " taskpane";
       var head = v.type === "task" ? esc(v.n || "") + (v.pen ? ' <span class="pen ' + v.pen + '"><i></i>' + { black: "黑笔", blue: "蓝笔", red: "红笔" }[v.pen] + "</span>" : "")
@@ -262,6 +300,24 @@
       }).join("");
       paper.appendChild(b);
     }
+  }
+  // 作答单正面的示意小图：把要写的地方用笔的颜色框出来
+  function SHEET(pen) {
+    var col = { black: "#26221c", blue: "#2457a6", red: "#b8382b" }[pen];
+    var o = '<svg class="sheet" viewBox="0 0 210 297" aria-label="作答单示意">';
+    o += '<rect x="1" y="1" width="208" height="295" fill="#fff" stroke="#b9ad97" stroke-width="2"/>';
+    o += '<rect x="8" y="8" width="10" height="10" fill="#26221c"/><rect x="192" y="8" width="10" height="10" fill="none" stroke="#26221c" stroke-width="2.5"/>';
+    o += '<rect x="8" y="279" width="10" height="10" fill="#26221c"/><rect x="192" y="279" width="10" height="10" fill="#26221c"/>';
+    o += '<text x="22" y="30" font-size="13" font-family="WenKai,KaiTi,serif" fill="#26221c">岳阳楼记·第1节</text>';
+    o += '<text x="20" y="62" font-size="10" font-weight="700" font-family="Noto Sans SC,sans-serif" fill="#26221c">第1题</text>';
+    for (var i = 0; i < 6; i++) o += '<line x1="20" x2="190" y1="' + (78 + i * 13) + '" y2="' + (78 + i * 13) + '" stroke="#c8bfae" stroke-dasharray="3 2"/>';
+    o += '<rect x="20" y="152" width="170" height="26" fill="none" stroke="#9a8f7c"/>';
+    o += '<text x="20" y="200" font-size="10" font-weight="700" font-family="Noto Sans SC,sans-serif" fill="#26221c">小测</text>';
+    for (var j = 0; j < 4; j++) o += '<line x1="20" x2="190" y1="' + (214 + j * 14) + '" y2="' + (214 + j * 14) + '" stroke="#c8bfae"/>';
+    var box = pen === "red" ? [16, 148, 178, 34] : [16, 66, 178, 80];
+    o += '<rect x="' + box[0] + '" y="' + box[1] + '" width="' + box[2] + '" height="' + box[3] + '" fill="' + col + '" fill-opacity=".12" stroke="' + col + '" stroke-width="4" rx="3"><animate attributeName="stroke-opacity" values="1;.35;1" dur="1.6s" repeatCount="indefinite"/></rect>';
+    o += '<text x="105" y="' + (box[1] + box[3] + 15) + '" text-anchor="middle" font-size="12" font-weight="700" font-family="Noto Sans SC,sans-serif" fill="' + col + '">写在这里</text>';
+    return o + "</svg>";
   }
   function highlight(id, cls) {
     vis.querySelectorAll(".sen").forEach(function (e) {
@@ -439,7 +495,7 @@
     $("#next").classList.remove("pulse");
     setTip(st.tip || "");
     // 人物表情
-    ["cg", "qx"].forEach(function (k) { actors[k].mood = st.think ? "think" : (st.who === k && st.face) ? st.face : "idle"; setFace(k, moodFace(k)); });
+    ["cg", "qx"].forEach(function (k) { actors[k].mood = st.think ? "think" : (st.who === k && st.face) ? st.face : "idle"; setFace(k, restFace(k)); });
     // 额外按钮
     var extra = $(".extra"); extra.innerHTML = "";
     (st.btns || []).forEach(function (b) {
@@ -547,6 +603,7 @@
   function start() {
     $(".cover").hidden = true;
     chime(0); // 解锁声音
+    try { if (actx && actx.state === "suspended") actx.resume(); } catch (e) {}
     loadVoices();
     go(Math.max(0, startAt));
   }

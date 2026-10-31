@@ -45,6 +45,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .cast{position:absolute;inset:0;pointer-events:none;z-index:2}
 .actor{position:absolute;top:0;left:0;width:1px;height:1px;transition:opacity .5s,filter .4s}
 .actor img{position:absolute;max-width:none;user-select:none}
+.actor img.mouth{opacity:0;transition:opacity .09s ease-in-out}
 .actor.off{filter:brightness(.82) saturate(.8)}
 .actor.away{opacity:0}
 .actor.talk .body{animation:sway .9s ease-in-out infinite alternate}
@@ -182,3 +183,25 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .dialog .hint{font-size:19px;color:var(--ink2);line-height:1.6}
 .toast{position:absolute;left:50%;top:80px;transform:translateX(-50%);z-index:25;background:var(--ink);color:#f6f1e3;padding:10px 26px;border-radius:4px;font-size:24px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* 三色笔步骤 */
+.pens3{padding:22px 34px 22px;gap:14px}
+.strip{display:flex;align-items:center;gap:10px}
+.strip .st{flex:1;display:flex;align-items:center;gap:10px;padding:8px 14px;border:2px solid rgba(38,34,28,.15);border-radius:6px;color:#a99d86;background:rgba(255,255,255,.4)}
+.strip .st b{font-family:var(--f-brush);font-weight:400;font-size:30px}
+.strip .st small{font-size:19px}
+.strip .st .dot{width:22px;height:22px;border-radius:50%;background:#cfc6b4;flex:0 0 auto}
+.strip .st.black.now,.strip .st.black.done{--c:#26221c}.strip .st.blue.now,.strip .st.blue.done{--c:#2457a6}.strip .st.red.now,.strip .st.red.done{--c:#b8382b}
+.strip .st.now{border-color:var(--c);color:var(--c);background:#fff;box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 15%,transparent)}
+.strip .st.now .dot{background:var(--c)}
+.strip .st.done{color:#8a8070}.strip .st.done .dot{background:var(--c);opacity:.5}
+.strip .st.done small::after{content:" ✓"}
+.strip .arr{width:18px;height:18px;border-top:3px solid #c8bfae;border-right:3px solid #c8bfae;transform:rotate(45deg);flex:0 0 auto}
+.now-row{display:flex;gap:24px;flex:1;min-height:0}
+.now-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.now-txt .do{font-family:var(--f-brush);font-size:40px;line-height:1.35}
+.now-txt.black .do{color:#26221c}.now-txt.blue .do{color:#2457a6}.now-txt.red .do{color:#b8382b}
+.now-txt .where{font-size:22px;color:var(--ink2)}
+.now-txt .qs{margin:6px 0 0;padding:10px 14px 10px 2.1em;font-family:var(--f-text);font-size:26px;line-height:1.7;background:rgba(255,255,255,.55);border-left:4px solid rgba(38,34,28,.2)}
+.sheet{width:170px;height:240px;flex:0 0 auto;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18));transform:rotate(2deg)}
+.pens3 .big-clock .num{font-size:64px}
