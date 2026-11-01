@@ -267,3 +267,26 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .cardpane .big-clock{margin-top:6px}
 .cardpane .big-clock .num{font-size:56px}
 .dlg .who.w-hy{background:#4e5f8a}
+
+/* ---------- 讲评版式（layout:"exam"）：题卡放大，对话条压低 ---------- */
+.lay-exam .vis{left:360px;top:62px;width:1020px;height:806px}
+.lay-exam .dlg{height:180px;padding:18px 40px 12px 112px}
+.lay-exam .dlg .who{top:18px;font-size:26px;width:58px}
+.lay-exam .dlg .txt{font-size:31px;line-height:1.5}
+.lay-exam .dlg .txt.note{font-size:30px}
+.lay-exam .cue{top:878px;height:180px}
+.lay-exam .cue .ct{font-size:40px}
+.lay-exam .cardpane{padding:26px 40px 22px;gap:14px}
+.lay-exam .cardpane .qn{font-size:32px}
+.lay-exam .cardpane .qt{font-size:40px}
+.lay-exam .cardpane .sc{font-size:24px}
+.lay-exam .cardpane .cq{font-size:36px;line-height:1.6}
+.lay-exam .cardpane .cq p+p{margin-top:4px}
+.lay-exam .cardpane .ca .tag{font-size:28px}
+.lay-exam .cardpane .cb{font-size:34px;line-height:1.55}
+.lay-exam .cardpane .colh{font-size:32px}
+.lay-exam .cardpane .cl{font-size:33px;line-height:1.6}
+.lay-exam .cardpane .yw{color:var(--ink2);font-size:.92em}
+.cardpane .pt{white-space:nowrap;font-size:.8em;color:var(--ink2)}
+.lay-exam .cardpane .yw::before{content:"原文　";color:var(--shi);font-weight:700;font-family:var(--f-ui);font-size:.7em;letter-spacing:.1em}
+.lay-exam .cardpane .yi::before{content:"译文　";color:var(--zhu);font-weight:700;font-family:var(--f-ui);font-size:.7em;letter-spacing:.1em}

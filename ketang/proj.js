@@ -6,6 +6,7 @@
 (function () {
   "use strict";
   var L = window.PROJ_LESSON, A = L.assets, CAST = L.cast;
+  if (L.layout) document.documentElement.classList.add("lay-" + L.layout);
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var store = {
     get: function (k, d) { try { var v = localStorage.getItem("hora-proj-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -317,9 +318,11 @@
       p.className += " cardpane" + (v.cols ? " two" : "");
       var MK = function (t) {
         return esc(t).replace(/\*\*(.+?)\*\*/g, '<b class="mk">$1</b>').replace(/~~(.+?)~~/g, '<s class="no">$1</s>')
-          .replace(/__(.+?)__/g, '<u class="ok">$1</u>').replace(/\[\[(.+?)\]\]/g, '<span class="hl">$1</span>');
+          .replace(/__(.+?)__/g, '<u class="ok">$1</u>').replace(/\[\[(.+?)\]\]/g, '<span class="hl">$1</span>')
+          .replace(/（(\d+分[^）]*)）/g, '<span class="pt">（$1）</span>');
       };
-      var block = function (lines, cls) { return '<div class="' + cls + '">' + lines.map(function (x) { return x === "" ? '<div class="gap"></div>' : "<p>" + MK(x) + "</p>"; }).join("") + "</div>"; };
+      var block = function (lines, cls) { return '<div class="' + cls + '">' + lines.map(function (x) { if (x === "") return '<div class="gap"></div>';
+        var m = /^(原|译)：/.exec(x); return m ? '<p class="' + (m[1] === "原" ? "yw" : "yi") + '">' + MK(x.slice(2)) + "</p>" : "<p>" + MK(x) + "</p>"; }).join("") + "</div>"; };
       var h = '<div class="ch">' + (v.n ? '<span class="qn">' + esc(v.n) + "</span>" : "") + '<span class="qt">' + MK(v.title || "") + "</span>" + (v.score ? '<span class="sc">' + esc(v.score) + "</span>" : "") + "</div>";
       if (v.cols) h += '<div class="cols">' + v.cols.map(function (c) { return '<div class="col ' + (c.tone || "") + '"><div class="colh">' + esc(c.h) + "</div>" + block(c.lines, "cl") + "</div>"; }).join("") + "</div>";
       if (v.q) h += block(v.q, "cq");
