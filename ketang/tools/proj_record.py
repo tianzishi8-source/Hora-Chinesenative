@@ -20,8 +20,8 @@ PROXY = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
 VOICES = {
     "fan": ("zh-CN-YunyangNeural", "-14%", "-6Hz"),   # 范仲淹：云扬·沉稳
     "cg":  ("zh-CN-YunxiNeural", "-6%", "-8Hz"),      # 长歌：云希·温和（原网站长歌的声音之一）
-    "qx":  ("zh-CN-XiaoxiaoNeural", "-4%", "+14Hz"),  # 清弦：晓晓·清亮
-    "hy":  ("zh-CN-XiaoyiNeural", "-8%", "-10Hz"),    # 徽音老师：晓伊，放慢压低（不能和清弦同用晓晓）
+    "qx":  ("zh-CN-XiaoyiNeural", "-2%", "+10Hz"),    # 清弦：晓伊·活泼（11-01 改：晓晓让给徽音老师）
+    "hy":  ("zh-CN-XiaoxiaoNeural", "-6%", "-4Hz"),   # 徽音老师：晓晓·温和（晓伊压低后太年轻、偏男声）
 }
 
 async def rec(item, out):
@@ -49,6 +49,6 @@ async def main():
         h, d = await rec(it, out); idx[h] = d
         print(f"{i+1}/{len(lines)} {it['who']} {d}s {it['text'][:24]}")
     with open(os.path.join(out, "index.js"), "w", encoding="utf-8") as f:
-        f.write("window.PROJ_VOICE = " + json.dumps(idx) + ";\n")
+        f.write("window.PROJ_VOICE = " + json.dumps(idx) + ";\nwindow.PROJ_VOICE_V = \"" + __import__("time").strftime("%m%d%H%M") + "\";\n")
 
 asyncio.run(main())

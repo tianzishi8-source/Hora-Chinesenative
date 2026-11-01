@@ -170,7 +170,7 @@
       if (!soundOn || !text) { setTimeout(fin, est * 1000 * (soundOn ? 1 : 0.6)); return; }
       var h = hash(who + "|" + text);
       if (VOICE_IDX[h]) {
-        var au = new Audio("voice/" + h + ".mp3"); curAudio = au; au.playbackRate = speed;
+        var au = new Audio("voice/" + h + ".mp3?v=" + (window.PROJ_VOICE_V || "")); curAudio = au; au.playbackRate = speed;
         try {
           actx = actx || new (window.AudioContext || window.webkitAudioContext)();
           if (!analyser) { analyser = actx.createAnalyser(); analyser.fftSize = 512; abuf = new Uint8Array(analyser.fftSize); analyser.connect(actx.destination); }
