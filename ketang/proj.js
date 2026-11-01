@@ -14,9 +14,25 @@
 
   /* ---------- 步骤展开 ---------- */
   var STEPS = [], SEGSTART = [], IDS = {};
+  function splitLong(st) {   // 太长的台词拆成几步（每步不超过约 56 字），对话框放得下；录音也按拆开后的句子录
+    var MAX = 56;
+    if (!st.say || st.v || st.say.length <= MAX) return [st];
+    var parts = st.say.split(/(?<=[。！？；])/), chunks = [], cur = "";
+    parts.forEach(function (p) { if (cur && (cur + p).length > MAX) { chunks.push(cur); cur = p; } else cur += p; });
+    if (cur) chunks.push(cur);
+    if (chunks.length < 2) return [st];
+    var tail = ["hold", "btns", "timer", "tip", "respond", "id"];
+    return chunks.map(function (c, i) {
+      var o = {};
+      if (i === 0) Object.keys(st).forEach(function (k) { if (tail.indexOf(k) < 0) o[k] = st[k]; });
+      else { o.who = st.who; if (st.face) o.face = st.face; }
+      if (i === chunks.length - 1) tail.forEach(function (k) { if (st[k] !== undefined) o[k] = st[k]; });
+      o.say = c; return o;
+    });
+  }
   L.segments.forEach(function (sg, si) {
     SEGSTART.push(STEPS.length);
-    sg.steps.forEach(function (st) { st._seg = si; if (st.id) IDS[st.id] = STEPS.length; STEPS.push(st); });
+    sg.steps.forEach(function (st0) { splitLong(st0).forEach(function (st) { st._seg = si; if (st.id) IDS[st.id] = STEPS.length; STEPS.push(st); }); });
   });
 
   /* ---------- 画布与缩放 ---------- */
@@ -46,10 +62,10 @@
 
   /* ---------- 人物：三张全身立绘同一比例（原图都是 1024×1536、脚底同一条线），所以高矮自然 ---------- */
   var actors = {}, SC = 0.62, TOP = 1110 - 1536 * SC;
-  var castBox = $(".cast");
-  ["fan", "cg", "qx"].forEach(function (k) {
+  var castBox = $(".cast"), LEAD = L.lead || "fan", LEAD_ENTERS = L.leadEnters !== false;
+  Object.keys(CAST).forEach(function (k) {
     var c = CAST[k], el = document.createElement("div");
-    el.className = "actor " + k + (k === "fan" ? " away" : "");
+    el.className = "actor " + k + (k === LEAD && LEAD_ENTERS ? " away" : "");
     var body = document.createElement("div"); body.className = "body"; el.appendChild(body);
     var base = new Image(), face = new Image(), mouth = new Image();
     base.src = A.chars + c.sprite + "_outfit_" + c.outfit + ".webp";
@@ -259,7 +275,7 @@
   function setScene(img, soft) {
     var key = img + (soft ? "|soft" : "");
     if (key === curScene) return; curScene = key;
-    sceneEl.style.backgroundImage = "url(" + A.img + img + ")";
+    sceneEl.style.backgroundImage = "url(" + (/\//.test(img) ? img : A.img + img) + ")";
     sceneEl.classList.toggle("soft", !!soft);
   }
   function renderVis(v, board, corner, force) {
@@ -291,13 +307,25 @@
       picEl.innerHTML = h;
       return;
     }
-    setScene(v.scene || (v.type === "map" ? "lake.webp" : "tower.webp"), true);
+    setScene(v.scene || L.scene || (v.type === "map" ? "lake.webp" : "tower.webp"), v.scene || L.scene ? !!L.sceneSoft : true);
     vis.classList.toggle("tall", v.type === "map");
     vis.innerHTML = '<div class="rod"></div><div class="silk"><div class="paper' + (hasBoard ? " withboard" : "") + '"></div></div><div class="rod"></div>';
     var paper = vis.querySelector(".paper");
     var p = document.createElement("div"); p.className = "pane";
     if (prev && prev.type === v.type && v.type !== "task") p.classList.add("still");
-    if (v.type === "text") {
+    if (v.type === "card") {
+      p.className += " cardpane" + (v.cols ? " two" : "");
+      var MK = function (t) {
+        return esc(t).replace(/\*\*(.+?)\*\*/g, '<b class="mk">$1</b>').replace(/~~(.+?)~~/g, '<s class="no">$1</s>')
+          .replace(/__(.+?)__/g, '<u class="ok">$1</u>').replace(/\[\[(.+?)\]\]/g, '<span class="hl">$1</span>');
+      };
+      var block = function (lines, cls) { return '<div class="' + cls + '">' + lines.map(function (x) { return x === "" ? '<div class="gap"></div>' : "<p>" + MK(x) + "</p>"; }).join("") + "</div>"; };
+      var h = '<div class="ch">' + (v.n ? '<span class="qn">' + esc(v.n) + "</span>" : "") + '<span class="qt">' + MK(v.title || "") + "</span>" + (v.score ? '<span class="sc">' + esc(v.score) + "</span>" : "") + "</div>";
+      if (v.cols) h += '<div class="cols">' + v.cols.map(function (c) { return '<div class="col ' + (c.tone || "") + '"><div class="colh">' + esc(c.h) + "</div>" + block(c.lines, "cl") + "</div>"; }).join("") + "</div>";
+      if (v.q) h += block(v.q, "cq");
+      if (v.ans) h += '<div class="ca"><span class="tag">' + esc(v.tag || "答案") + "</span>" + block(v.ans, "cb") + "</div>";
+      p.innerHTML = h + '<div class="big-clock" hidden><span class="num">0:00</span><span class="lab"></span><span class="bar"><i></i></span></div>';
+    } else if (v.type === "text") {
       p.className += " textpane";
       v.paras.forEach(function (pk) {
         var d = document.createElement("div"); d.className = "para" + (v.paras.length > 1 ? " sm" : "");
@@ -567,7 +595,7 @@
     var sg = STEPS[n]._seg, v = null, board = [], corner = "", fanIn = false;
     for (var i = 0; i <= n; i++) {
       var s = STEPS[i];
-      if (s.who === "fan" || s.enter === "fan" || s.read) fanIn = true;
+      if (!LEAD_ENTERS || s.who === LEAD || s.enter === LEAD || s.read) fanIn = true;
       if (s._seg !== sg) continue;
       if (s.vis) v = s.vis;
       if (s.board) board = s.board;
@@ -580,7 +608,7 @@
     if (n < 0 || n >= STEPS.length) return;
     TOKEN++; var token = TOKEN;
     stopVoice(); stopTimer(); clearTimeout(autoTimer);
-    ["cg", "qx", "fan"].forEach(function (k) { talking(k, false); });
+    Object.keys(actors).forEach(function (k) { talking(k, false); });
     var prevSeg = cur >= 0 ? STEPS[cur]._seg : -1;
     cur = n; var st = STEPS[n], S = stateAt(n);
     if (st._seg !== prevSeg && n === SEGSTART[st._seg]) sfx("qin");
@@ -590,12 +618,12 @@
     // 顶栏
     segBox.querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === st._seg); b.classList.toggle("done", i < st._seg); });
     renderVis(S.v, S.board, S.corner);
-    actors.fan.el.classList.toggle("away", !S.fanIn);
+    actors[LEAD].el.classList.toggle("away", !S.fanIn);
     respEl.hidden = true;
     $("#next").classList.remove("pulse");
     setTip(st.tip || "");
     // 人物表情
-    ["cg", "qx"].forEach(function (k) { actors[k].mood = st.think ? "think" : (st.who === k && st.face) ? st.face : "idle"; setFace(k, restFace(k)); });
+    Object.keys(actors).forEach(function (k) { actors[k].mood = (st.think && k !== LEAD) ? "think" : (st.who === k && st.face) ? st.face : "idle"; setFace(k, restFace(k)); });
     // 额外按钮
     var extra = $(".extra"); extra.innerHTML = "";
     (st.btns || []).forEach(function (b) {
@@ -676,7 +704,7 @@
   sndBtn.onclick = function () { soundOn = !soundOn; store.set("sound", soundOn); if (!soundOn) stopVoice(); paintToggles(); };
   paintToggles();
   $("#full").onclick = function () { var d = document.documentElement; if (!document.fullscreenElement) (d.requestFullscreen || d.webkitRequestFullscreen || function () {}).call(d); else document.exitFullscreen(); };
-  $("#sheet").onclick = function () { window.open(A.sheet, "_blank"); };
+  if (A.sheet) $("#sheet").onclick = function () { window.open(A.sheet, "_blank"); }; else $("#sheet").hidden = true;
   $("#set").onclick = openSettings;
   document.addEventListener("keydown", function (e) {
     if ($(".dialog") && !$(".dialog").hidden) { if (e.key === "Escape") $(".dialog").hidden = true; return; }
@@ -696,7 +724,7 @@
     var d = $(".dialog"); d.hidden = false;
     var h = "<h3>声音设置</h3>";
     h += '<div class="hint">没有录音的台词，用这台电脑自带的中文语音读。用 Microsoft Edge 浏览器打开，能用到更自然的“晓晓、云扬、云健”等声音。共找到 ' + zhVoices.length + " 种中文声音。</div>";
-    ["fan", "cg", "qx"].forEach(function (k) {
+    Object.keys(CAST).forEach(function (k) {
       var cv = pickVoice(k);
       h += "<label><b>" + CAST[k].name + '</b><select data-k="' + k + '">' + zhVoices.map(function (v) {
         return '<option value="' + esc(v.name) + '"' + (cv && cv.name === v.name ? " selected" : "") + ">" + esc(v.name) + "</option>"; }).join("") +
@@ -707,7 +735,7 @@
     h += '<div style="display:flex;justify-content:flex-end"><button class="btn" id="setok">好了</button></div>';
     d.querySelector(".box").innerHTML = h;
     d.querySelectorAll("select[data-k]").forEach(function (s) { s.onchange = function () { store.set("voice-" + s.dataset.k, s.value); }; });
-    d.querySelectorAll("[data-try]").forEach(function (b) { b.onclick = function () { var k = b.dataset.try; stopVoice(); say(k, k === "fan" ? "诸位好。我姓范，名仲淹。" : k === "cg" ? "同学们好！我是长歌。" : "同学们好，我是清弦。", TOKEN); }; });
+    d.querySelectorAll("[data-try]").forEach(function (b) { b.onclick = function () { var k = b.dataset.try; stopVoice(); say(k, "同学们好，我是" + CAST[k].name + "。", TOKEN); }; });
     $("#spd").onchange = function () { speed = +this.value; store.set("speed", speed); };
     $("#setok").onclick = function () { d.hidden = true; };
   }
@@ -720,7 +748,7 @@
     loadVoices();
     go(Math.max(0, startAt));
   }
-  setScene("tower.webp", false);
+  setScene(L.scene || "tower.webp", false);
   var startAt = 0;
   var saved = store.get("pos", 0);
   var resumeBtn = $("#resume");

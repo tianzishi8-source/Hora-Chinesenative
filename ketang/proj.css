@@ -242,3 +242,28 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .mappane .popin.late{animation-delay:1.6s}
 .mappane .ring{transform-box:fill-box;transform-origin:center;animation:ring 1.6s ease-out 2 both}
 @keyframes ring{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:scale(3.2)}}
+
+/* 讲评题卡 */
+.cardpane{padding:26px 40px 22px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.cardpane .ch{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.cardpane .qn{flex:0 0 auto;background:var(--zhu);color:#f6f1e3;font-family:var(--f-brush);font-size:28px;padding:2px 14px}
+.cardpane .qt{font-family:var(--f-brush);font-size:34px;line-height:1.35;flex:1;min-width:0}
+.cardpane .sc{font-size:20px;color:var(--ink2)}
+.cardpane .cq{font-family:var(--f-text);font-size:28px;line-height:1.75}
+.cardpane .cq p,.cardpane .cb p,.cardpane .cl p{margin:0}
+.cardpane .gap{height:8px}
+.cardpane .ca{margin-top:auto;display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.62);border-left:5px solid var(--shi);padding:12px 18px;animation:fade .5s}
+.cardpane .ca .tag{flex:0 0 auto;font-family:var(--f-brush);font-size:24px;color:#fff;background:var(--shi);padding:2px 12px}
+.cardpane .cb{font-family:var(--f-text);font-size:27px;line-height:1.65;min-width:0}
+.cardpane .mk{color:var(--zhu);font-weight:700}
+.cardpane s.no{color:#9a8f7c;text-decoration-color:var(--zhu);text-decoration-thickness:3px}
+.cardpane u.ok{color:var(--shi);font-weight:700;text-decoration:none;border-bottom:3px solid var(--shi)}
+.cardpane .hl{background:linear-gradient(transparent 58%,rgba(178,58,42,.2) 58%)}
+.cardpane .cols{display:flex;gap:18px;flex:1;min-height:0}
+.cardpane .col{flex:1;min-width:0;background:rgba(255,255,255,.5);padding:14px 18px;border-top:5px solid #9a8f7c}
+.cardpane .col.good{border-top-color:var(--shi)}.cardpane .col.bad{border-top-color:#b8a98c}
+.cardpane .colh{font-family:var(--f-brush);font-size:26px;margin-bottom:6px}
+.cardpane .cl{font-family:var(--f-text);font-size:25px;line-height:1.7}
+.cardpane .big-clock{margin-top:6px}
+.cardpane .big-clock .num{font-size:56px}
+.dlg .who.w-hy{background:#4e5f8a}

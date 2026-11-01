@@ -21,6 +21,7 @@ VOICES = {
     "fan": ("zh-CN-YunyangNeural", "-14%", "-6Hz"),   # 范仲淹：云扬·沉稳
     "cg":  ("zh-CN-YunxiNeural", "-6%", "-8Hz"),      # 长歌：云希·温和（原网站长歌的声音之一）
     "qx":  ("zh-CN-XiaoxiaoNeural", "-4%", "+14Hz"),  # 清弦：晓晓·清亮
+    "hy":  ("zh-CN-XiaoyiNeural", "-8%", "-10Hz"),    # 徽音老师：晓伊，放慢压低（不能和清弦同用晓晓）
 }
 
 async def rec(item, out):
@@ -37,7 +38,13 @@ async def rec(item, out):
 async def main():
     lines = json.load(open(sys.argv[1], encoding="utf-8"))
     out = sys.argv[2]; os.makedirs(out, exist_ok=True)
+    # 所有课共用一个 voice/index.js：读进旧的，再合并（不会把别的课的录音冲掉）
     idx = {}
+    ip = os.path.join(out, "index.js")
+    if os.path.exists(ip):
+        import re
+        m = re.search(r"=\s*(\{.*\})", open(ip, encoding="utf-8").read(), re.S)
+        if m: idx = json.loads(m.group(1))
     for i, it in enumerate(lines):
         h, d = await rec(it, out); idx[h] = d
         print(f"{i+1}/{len(lines)} {it['who']} {d}s {it['text'][:24]}")
