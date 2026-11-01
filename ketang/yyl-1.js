@@ -41,6 +41,29 @@ window.PROJ_LESSON = {
     qx:  { name: "清弦", sprite: "qingxian", outfit: "ancient", x: 1470, face: { idle: "idle", talk: "talk", blink: "blink", think: "think", happy: null },
            voice: { prefer: ["Xiaoxiao", "Xiaoyi", "Huihui", "Yaoyao", "Tingting", "女"], rate: 0.95, pitch: 1.05 } }
   },
+  /* 地图（用户提供的图，11-01）：坐标是原图像素；城市、河流图上已画好，这里只叠地名、朱线 */
+  maps: {
+    song: { img: "img/map-song.webp", w: 1448, h: 1086,
+      fixed: [{ at: [1290, 120], label: "黄河", color: "#8a6a2a" }, { at: [600, 660], label: "长江" }, { at: [560, 900], label: "洞庭湖", size: 54 }],
+      items: {
+        kaifeng: { at: [826, 300], label: "开封", sub: "北宋京城", color: "#26221c", dx: 175, dy: -10 },
+        baling: { at: [945, 785], label: "巴陵", sub: "今湖南岳阳", dx: 105, dy: 10 },
+        dengzhou: { at: [437, 505], label: "邓州", sub: "今河南邓州", dx: 95, dy: 10 },
+        lineB: { route: [[836, 320], [870, 470], [910, 620], [940, 760]] }
+      } },
+    dongting: { img: "img/map-dongting.webp", w: 1448, h: 1086,
+      fixed: [{ at: [860, 470], label: "洞庭湖", size: 60, anchor: "middle" }, { at: [760, 125], label: "长江" }],
+      items: {
+        yueyang: { at: [1215, 380], label: "岳阳楼", dx: 0, dy: 90, anchor: "middle", color: "#26221c" },
+        wuxia: { at: [170, 210], label: "巫峡", dx: 40, dy: -40 },
+        wuroute: { route: [[1095, 260], [1060, 175], [900, 150], [700, 165], [520, 215], [360, 265], [235, 255]],
+                   label: { at: [600, 280], text: "北通巫峡：沿长江西上" } },
+        xiaoxiang: { delay: 3.5, route: [[660, 1080], [640, 960], [700, 860], [755, 770], [735, 705]],
+                   label: { at: [790, 960], text: "南极潇湘：从南面流进湖" } },
+        xiao: { delay: 3.5, at: [300, 960], label: "潇水", dx: -30, dy: -30, color: "#3c6f7a" },
+        xiang: { delay: 3.5, at: [690, 830], label: "湘水", dx: -40, dy: 15, anchor: "end", color: "#3c6f7a" }
+      } }
+  },
   /* 原文：按句切开，句子编号 p1-0、p2-3 …… */
   paras: {
     p1: ["庆历四年春，滕子京谪守巴陵郡。", "越明年，政通人和，百废具兴，", "乃重修岳阳楼，增其旧制，", "刻唐贤今人诗赋于其上，", "属予作文以记之。"],
@@ -178,7 +201,7 @@ window.PROJ_LESSON = {
       { who: "cg", say: "前人都写完了？那您还写什么？", face: "think" },
       { who: "fan", say: "问得好。这几句，我只是略写；前人写得够多了，我想写的是别的。" },
       { vis: { type: "text", paras: ["p2"], hi: ["p2-4"], from: 2, mark: ["然则"] }, who: "fan", say: "你们看下一句：“然则北通巫峡，南极潇湘。”" },
-      { vis: { type: "map", layers: ["lake", "wuxia", "xiaoxiang"], zoom: "south" }, corner: "",
+      { vis: { type: "map", map: "dongting", layers: ["yueyang", "wuxia", "wuroute", "xiao", "xiang", "xiaoxiang"] }, corner: "",
         who: "fan", say: "“然则”，是“既然这样，那么”。“极”，是“到”。这片湖往北经长江通到巫峡，往南一直到潇水、湘水。" },
       { who: "qx", say: "所以，从四面八方来的人，都会经过这里……" },
       { vis: { type: "text", paras: ["p2"], hi: ["p2-5"], from: 2, mark: ["迁客骚人"] }, who: "fan", say: "是。“迁客骚人，多会于此。”" },

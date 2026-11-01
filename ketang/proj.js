@@ -292,6 +292,7 @@
       return;
     }
     setScene(v.scene || (v.type === "map" ? "lake.webp" : "tower.webp"), true);
+    vis.classList.toggle("tall", v.type === "map");
     vis.innerHTML = '<div class="rod"></div><div class="silk"><div class="paper' + (hasBoard ? " withboard" : "") + '"></div></div><div class="rod"></div>';
     var paper = vis.querySelector(".paper");
     var p = document.createElement("div"); p.className = "pane";
@@ -312,7 +313,8 @@
       });
     } else if (v.type === "map") {
       var fresh = (v.layers || []).filter(function (k) { return !(prev && prev.type === "map" && prev.zoom === v.zoom && (prev.layers || []).indexOf(k) >= 0); });
-      p.className += " mappane"; p.innerHTML = MAP.svg(v.layers || [], v.zoom, hasBoard ? 590 : 924, fresh) + (corner ? '<div class="corner">' + esc(corner) + "</div>" : "");
+      var mk = v.map || (v.zoom === "south" ? "dongting" : "song");
+      p.className += " mappane"; p.innerHTML = (L.maps && L.maps[mk] ? PICMAP(L.maps[mk], v.layers || [], fresh) : MAP.svg(v.layers || [], v.zoom, hasBoard ? 590 : 924, fresh)) + (corner ? '<div class="corner">' + esc(corner) + "</div>" : "");
     } else if (v.type === "task" && v.pen) {
       // 三色笔：一眼看出现在第几步、用哪支笔、写在哪里
       p.className += " taskpane pens3";
@@ -371,6 +373,40 @@
   }
 
   /* ---------- 地图（示意，按经纬度画） ---------- */
+  function PICMAP(m, layers, fresh) {
+    var has = function (k) { return layers.indexOf(k) >= 0; }, isNew = function (k) { return fresh.indexOf(k) >= 0; };
+    var o = '<svg viewBox="0 0 ' + m.w + " " + m.h + '" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="示意地图">';
+    o += '<defs><marker id="arp" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b23a2a"/></marker></defs>';
+    o += '<image href="' + m.img + '" x="0" y="0" width="' + m.w + '" height="' + m.h + '"/>';
+    var T = function (x, y, txt, size, col, anchor, cls) {
+      return '<text x="' + x + '" y="' + y + '" text-anchor="' + (anchor || "start") + '" font-family="WenKai,KaiTi,serif" font-size="' + size + '" fill="' + col +
+        '" stroke="#f6f1e3" stroke-width="' + Math.round(size / 5) + '" stroke-linejoin="round" paint-order="stroke"' + (cls ? ' class="' + cls + '"' : "") + ">" + txt + "</text>";
+    };
+    (m.fixed || []).forEach(function (f) { o += T(f.at[0], f.at[1], f.label, f.size || 46, f.color || "#3c6f7a", f.anchor); });
+    Object.keys(m.items).forEach(function (k) {
+      if (!has(k)) return;
+      var it = m.items[k], dl = it.delay && isNew(k) ? ' style="animation-delay:' + it.delay + 's"' : "";
+      if (it.route) {
+        var q = it.route, d = "M" + q[0][0] + " " + q[0][1];
+        for (var i = 1; i < q.length; i++) {   // 平滑
+          var p0 = q[i - 2] || q[i - 1], p1 = q[i - 1], p2 = q[i], p3 = q[i + 1] || q[i];
+          d += " C" + (p1[0] + (p2[0] - p0[0]) / 6) + " " + (p1[1] + (p2[1] - p0[1]) / 6) + " " + (p2[0] - (p3[0] - p1[0]) / 6) + " " + (p2[1] - (p3[1] - p1[1]) / 6) + " " + p2[0] + " " + p2[1];
+        }
+        o += '<path d="' + d + '" fill="none" stroke="#f6f1e3" stroke-width="20" stroke-linecap="round" opacity=".7" pathLength="1"' + (isNew(k) ? ' class="draw"' + dl : "") + "/>";
+        o += '<path d="' + d + '" fill="none" stroke="#b23a2a" stroke-width="10" stroke-linecap="round" pathLength="1" marker-end="url(#arp)"' + (isNew(k) ? ' class="draw"' + dl : "") + "/>";
+        if (it.label) o += '<g' + (isNew(k) ? ' class="popin late"' + (it.delay ? ' style="animation-delay:' + (it.delay + 1.6) + 's"' : "") : "") + ">" + T(it.label.at[0], it.label.at[1], it.label.text, 40, "#b23a2a", it.label.anchor) + "</g>";
+      } else {
+        var x = it.at[0], y = it.at[1], col = it.color || "#b23a2a", lx = x + (it.dx || 0), ly = y + (it.dy || 0);
+        o += '<g' + (isNew(k) ? ' class="popin"' + dl : "") + ">";
+        o += '<circle cx="' + x + '" cy="' + y + '" r="16" fill="' + col + '" stroke="#fff" stroke-width="5"/>';
+        if (isNew(k)) o += '<circle cx="' + x + '" cy="' + y + '" r="16" fill="none" stroke="' + col + '" stroke-width="5" class="ring"/>';
+        o += T(lx, ly, it.label, 64, col, it.anchor);
+        if (it.sub) o += T(lx, ly + 46, it.sub, 32, "#5b5244", it.anchor);
+        o += "</g>";
+      }
+    });
+    return o + "</svg>";
+  }
   var MAP = (function () {
     var box = { n: 35.6, s: 25.6, w: 108.2, e: 116.2 }; // 全图
     var south = { n: 31.8, s: 25.8, w: 108.6, e: 115.4 }; // 洞庭湖附近

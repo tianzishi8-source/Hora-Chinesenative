@@ -236,3 +236,9 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .tease>div:nth-child(2){animation-delay:.5s}
 .tease span{position:absolute;left:16px;bottom:16px;background:rgba(246,241,227,.92);padding:6px 16px;font-family:var(--f-brush);font-size:32px}
 .tease b{position:absolute;left:50%;top:-6px;transform:translate(-50%,-50%);background:var(--zhu);color:#f6f1e3;font-family:var(--f-brush);font-weight:400;font-size:30px;padding:4px 18px}
+
+/* 图片地图：立轴加高 */
+.vis.tall{height:732px}
+.mappane .popin.late{animation-delay:1.6s}
+.mappane .ring{transform-box:fill-box;transform-origin:center;animation:ring 1.6s ease-out 2 both}
+@keyframes ring{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:scale(3.2)}}
