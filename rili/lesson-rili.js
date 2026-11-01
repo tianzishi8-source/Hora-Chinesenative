@@ -53,6 +53,9 @@ cast:{
       voicesBy:{
         qingxian:[{id:"q1",name:"清亮",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-4%",pitch:"+14Hz"},{id:"q2",name:"温柔",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-10%",pitch:"+6Hz"},{id:"q3",name:"活泼",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-2%",pitch:"+10Hz"}],
         changge:[{id:"c1",name:"沉稳",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-10%",pitch:"-18Hz"},{id:"c2",name:"低沉",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-8%",pitch:"-12Hz"},{id:"c3",name:"温和",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-6%",pitch:"-8Hz"}]}},
+  /* 第2天“看看别人怎么找”里的虚拟同学，第3天也出来说话（只在对话框里出现，没有立绘；配音设置里不列出） */
+  xiaoman:{name:"小满",extra:true,shape:"seal",glyph:"满",ink:"#b0662a",voice:{gender:"female",pitch:1.05,rate:1},voices:[{id:"a",name:"小满",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-6%",pitch:"-4Hz"}]},
+  linyi:{name:"林一",extra:true,shape:"seal",glyph:"一",ink:"#3d5a7a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"林一",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-6%",pitch:"+0Hz"}]},
   me:{name:"我",sprite:"me",shape:"seal",glyph:"我",seal:"同学",ink:"--warm",
       sample:"这是我的声音。读到我的话时，就用这个声音。",
       /* “我”的声音跟着学生选的样子：女生比清弦低一点，男生比长歌高一点。
@@ -182,42 +185,192 @@ days:[
  ]}
 ],end:"第2天读完了。下次见。"},
 
-/* ===== 第 3 天 ===== */
-{title:"一级一级往上走",short:"层层推进",beats:[
- {title:"数台阶",mood:"calm",steps:[
-  {t:"say",who:"ri",text:"作者从“我喜欢用日历”，走到“日历具有生命感”。中间是怎么一级一级走上去的？"},
-  {t:"say",who:"zhou",text:"原文每两段之间都有一道细缝。你觉得意思从这里换了一层，就点那道缝。分得和别人不一样，没关系。"},
-  {t:"layering",key:"d3",min:3,max:10,keyOptional:true,q:"在左边原文的段落之间分层，每一层写一句话说它讲了什么。关键句可以不选。",
-   obs:{id:"d3-layers",label:"给全文分层、概括",skill:"把握文章结构：层层推进"},
-   prompts:["这一层比上一层多说了什么？","用你自己的话，把这一层说成一句。"],
-   firstCut:"分出第一层了。下面那一层和上面那一层，说的是不一样的事吗？",
-   few:"分得有点少。从开头的问题走到结尾的回答，路上有没有转弯的地方？要是你就这样分，再按一次。",
-   many:"分得有点密。有没有两层说的是一回事，可以并成一层？要是你就这样分，再按一次。",
-   none:"还没有分层。在左边原文两段之间点一下，就分出一层。",
-   empty:"有几层还空着，没写它说了什么。每层写一句话就行。",
-   topQuote:"因为日历具有生命感。或者说日历叫我随时感知自己的生命并叫我思考如何珍惜它。",topLabel:"台阶的顶：作者在结尾的回答（第 17 段）",
-   done:"走到顶了，就是结尾这一句。只要每一层你都说得出依据，分得和别人不一样也没关系。"}
+/* ===== 第 3 天（11-01 改版：剧本见 Claude Docs《〈日历〉第3天剧本（改版）》） ===== */
+{title:"五处扯日历",short:"扯日历",beats:[
+ {title:"一个字",mood:"calm",steps:[
+  {t:"say",who:"ri",text:"今天先找一个字。全文有一个动作，作者写了好几回。没有这个动作，就没有这篇文章。"},
+  {t:"say",who:"zhou",textBy:{changge:"动作？我懂了！是“挂”！日历不都挂在墙上嘛！",qingxian:"会不会是……那个让人有点舍不得的动作？"},text:"是“挂”吗？"},
+  {t:"findWord",who:"ri",ask:"月历也挂在墙上。要找的，是日历能做、月历做不了的那个动作。全文写到这个动作的地方有五处，都在原文里点出来。",
+   task:"找出全文写到“扯”日历的五处",word:"扯",paras:[1,3,4,6,14],key:"d3.che",label:"点出写到“扯”的句子",
+   found:"就是它：扯。月历一个月才扯一张，日历一天就扯一页。接着找。",
+   misses:[{paras:[2],text:"这一段是“随手一翻”。翻是翻看，不是扯下来。"},{paras:[8],text:"这里说的是“页码”，没有扯。"}],
+   other:"这一句里没有“扯”。找“扯”这个字。",hint:"还有一处，藏在倒数第三段。",hintAfter:60,
+   obs:{id:"d3-che",label:"找出全文写到“扯”的五处",skill:"抓住贯穿全文的动作"},
+   doneText:"五处扯，五种心情，待会儿一处一处看。先记住：这篇文章是从“扯下一页”写起的。月历做不到这个动作，所以作者偏偏喜欢日历。"}
  ]},
- {title:"和同桌比",steps:[
-  {t:"say",who:"zhou",text:"和同桌比一比：你们哪一层分得不一样？各自说说，你是凭哪一句分的。"},
-  {t:"next",label:"说完了"}
+ {title:"小满又来了",steps:[
+  {t:"say",who:"xiaoman",text:"我第2天就说过：开头作者喜欢扯，后来又不肯扯，前后矛盾。我现在还是这么觉得！",next:"嗯……"},
+  {t:"mc",who:"ri",ask:"你站哪边？",q:"小满说作者前后矛盾，你站哪边？",key:"d3.stance",stance:true,wait:false,
+   options:[{text:"我同意小满",value:"agree",who:"zhou",reply:"那我们一起看看，他到底矛不矛盾。"},
+            {text:"我不同意",value:"disagree",who:"zhou",reply:"那你待会儿要说出理由哦。"},
+            {text:"我还说不准",value:"unsure",who:"zhou",reply:"没关系，看完再定。"}],
+   obs:{id:"d3-stance",label:"表态：作者前后矛盾吗",skill:"辨析：先表态"}},
+  {t:"say",who:"ri",text:"先别急着判。看完五处扯，再回来回答小满。"}
  ]},
- {title:"我的三级台阶",mood:"bright",steps:[
-  {t:"ladder",key:"d3.steps",who:"ri",ask:"最后，给你的{d1.object|那样东西}也搭三级台阶。作者是从日历“一天一页”的样子出发，一级一级想上去的，你也试试。",q:"给{d1.object|你选的东西}搭三级台阶",button:"搭好了",
-   labels:["第 1 级　它是什么样子？写一点只有它才有的地方","第 2 级　这让我想到……","第 3 级　所以我明白……"],
-   hints:["先只看它。它长什么样、怎么用？","从它的样子想开去。它让你想到了谁、哪一天、什么事？","最后一级：你从它身上明白了什么？"],
-   obs:{id:"d3-ladder",label:"仿写：自己的三级台阶",skill:"仿写：由物及理、层层推进"}},
-  {t:"ai",who:"ri",key:"d3.ai",obs:{id:"d3-ai",label:"三级台阶的 AI 点评",skill:"（AI 入口：开放写作点评）"},
-   intro:"想不想让我看看这三级台阶？我只看一件事：是不是一级比一级走得更高。",
-   button:"请那页日历看看",skipLabel:"不用了，往下",
-   offText:"这三级台阶，可以请同桌读一读：哪一级走得最高？",
-   prompt:"冯骥才的《日历》是这样写的：从日历“一天一页、一页撕下”的样子出发，想到每一天、想到记忆，最后明白“日历具有生命感”，一级比一级更深。\n学生选的日常物件是：{d1.object}\n学生写的三级台阶：\n第1级（它的样子）：{d3.steps.0}\n第2级（想到）：{d3.steps.1}\n第3级（明白）：{d3.steps.2}\n\n请只看两件事：一、第1级有没有写出只有这样东西才有的样子或用法；二、第2、3级是不是从第1级的样子自然想过去、一级比一级更深，还是跳得太远或原地打转。先说一处写得好的，再提一个最值得改的地方，都要引学生的原话。把要改的地方说成一个问题让他自己想，不要替他写。总共不超过100字。"},
-  {t:"say",who:"zhou",text:"这就是作者的本事：从一样东西出发，一级一级想上去。你的日历本里，已经有一篇小草稿了。"},
-  {t:"next",label:"看看我的草稿"},
+ {title:"期待·失落",steps:[
+  {t:"cal5",op:"show"},
+  {t:"focus",para:1,has:"扯"},
+  {t:"say",who:"ri",text:"第一处，在第2段：每扯下一页，它新的一页——光亮而开阔的一天便笑嘻嘻地等着我去填满。",wait:false},
+  {t:"mc",q:"这一次扯，作者是什么心情？",obs:{id:"d3-m1",label:"第2段扯日历的心情",skill:"体会情感变化"},
+   options:[{text:"期待",ok:true,reply:"“笑嘻嘻”“光亮而开阔”，新的一天在等他。"},
+            {text:"难过",ok:false,reply:"看看“笑嘻嘻”。是难过的样子吗？"},
+            {text:"无所谓",ok:false,reply:"他说“明天”是“人生中最富魅力的字眼儿”，一点也不无所谓。"}]},
+  {t:"pick",who:"ri",ask:"下一段接着写新日历。第3段把“明天”比作什么？在原文里点出来。",task:"第3段把“明天”比作什么？",label:"点出写比喻的那一句",
+   accept:{paras:[2],has:"空屋子"},fallback:["这一句没有比喻。找“不就像是……吗”。"],
+   obs:{id:"d3-room",label:"找出“明天＝空屋子”的比喻",skill:"找出比喻"},okText:"一间间空屋子。搬什么进去，全看你。"},
+  {t:"pick",who:"ri",ask:"可同一段的后面，心情变了。从哪个词开始变的？点出那一句。",task:"第3段里，心情从哪里开始变了？",label:"点出心情转弯的那一句",
+   accept:{paras:[2],has:"可是"},fallback:["再往后看。找一个表示转折的词。"],
+   obs:{id:"d3-kesh",label:"找出第3段的转折",skill:"抓住转折词"},okText:"可是。日子用过就没了，“了无痕迹”。心情从期待，滑到了“匆匆与虚无”。"},
+  {t:"cal5",op:"stamp",page:1,mood:"期待",fig:"明天·空屋子"},
+  {t:"focus",para:3,has:"扯"},
+  {t:"say",who:"ri",text:"第二处，在第4段：你每扯去一页用过的日历时，是不是觉得有点像扯掉一个生命的页码？",wait:false},
+  {t:"mc",q:"这一次扯，作者是什么心情？",obs:{id:"d3-m2",label:"第4段扯日历的心情",skill:"体会情感变化"},
+   options:[{text:"无奈、失落",ok:true,reply:"白发、衰弱的身躯……扯掉的好像不是纸，是生命。"},
+            {text:"愤怒",ok:false,reply:"有一句说到“倒行逆施”，那只是一句感慨。整段落在哪个词上？找找“无奈”。"},
+            {text:"期待",ok:false,reply:"期待是第2段的心情。这一段的日子，像“呼呼的风”“闪闪烁烁的流光”。"}]},
+  {t:"say",who:"zhou",textBy:{changge:"等等等等！扯一页，就是扯掉一页生命？那我以后不敢撕日历了……",qingxian:"生命的页码……一页一页地少下去。好像……有点难过。"},text:"生命的页码……"},
+  {t:"cal5",op:"stamp",page:2,mood:"失落",fig:"生命的页码"}
+ ]},
+ {title:"舍不得",steps:[
+  {t:"cal5",op:"show"},
+  {t:"focus",para:4,has:"扯"},
+  {t:"say",who:"ri",text:"第三处，在第5段：可是当我把这一叠用过的日子扯下来，往往不忍丢掉。",wait:false},
+  {t:"mc",q:"这一段里，作者对用过的日历是什么心情？",obs:{id:"d3-m3",label:"第5段的心情变化",skill:"体会情感变化"},
+   options:[{text:"先嫌弃，后舍不得",ok:true,reply:"先“好似废纸”，一个“可是”，就“不忍丢掉”了。"},
+            {text:"一直嫌弃",ok:false,reply:"嫌弃的东西，会夹在画册中间吗？看看他把它们放在哪里。"},
+            {text:"一直珍惜",ok:false,reply:"一开始，它们是“黯淡、沉寂和没用”的。心情是从哪里变的？"}]},
+  {t:"mc",q:"同一叠用过的日历，作者用了哪两个比喻？",obs:{id:"d3-leaf",label:"找出废纸、落叶两个比喻",skill:"找出比喻"},
+   options:[{text:"废纸，生命的落叶",ok:true,reply:"对。同一叠纸，前后两个比喻。"},
+            {text:"空屋子，生命的页码",ok:false,reply:"这两个在前面几段。看第5段。"},
+            {text:"落叶，葡萄酒",ok:false,reply:"葡萄酒在后面。第5段里，落叶之前，它先被比作什么？"}]},
+  {t:"say",who:"linyi",text:"我第2天找的就是这一对！待会儿我还要说。"},
+  {t:"cal5",op:"stamp",page:3,mood:"舍不得",fig:"废纸→落叶"},
+  {t:"focus",para:5},
+  {t:"say",who:"ri",text:"下一段只有一句：别忘了，我们的每一天都曾经生活在这一页一页的日历上。",wait:false},
+  {t:"mc",q:"这一句为什么单独成一段？",obs:{id:"d3-p6",label:"第6段的作用",skill:"理解段落作用：承上启下"},
+   options:[{text:"承上启下：接住“用过的日子、生命的落叶”，引出下一段地震那一页",ok:true,reply:"上一段说用过的日历是生命的落叶。这一句提醒我们，每一页上都有人生活过。下一段，就是其中的一页。"},
+            {text:"总结全文",ok:false,reply:"文章才走到一半，结尾还在后面。"},
+            {text:"提出一个新问题",ok:false,reply:"这一句是问句吗？它用的是“别忘了”，是在提醒。"}]}
+ ]},
+ {title:"珍藏·不肯扯",mood:"memory",steps:[
+  {t:"cal5",op:"show"},
+  {t:"focus",para:6,has:"扯"},
+  {t:"say",who:"ri",text:"第四处，在第7段：我伸手把它小心地扯下来。"},
+  {t:"say",who:"ri",text:"这一处的“它”，就是我。",wait:false},
+  {t:"mc",q:"为什么是“小心地”扯？",obs:{id:"d3-m4",label:"“小心地扯”的原因",skill:"体会细节里的情感"},
+   options:[{text:"因为这一页记着他从死神的指缝里逃出来的那一天",ok:true,reply:"他要“记下这一切”。我和那天拍的照片放在一起，成了“刻骨铭心的珍藏”。"},
+            {text:"因为日历很旧，容易撕破",ok:"half",reply:"我确实蒙满了灰土。可他为什么要把一页旧纸保存得好好的？"},
+            {text:"怕在房间里留下纸屑",ok:false,reply:"那个房间，已经“没有屋顶”了。"}]},
+  {t:"pick",who:"ri",ask:"地震以后，作者懂得了什么？在下一段里点出那一句。",task:"地震以后，作者懂得了什么？",label:"点出作者懂得了什么",
+   accept:{paras:[7],has:["日历的意义","忠实的记录"]},fallback:["在第8段里找。找“懂得”两个字后面。"],
+   obs:{id:"d3-know",label:"找出“日历是生命忠实的记录”",skill:"概括：由事到理"},okText:"由此，我懂得了日历的意义。它原是我们生命忠实的记录。"},
+  {t:"cal5",op:"stamp",page:4,mood:"珍藏",fig:"生命的记录·日记"},
+  {t:"focus",para:9},
+  {t:"say",who:"ri",text:"可大多数日子是重复的，记不住。所以他说，不能只等着被记住，要“用行为去创造记忆”，“生活就是创造每一天”。"},
+  {t:"focus",para:14,has:"扯"},
+  {t:"say",who:"ri",text:"第五处，在第15段：我都是不肯再去扯日历。",wait:false},
+  {t:"mc",q:"年底了，作者为什么不肯扯？",obs:{id:"d3-m5",label:"不肯扯的原因",skill:"从原文找依据"},
+   options:[{text:"不愿意把日子花得净光",ok:true,reply:"他自己说了：“我不愿意把日子花得净光。”"},
+            {text:"年底太忙，忘了扯",ok:false,reply:"他是“不肯”，不是“忘了”。原因就在“这可能出于……”的后面。"},
+            {text:"懒得扯",ok:false,reply:"要是懒，他就不会“总把这最后几页保存下来”。"}]},
+  {t:"cal5",op:"stamp",page:5,mood:"不肯扯",fig:"葡萄变酒"},
+  {t:"say",who:"ri",text:"他留住日子的办法，在下一段。等一会儿，我们再仔细看。"}
+ ]},
+ {title:"回答小满",mood:"bright",steps:[
+  {t:"cal5",op:"map"},
+  {t:"say",who:"ri",text:"五页连起来，就是这篇文章走过的路。小满，开头喜欢扯，结尾不肯扯，不是矛盾。是一路走过来的心情：期待，失落，舍不得，懂得，不肯花光。"},
+  {t:"focus",para:16},
+  {t:"say",who:"ri",text:"结尾说，日历“叫我随时感知自己的生命，并叫我思考如何珍惜它”。前面几处扯，让他感到日子在流走；从“不忍丢掉”开始，他在想怎么留住它。这就是“生命感”。"},
+  {t:"say",who:"xiaoman",text:"好吧……我改口。不是矛盾，是一路走过来的。"},
+  {t:"say",who:"zhou",textIf:{key:"d3.stance",map:{agree:"我们都被小满带跑了一下，哈哈。",disagree:"你一开始就看出来了！",unsure:"现在说得准了吧？"}},text:"现在说得准了吧？"}
+ ]},
+ {title:"能删吗：第7段",mood:"focus",steps:[
+  {t:"say",who:"xiaoman",text:"既然不矛盾了，我再提一个意见：第7段太跑题！全文都在讲日历的道理，突然讲地震、讲血淋淋，我觉得删掉更顺。",next:"嗯……"},
+  {t:"mc",who:"ri",ask:"你站哪边？",q:"第7段，删不删？",key:"d3.del7v",stance:true,wait:false,
+   options:[{text:"删",value:"del",who:"xiaoman",reply:"对吧！"},{text:"不删",value:"keep",who:"xiaoman",reply:"哼，那你说说为什么。"},{text:"拿不准",value:"unsure",who:"xiaoman",reply:"那就先删了试试！"}],
+   obs:{id:"d3-del7v",label:"表态：第7段能删吗",skill:"辨析：先表态"}},
+  {t:"strike",para:6,flag:{para:7,text:"由此",tag:"由什么？"}},
+  {t:"say",who:"ri",text:"好，先删了试试。小满，你把删掉以后接上的地方读一读。"},
+  {t:"say",who:"xiaoman",text:"别忘了，我们的每一天都曾经生活在这一页一页的日历上。由此，我懂得了日历的意义……咦？",wait:false},
+  {t:"mc",q:"删掉以后，哪里读不通了？",obs:{id:"d3-del7a",label:"删第7段后哪里不通",skill:"理解段落作用：结构"},
+   options:[{text:"“由此”——由什么？没有着落了",ok:true,reply:"“由此”就是“从这件事”。地震那一页没了，“这件事”就不在了。"},
+            {text:"没有哪里不通",ok:false,reply:"再读一遍“由此”。由这个，得出那个。现在“这个”在哪里？"},
+            {text:"“别忘了”这一句读不通",ok:false,reply:"“别忘了”这一句本身没问题。断在它后面的那个词。"}]},
+  {t:"mc",q:"全文只有这一处是“小心地”扯。地震这一页，让作者从哪一步走到了哪一步？",obs:{id:"d3-del7b",label:"第7段在心情上的作用",skill:"理解段落作用：情感"},
+   options:[{text:"从“舍不得”走到“懂得”",ok:true,reply:"第5段他只是“不忍丢掉”，说不出为什么；有了这一页，他才说“我懂得了日历的意义”。"},
+            {text:"从“期待”走到“失落”",ok:false,reply:"那是第2段到第4段的路。看看紧接在地震后面的是哪个词。"},
+            {text:"从“不肯扯”走到“扯”",ok:false,reply:"“不肯扯”在第15段，还在后面呢。"}]},
+  {t:"mc",q:"这篇文章是由物及理。要是只剩道理，“日历是生命忠实的记录”这句话会怎样？",obs:{id:"d3-del7c",label:"第7段在由物及理中的作用",skill:"理解写法：由物及理，以事证理"},
+   options:[{text:"变成一句空话，没有让人信服的事",ok:true,reply:"全文只有这一件往事，有确切的日期，也有完整的经过。道理是从这件事上长出来的。"},
+            {text:"更清楚了",ok:false,reply:"少了一件事，读的人凭什么相信一页纸会记录生命？"},
+            {text:"不受影响",ok:false,reply:"想想：没有那一页，作者自己是怎么“懂得”的？"}]},
+  {t:"say",who:"zhou",textBy:{changge:"我懂了！道理要有证据，第7段就是证据！",qingxian:"有血、有废墟、有日期……这一页，是真的。"},text:"这一页，是真的。"},
+  {t:"input",who:"ri",key:"d3.no7",rows:2,q:"给小满写一句话：第7段为什么不能删？用上一个原文里的词。",ph:"小满，第7段不能删，因为……",
+   requireEnd:{re:"由此|懂得|小心|记录|日记|地震|珍藏|1976|意义",who:"ri",text:"用上一个原文里的词，比如“由此”“懂得”“小心”“记录”。要是你就想这样写，再按一次“写好了”。"},
+   obs:{id:"d3-no7",label:"给小满的一句话：第7段为什么不能删",skill:"用原文说理"},
+   replies:[{who:"xiaoman",text:"行吧，你说服我了。第7段我不删了。"}]},
+  {t:"unstrike"}
+ ]},
+ {title:"能删吗：第4段",steps:[
+  {t:"say",who:"zhou",textBy:{changge:"那第4段呢？白发、衰弱的身躯……太丧了！跟日历有啥关系？删！",qingxian:"第4段读着好难过……能不能删掉它？我不想读了。"},text:"第4段能不能删？"},
+  {t:"strike",para:3,flag:{para:16,text:"随时感知自己的生命",tag:"依据呢？"}},
+  {t:"say",who:"ri",text:"这一次，我们不看接缝，看结尾。",wait:false},
+  {t:"mc",q:"删了第4段，结尾哪半句会站不住？",obs:{id:"d3-del4a",label:"删第4段后结尾哪句失了依据",skill:"理解段落作用：主旨"},
+   options:[{text:"“叫我随时感知自己的生命”",ok:true,reply:"“生命的页码”“白发”“日见衰弱的身躯”，都在这一段。感知生命，就是感到它在一页一页少下去。"},
+            {text:"“叫我思考如何珍惜它”",ok:false,reply:"珍惜的意思，后面第5到16段写了很多。删掉的这一段，写的是什么？"},
+            {text:"哪半句都不受影响",ok:false,reply:"来回对一下：结尾的“生命”两个字，前面哪一段写得最重？"}]},
+  {t:"mc",q:"第5段的“不忍丢掉”，为什么需要第4段在前面？",obs:{id:"d3-del4b",label:"第4段和第5段的关系",skill:"理解段落作用：情感"},
+   options:[{text:"先让人感到扯掉的是生命，后面的舍不得才有分量",ok:true,reply:"这是全文心情最低的地方。没有它，“不忍丢掉”就只是舍不得几张纸。"},
+            {text:"第4段介绍了日历的样子",ok:false,reply:"日历的样子在第2、3段。第4段写的是时光和人。"},
+            {text:"没有关系，只是顺序",ok:false,reply:"读一读第4段末尾和第5段开头：一个是“扯掉一个生命的页码”，一个是“扯下来……不忍丢掉”。"}]},
+  {t:"say",who:"zhou",textBy:{changge:"那我重来。不删！这一段是整篇的“低音”。",qingxian:"原来难过的部分也不能少……没有难过，后面的珍惜也轻了。"},text:"原来这一段也不能少。"},
+  {t:"unstrike"},
+  {t:"say",who:"ri",text:"两段都删不得，可理由不一样。第7段删了，“由此”没有着落，文章从“舍不得”走不到“懂得”，这是结构上删不得。第4段删了，结尾“感知自己的生命”失了依据，后面的珍惜也轻了，这是情感和主旨上删不得。"},
+  {t:"say",who:"ri",text:"以后判断一段能不能删，就问两件事：它和前后文接不接得上？它在全文里撑着哪一句话？"}
+ ]},
+ {title:"废纸和落叶",steps:[
+  {t:"say",who:"linyi",text:"我来！第5段，同一叠用过的日历，先“好似废纸”，后来又是“生命的落叶”。我们换一换。"},
+  {t:"swap",text:"就像从地上拾起的废纸。它们是我生命的废纸！",marks:["废纸"],label:"换成“废纸”"},
+  {t:"say",who:"linyi",text:"就像从地上拾起的废纸。它们是我生命的废纸！",next:"呃……"},
+  {t:"say",who:"zhou",textBy:{changge:"哈哈哈，“生命的废纸”？好奇怪！",qingxian:"读起来……一点也不想拾起来了。"},text:"好奇怪。"},
+  {t:"mc",q:"“废纸”和“落叶”，差在哪里？",obs:{id:"d3-leafb",label:"废纸和落叶的区别",skill:"体会比喻的贴切：比喻带出态度"},
+   options:[{text:"废纸没用、该扔；落叶是从生命上落下来的，会被人拾起来",ok:true,reply:"同一叠纸，比喻一换，态度就换了。中间那个“可是”，就是作者改主意的地方。"},
+            {text:"落叶更好看",ok:"half",reply:"好看不是重点。看原文：“从地上拾起的落叶”。拾起来，是因为什么？"},
+            {text:"没什么差别，都是比喻",ok:false,reply:"你刚才听林一读“生命的废纸”了。换了以后，意思还一样吗？"}]}
+ ]},
+ {title:"葡萄干和酒",steps:[
+  {t:"focus",para:15},
+  {t:"say",who:"xiaoman",text:"第16段我有更好的比喻！保存葡萄，晒成葡萄干不就行了？放好久都不坏。",next:"嗯……"},
+  {t:"swap",text:"保存葡萄最好的方式是把葡萄晒成葡萄干；保存岁月最好的方式是……",marks:["晒成葡萄干"],label:"小满的版本"},
+  {t:"mc",q:"后半句，你帮小满接上：",key:"d3.grape",stance:true,keep:true,obs:{id:"d3-grape1",label:"为小满的比喻接后半句",skill:"体会比喻的前后对应"},
+   options:[{text:"……把岁月原样晒干，收起来",value:"dry",who:"xiaoman",reply:"啊……岁月晒干了……好像不太对。"},
+            {text:"……致力把岁月变为永存的诗篇或画卷",value:"poem",who:"ri",reply:"可这一半，和葡萄干对不上了。前半句要换回什么，才接得上？"}]},
+  {t:"mc",q:"作者为什么用“酒”，不用“葡萄干”？",obs:{id:"d3-grape2",label:"为什么是葡萄变酒",skill:"体会比喻的贴切：变为、永存"},
+   options:[{text:"酒是葡萄“变”成的新东西；保存不是原样留住，而是变成更长久的东西",ok:true,reply:"原文用的是“变为”和“永存”。葡萄干是原样缩着留下；酒，是变成了另一种东西。"},
+            {text:"因为酒更贵",ok:false,reply:"文章里没有讲价钱。看看原文用的动词。"},
+            {text:"因为作者喜欢喝酒",ok:false,reply:"文章里没有写他喜欢喝酒。找一找原句里的“变为”。"}]},
+  {t:"say",who:"ri",text:"第10段说要“用行为去创造记忆”，第12段说“生活就是创造每一天”。不扯日历，留不住日子；把日子变成诗篇和画卷，就是用心地过、用心地写，这样才留得住。"},
+  {t:"say",who:"xiaoman",text:"好吧，葡萄干输了。"}
+ ]},
+ {title:"我的比喻",mood:"bright",steps:[
+  {t:"say",who:"zhou",text:"你的{d1.object|东西}，也找一个比喻吧！就像作者把用过的日历写成落叶。",wait:false},
+  {t:"frame",who:"ri",key:"d3.meta",q:"给{d1.object|你选的东西}写一个比喻，再说出它让你想到的关于时间或日子的一句话。",
+   example:"作者的例子：用过的日历像<b>生命的落叶</b>。所以：<b>我们的每一天都曾经生活在这一页一页的日历上。</b>",
+   parts:[{label:"{d1.object|它}像",ph:"一个比喻",min:2,short:"比喻再多写一点。"},{label:"所以我想到：",ph:"关于时间或日子的一句话",min:6,short:"这一句再多写几个字。"}],
+   nudge:{field:1,re:"时间|日子|每天|一天|天天|明天|昨天|今天|年|岁月|生命|光阴",who:"ri",text:"比喻有了。再往前走一步：它让你想到日子、时间的什么？要是你就想这样写，再按一次“写好了”。"},
+   replies:[{field:1,re:"时间|日子|每天|一天|天天|明天|昨天|今天|年|岁月|生命|光阴",who:"ri",text:"从{d1.object|它}走到了日子，这就是由物及理。"},{who:"ri",text:"记下了。"}],
+   obs:{id:"d3-meta",label:"仿写：我的比喻（由物及理）",skill:"仿写：借比喻由物及理"}},
+  {t:"say",who:"zhou",text:"这一句放进你的日历本了，接在第1天那个开头的问题后面。"},
+  {t:"say",who:"ri",text:"三天下来，你也会作者的本事了：从一样东西出发，借一个贴切的比喻，走到一个道理。",wait:false},
+  {t:"next",label:"看看我的日历本"},
   {t:"openBook"}
  ]}
-],end:"三天读完了。打开“我的日历本”，看看你写下的东西。",after:"课后：先自己朗读“每年元月元日……迎面而来”一段，想想为什么这样读、依据哪个词；再听录音对照。"}
+],end:"第3天读完了。打开“我的日历本”，看看你写下的东西。",after:"课后：先自己朗读“每年元月元日……迎面而来”一段，想想为什么这样读、依据哪个词；再听录音对照。"}
 ],
+
+/* 第3天“五处扯”的日历条和结构图 */
+cal5:{pages:[{label:"第2段"},{label:"第4段"},{label:"第5段"},{label:"第7段"},{label:"第15段"}],
+ map:[{t:"问",s:"第1段",k:"q"},{t:"日子在流走：从期待到虚无",s:"第2–4段"},{t:"用过的日子：废纸还是落叶",s:"第5段"},{t:"承上启下",s:"第6段"},{t:"地震那一页：懂得日历是生命的记录",s:"第7–8段"},{t:"记忆，以及要去创造记忆",s:"第9–14段"},{t:"保存岁月：不肯扯、葡萄变酒",s:"第15–16段"},{t:"答：日历具有生命感",s:"第17段",k:"a"}]},
 
 notebook:{
  button:"我的日历本",
@@ -226,13 +379,14 @@ notebook:{
  pages:[
   {n:1,title:"开头的问题",get:function(D){return D.d1&&D.d1.question;}},
   {n:2,title:"两种心情",get:function(D){return D.d2&&D.d2.feel;}},
-  {n:3,title:"三级台阶",get:function(D){return ((D.d3&&D.d3.steps)||[]).filter(Boolean).map(function(s,i){return (i+1)+"．"+s;}).join("\n");}}],
- draft:function(D){var q=D.d1&&D.d1.question,st=D.d3&&D.d3.steps;if(!q||!st)return null;return [q,st[0],(D.d2&&D.d2.feel)||"",st[1],st[2]].filter(Boolean).join("");},
+  {n:3,title:"我的比喻",get:function(D){return D.d3&&D.d3.meta&&D.d3.meta.text;}}],
+ draft:function(D){var q=D.d1&&D.d1.question,m=D.d3&&D.d3.meta&&D.d3.meta.text;if(!q||!m)return null;return [q,(D.d2&&D.d2.feel)||"",m].filter(Boolean).join("");},
  draftNote:"这是把你写的几页按顺序连起来的样子。读一读，哪里接不上，以后再改。",
  records:[
   {n:"第1天",title:"最先想说的",get:function(D){return D.d1&&D.d1.first;}},
   {n:"第2天",title:"交上去的作答",get:function(D){var d=D.d2||{};if(!d.at)return "";return (d.items||[]).map(function(o,k){return "第 "+(k+1)+" 处\n这里说："+o.a+"\n那里又说："+o.b+"\n关系："+o.rel;}).join("\n\n");}},
-  {n:"第3天",title:"我分的台阶",get:function(D){return ((D.d3&&D.d3.layers)||[]).map(function(l,i){return (i+1)+"．"+(l.sum||"")+(l.key?"（"+l.key+"）":"");}).join("\n");}}]
+  {n:"第3天",title:"给小满的一句话：第7段为什么不能删",get:function(D){return D.d3&&D.d3.no7;}},
+  {n:"第3天",title:"判断一段能不能删",get:function(D){return D.d3&&D.d3.no7?"① 它和前后文接不接得上？\n② 它在全文里撑着哪一句话？":"";}}]
 }
 
 };

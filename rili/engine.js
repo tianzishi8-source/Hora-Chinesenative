@@ -122,11 +122,11 @@ getSample().then(function(s){if(s&&C.chat!==false)bChat.hidden=false;});
 var rbody=$("#rbody"),reader=$("#reader"),rmode=$("#rmode");
 var R={mode:"none",onPick:null,onCut:null,onMark:null,marks:{},picks:{},keys:{},cuts:{}};
 function renderText(){rbody.innerHTML="";
-  PARAS.forEach(function(p,pi){var pe=el("p",{class:CENTER[pi]?"center":""});
+  PARAS.forEach(function(p,pi){var pe=el("p",{class:CENTER[pi]?"center":"","data-p":String(pi)});
     PSENT[pi].forEach(function(id){var t=SENT[id].t,sp=el("span",{class:"s","data-id":String(id),tabindex:"-1"});var i=0;
       while(i<t.length){var hit=null;for(var g=0;g<GKEYS.length;g++){if(t.substr(i,GKEYS[g].length)===GKEYS[g]){hit=GKEYS[g];break;}}
         if(hit){sp.append(el("span",{class:"g","data-g":hit,text:hit}));i+=hit.length;}else{sp.append(document.createTextNode(t[i]));i++;}}
-      pe.append(sp);});
+      sp.normalize();pe.append(sp);});
     rbody.append(pe);
     if(pi<PARAS.length-1){var gp=el("span",{class:"gap","data-after":String(pi)});gp.append(el("button",{type:"button","aria-label":"在第"+(pi+1)+"段后面分层"},["在这里分层"]));rbody.append(gp);}});
   if(L.source)rbody.append(el("p",{class:"src",text:L.source}));paintMarks();}
@@ -231,12 +231,17 @@ function buildCast(){[["l",C.left],["r",C.right]].forEach(function(side){var hos
 function layoutFigs(){if(!FIGS)return;var work=$(".work"),cast=$("#cast"),task=$("#task");if(!work||!cast)return;
   var wr=work.getBoundingClientRect(),cr=cast.getBoundingClientRect(),bottom=($(".work .head")||work).getBoundingClientRect().bottom;
   /* 任务卡里所有看得见的内容的最下沿（藏起来的元素量出来是 0，不能只看最后一个） */
-  [].forEach.call(task.querySelectorAll("*"),function(e){var r=e.getBoundingClientRect();if(r.height>0&&r.bottom>bottom)bottom=r.bottom;});
+  [].forEach.call(document.querySelectorAll("#task *,#cal5 *"),function(e){var r=e.getBoundingClientRect();if(r.height>0&&r.bottom>bottom)bottom=r.bottom;});
   var free=cr.top-bottom-14,wide=innerWidth>860&&wr.width>=380,mode;
   /* 内容已经要往下滑才看得完：不放大图，只用头像圈，免得挡字 */
   if(work.scrollHeight>work.clientHeight+4)free=0;
   if(!wide||free<280)mode="circle";else if(free<320&&FIGMODE==="circle")mode="circle";else mode=free>=470?"full":"half";
   var h=Math.min(free,mode==="full"?600:420);
+  /* 并排的几个人加起来不能比右栏宽，不然会伸到左边原文上 */
+  var nf=0;for(var wk in SPR)nf++;nf=Math.max(1,nf);
+  function capH(md){var RR=md==="full"?[20,30,1004,1530]:[130,20,880,900];return (wr.width-8)/(nf*.94*(RR[2]-RR[0])/(RR[3]-RR[1]));}
+  if(mode==="full"&&capH("full")<Math.min(h,470)){mode="half";h=Math.min(free,420);}
+  if(mode!=="circle"){h=Math.min(h,capH(mode));if(h<250)mode="circle";}
   if(mode!==FIGMODE){FIGMODE=mode;document.body.classList.toggle("figs-on",mode!=="circle");FIGS.className="figs "+mode;}
   if(mode==="circle"){for(var w in SPR)applyHead(SPR[w],w);return;}
   FIGS.style.right=Math.max(16,innerWidth-wr.right)+"px";FIGS.style.bottom=Math.round(innerHeight-cr.top+4)+"px";FIGS.style.maxWidth=Math.round(wr.width)+"px";
@@ -313,7 +318,7 @@ var VOICE=(function(){var tts=!!(window.speechSynthesis&&window.SpeechSynthesisU
   /* 设置面板 */
   var panelEl=null;
   function openPanel(){if(panelEl&&!panelEl.hidden){panelEl.hidden=true;return;}if(!panelEl){panelEl=el("div",{class:"chat vpanel",role:"dialog","aria-label":"配音设置"});document.body.append(panelEl);}load();
-    var who=Object.keys(PEOPLE).filter(function(w){return w!=="me"||rec("me").length;});function lbl(w){return PEOPLE[w].label||PEOPLE[w].name;}
+    var who=Object.keys(PEOPLE).filter(function(w){return !PEOPLE[w].extra&&(w!=="me"||rec("me").length);});function lbl(w){return PEOPLE[w].label||PEOPLE[w].name;}
     var h='<div class="chat-h"><b>配音设置</b><span class="sp"></span><button type="button" class="dbtn" data-x>关上</button></div><div class="chat-b vb">'+
       '<label class="row"><input type="checkbox" id="vOn"'+(V.on?" checked":"")+'> <b>开启配音</b></label>'+
       '<label class="vrow"><span class="vn">语速</span><input type="range" min="0.8" max="1.25" step="0.05" value="'+V.rate+'" id="vRate" aria-label="语速"><span class="vv" id="vRateV"></span></label>'+
@@ -341,11 +346,13 @@ var VOICE=(function(){var tts=!!(window.speechSynthesis&&window.SpeechSynthesisU
 /* ================= 对话框 ================= */
 var RUN={token:0};var CANCEL={};
 var DLOG=[];
-function say(txt,who,tok){who=who||lead();return new Promise(function(res,rej){if(tok!==RUN.token)return rej(CANCEL);
+var SAYSEQ=0;
+/* 新的一句开始，上一句还没打完的字就停下（不然两句会在同一个框里来回闪） */
+function say(txt,who,tok){who=who||lead();return new Promise(function(res,rej){if(tok!==RUN.token)return rej(CANCEL);var my=++SAYSEQ;
   SPEAKER=who;NOD[who]=performance.now()/1000;dWho.textContent=nameOf(who);dWho.style.background=inkOf(who);DLOG.push({who:who,text:txt});VOICE.say(who,txt);
   if(reduce){dTxt.textContent=txt;return res();}
   var i=0,skip=false;TALK=true;var k=function(){skip=true;};dTxt.addEventListener("click",k,{once:true});
-  (function step(){if(tok!==RUN.token){TALK=false;return rej(CANCEL);}if(skip||i>=txt.length){dTxt.textContent=txt;dTxt.removeEventListener("click",k);TALK=false;return res();}i++;dTxt.textContent=txt.slice(0,i);setTimeout(step,/[。！？]/.test(txt[i-1])?320:/[，；：、]/.test(txt[i-1])?200:62);})();});}
+  (function step(){if(tok!==RUN.token){TALK=false;return rej(CANCEL);}if(my!==SAYSEQ){dTxt.removeEventListener("click",k);return res();}if(skip||i>=txt.length){dTxt.textContent=txt;dTxt.removeEventListener("click",k);TALK=false;return res();}i++;dTxt.textContent=txt.slice(0,i);setTimeout(step,/[。！？]/.test(txt[i-1])?320:/[，；：、]/.test(txt[i-1])?200:62);})();});}
 function sayQ(txt,who,tok){say(txt,who,tok).catch(function(){});}
 /* 一段话说完，等学生点“继续”再往下（下一步本来就是“继续”按钮时不重复） */
 var NEXT="end";
@@ -372,8 +379,10 @@ function q(text){return el("div",{class:"task-q",text:fill(text)});}
 
 /* ================= 步骤类型 ================= */
 var H={};
-var NOWAIT={next:1,input:1,choose:1,independent:1,markHeard:1,layering:1,clear:1};
-H.say=function(s,tok){var nx=NEXT;return say(fill(s.text),s.who,tok).then(function(){if(s.wait===false||NOWAIT[nx])return;return next(s.next||"继续",tok,true);});};
+/* 一句台词的几个版本：textBy＝按学生选的伴学（qingxian／changge）；textIf＝按之前某一题的选择 {key, map:{值:台词}, other} */
+function variant(s,f){var by=s[f+"By"];if(by&&by[myBuddy().who])return by[myBuddy().who];var ci=s[f+"If"];if(ci){var v=get(ci.key);if(v!=null&&ci.map[v]!=null)return ci.map[v];if(ci.other!=null)return ci.other;}return s[f];}
+var NOWAIT={next:1,input:1,choose:1,independent:1,markHeard:1,layering:1,clear:1,mc:1,findWord:1,frame:1};
+H.say=function(s,tok){var nx=NEXT;return say(fill(variant(s,"text")),s.who,tok).then(function(){if(s.wait===false||NOWAIT[nx])return;return next(s.next||"继续",tok,true);});};
 H.me=function(s,tok){return line(fill(s.text),"me",tok);};
 H.next=function(s,tok){return next(fill(s.label),tok,s.keep);};
 H.sleep=function(s){return sleepTick(s.ms||500);};
@@ -395,10 +404,10 @@ H.quoteOrPick=function(s,tok){var v=get(s.from)||"";var hits=findQuotedAll(v);
   .then(function(ids){var t=joinSents(ids);clearTask();R.keys={};ids.forEach(function(i){R.keys[i]=1;});R.picks={};paintMarks();set(s.key,t);logStep(s.obs,{try:1,answer:(ids.length>1?"（"+ids.length+"句）":"")+t});commit();return line(s.doneText,s.who,tok);});};
 
 H.pick=function(s,tok){var other=0;var fbWho=s.feedbackWho||coach();return say(fill(s.ask),s.who,tok).then(function(){clearTask();task.append(q(s.task||s.label),el("p",{class:"note",text:"在左边原文里点一句。"}));return pickSent(s.label,tok,function(id){logStep(s.obs,{try:1});
-    if(inPara(id,s.accept.paras)){SOUND.sfx("ok");return true;}
+    if(inPara(id,s.accept.paras)&&(!s.accept.has||[].concat(s.accept.has).some(function(h){return SENT[id].t.indexOf(h)>=0;}))){SOUND.sfx("ok");return true;}
     var t=SENT[id].t,ms=s.misses||[];for(var i=0;i<ms.length;i++){var m=ms[i];if((m.has&&t.indexOf(m.has)>=0)||(m.paras&&m.paras.indexOf(SENT[id].p)>=0)){return function(){SOUND.sfx("no");logStep(s.obs,{miss:m.id});sayQ(m.text,fbWho,tok);};}}
     return function(){SOUND.sfx("no");logStep(s.obs,{miss:"other"});var fb=s.fallback||["不是这一句，再找找。"];sayQ(fb[Math.min(other,fb.length-1)],fbWho,tok);other++;};});})
-  .then(function(id){clearTask();logStep(s.obs,{answer:SENT[id].t});commit();if(s.light!==false){if(!s.keepKeys)R.keys={};s.accept.paras.forEach(function(p){PSENT[p].forEach(function(i){R.keys[i]=1;});});paintMarks();}if(s.quote)task.append(el("blockquote",{class:"quote",text:PARAS[s.accept.paras[0]]}));if(s.okText)return line(fill(s.okText),s.okWho||s.who,tok);});};
+  .then(function(id){clearTask();logStep(s.obs,{answer:SENT[id].t});commit();if(s.light!==false){if(!s.keepKeys)R.keys={};s.accept.paras.forEach(function(p){PSENT[p].forEach(function(i){if(!s.accept.has||[].concat(s.accept.has).some(function(h){return SENT[i].t.indexOf(h)>=0;}))R.keys[i]=1;});});paintMarks();}if(s.quote)task.append(el("blockquote",{class:"quote",text:PARAS[s.accept.paras[0]]}));if(s.okText)return line(fill(s.okText),s.okWho||s.who,tok);});};
 
 H.choose=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.q)task.append(q(s.q));var row=el("div",{class:"objs"});var cur=get(s.key)||"";var inp=el("input",{type:"text",id:"in-"+s.key.replace(/\./g,"-"),placeholder:s.ph||"也可以自己写一样",autocomplete:"off"});inp.value=s.options.indexOf(cur)<0?cur:"";var chosen=cur;
   s.options.forEach(function(o){var b=el("button",{class:"obj",type:"button","aria-pressed":String(o===chosen),text:o});b.addEventListener("click",function(){chosen=o;inp.value="";$$(".obj",row).forEach(function(x){x.setAttribute("aria-pressed",String(x===b));});});row.append(b);});
@@ -570,6 +579,71 @@ H.vis=function(s){clearTask();task.classList.add("plain");task.append(L.visuals[
 
 H.openBook=function(){openBook();return Promise.resolve();};
 
+/* ================= 第3天新增的步骤类型（以后别的课文也能用） ================= */
+/* 单选：每个选项各有回应；ok:true 对、"half" 半对、false 错；对了才往下（stance:true 时任何一项都算，用来表态）。
+   {t:"mc",who,ask,q,key,options:[{text,ok,reply,who,value}],obs,feedbackWho,wait} */
+H.mc=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.ask?say(fill(variant(s,"ask")),s.who,tok):Promise.resolve();
+  return pre.then(function(){return new Promise(function(res,rej){clearTask();if(s.q)task.append(q(s.q));var box=el("div",{class:"mc"});
+    s.options.forEach(function(o,i){var b=el("button",{class:"mco",type:"button",text:fill(o.text)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
+        logStep(s.obs,{try:1});var ok=s.stance||o.ok===true;
+        if(ok){$$(".mco",box).forEach(function(x){x.disabled=true;});b.classList.add("ok");SOUND.sfx(s.stance?"page":"ok");if(s.key)set(s.key,o.value!=null?o.value:i);logStep(s.obs,{answer:fill(o.text)});logMe(fill(o.text));commit();
+          var r=o.reply?say(fill(o.reply),o.who||fbWho,tok):Promise.resolve();r.then(function(){res();},function(){});}
+        else{b.classList.add(o.ok==="half"?"half":"no");b.disabled=true;SOUND.sfx("no");logStep(s.obs,{miss:"o"+i});if(o.reply)sayQ(fill(o.reply),o.who||fbWho,tok);}});box.append(b);});
+    task.append(box);});}).then(function(){if(s.wait===false)return;return next(s.next||"继续",tok,!!s.keep);});};
+
+/* 在原文里找一个字：每段算一处，找齐为止。{t:"findWord",who,ask,task,word,paras:[段号(0起)],misses:[{paras,text}],other,hint,hintAfter,found,doneText,key,obs} */
+function wrapWord(id,word){var sp=$('.s[data-id="'+id+'"]',rbody);if(!sp||sp.getAttribute("data-w"))return;sp.setAttribute("data-w","1");
+  var walk=document.createTreeWalker(sp,NodeFilter.SHOW_TEXT),n,list=[];while((n=walk.nextNode()))list.push(n);
+  list.forEach(function(tn){var t=tn.nodeValue,i=t.indexOf(word);if(i<0)return;var frag=document.createDocumentFragment(),last=0;while(i>=0){frag.append(document.createTextNode(t.slice(last,i)),el("mark",{class:"wd",text:word}));last=i+word.length;i=t.indexOf(word,last);}frag.append(document.createTextNode(t.slice(last)));tn.parentNode.replaceChild(frag,tn);});}
+H.findWord=function(s,tok){var fbWho=s.feedbackWho||lead(),got={},n=s.paras.length;
+  function light(p){PSENT[p].forEach(function(i){if(SENT[i].t.indexOf(s.word)>=0){R.keys[i]=1;wrapWord(i,s.word);}});paintMarks();}
+  (get(s.key)||[]).forEach(function(p){got[p]=1;light(p);});
+  return say(fill(variant(s,"ask")),s.who,tok).then(function(){return new Promise(function(res,rej){clearTask();var cnt=el("div",{class:"wcount"});task.append(q(s.task),cnt,el("p",{class:"note",text:"在左边原文里点句子。"}));
+    function upd(){var k=Object.keys(got).length;cnt.textContent="找到 "+k+" / "+n+" 处";}upd();
+    var hintT=setTimeout(function(){if(tok===RUN.token&&Object.keys(got).length<n&&s.hint)sayQ(fill(s.hint),fbWho,tok);},(s.hintAfter||60)*1000);
+    var first=true;
+    function check(id){var p=SENT[id].p,t=SENT[id].t;logStep(s.obs,{try:1});
+      if(s.paras.indexOf(p)>=0&&t.indexOf(s.word)>=0){if(got[p]){sayQ("这一处找过了。",fbWho,tok);return function(){};}got[p]=1;light(p);SOUND.sfx("page");upd();set(s.key,Object.keys(got).map(Number));commit();
+        if(Object.keys(got).length>=n){clearTimeout(hintT);return true;}
+        if(first&&s.found){first=false;sayQ(fill(s.found),s.who||fbWho,tok);}return function(){};}
+      var ms=s.misses||[];for(var i=0;i<ms.length;i++){if(ms[i].paras.indexOf(p)>=0)return function(m){return function(){SOUND.sfx("no");logStep(s.obs,{miss:"p"+p});sayQ(fill(m.text),fbWho,tok);};}(ms[i]);}
+      return function(){SOUND.sfx("no");logStep(s.obs,{miss:"other"});sayQ(fill(s.other||"这一句里没有要找的字。"),fbWho,tok);};}
+    if(Object.keys(got).length>=n){clearTimeout(hintT);res();return;}
+    pickSent(s.label||("点出“"+s.word+"”在的句子"),tok,check).then(function(){res();},rej);});})
+  .then(function(){logStep(s.obs,{answer:"找齐"});if(s.doneText)return line(fill(s.doneText),s.who,tok);});};
+
+/* 让原文某段亮起来、滚到眼前（可只亮含某个字的句子）。{t:"focus",para,has,clear} */
+H.focus=function(s){if(s.clear!==false)R.keys={};PSENT[s.para].forEach(function(i){if(!s.has||SENT[i].t.indexOf(s.has)>=0)R.keys[i]=1;});paintMarks();var ids=PSENT[s.para].filter(function(i){return R.keys[i];});if(ids.length)flashSent(ids[0]);if(isNarrow())openReader();return Promise.resolve();};
+
+/* 删除试验：把一段划掉、淡出，再把出问题的那个词标红打问号。{t:"strike",para,flag:{para,text,tag}}；{t:"unstrike"} */
+function unstrike(){$$("p.struck",rbody).forEach(function(p){p.classList.remove("struck");});$$("mark.qflag",rbody).forEach(function(m){m.replaceWith(document.createTextNode(m.textContent));});}
+H.strike=function(s){var pe=$('p[data-p="'+s.para+'"]',rbody);if(pe)pe.classList.add("struck");if(isNarrow())openReader();
+  if(s.flag){var fp=$('p[data-p="'+s.flag.para+'"]',rbody);if(fp){var walk=document.createTreeWalker(fp,NodeFilter.SHOW_TEXT),n;while((n=walk.nextNode())){var i=n.nodeValue.indexOf(s.flag.text);if(i>=0){var r=document.createRange();r.setStart(n,i);r.setEnd(n,i+s.flag.text.length);var m=el("mark",{class:"qflag","data-tag":s.flag.tag||"？"});r.surroundContents(m);m.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});break;}}}}
+  else if(pe)pe.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});
+  return Promise.resolve();};
+H.unstrike=function(){unstrike();return Promise.resolve();};
+
+/* 换词试验：在任务区显示换过词的句子，换上的词标红。{t:"swap",text,marks:[...],label} */
+H.swap=function(s){clearTask();var bq=el("blockquote",{class:"quote swap"});var t=fill(s.text),parts=[t];(s.marks||[]).forEach(function(m){var out=[];parts.forEach(function(x){if(typeof x!=="string"){out.push(x);return;}var seg=x.split(m);seg.forEach(function(y,k){if(k)out.push({m:m});out.push(y);});});parts=out;});
+  parts.forEach(function(x){bq.append(typeof x==="string"?document.createTextNode(x):el("mark",{class:"swapw",text:x.m}));});
+  task.append(el("div",{class:"swaptag",text:s.label||"换一换"}),bq);return Promise.resolve();};
+
+/* 五页日历条：做完一处盖一枚心情章、写上比喻；最后变成结构图。{t:"cal5",op:"show"|"stamp"|"map",page,mood,fig}  页上的内容存在 S.data.d3.cal */
+function cal5El(){var c=$("#cal5");if(!c){c=el("div",{class:"cal5",id:"cal5"});task.parentNode.insertBefore(c,task);}return c;}
+function paintCal5(){var c=cal5El(),st=get("d3.cal")||{},P=L.cal5||{pages:[]};c.innerHTML="";
+  if(st.map&&P.map){var ol=el("ol",{class:"c5map"});P.map.forEach(function(m){ol.append(el("li",{class:m.k?"k-"+m.k:""},[el("b",{text:m.t}),el("span",{text:m.s})]));});c.append(el("div",{class:"c5h",text:"全文结构"}),ol);return;}
+  var row=el("div",{class:"c5row"});P.pages.forEach(function(pg,i){var d=st[i+1];row.append(el("div",{class:"c5p"+(d?" on":"")},[el("small",{text:pg.label}),el("b",{class:"c5m",text:d?d.mood:"？"}),el("span",{class:"c5f",text:d?d.fig:""})]));});c.append(row);}
+H.cal5=function(s){var st=get("d3.cal")||{};if(s.op==="stamp"){st[s.page]={mood:s.mood,fig:s.fig||""};set("d3.cal",st);commit();SOUND.sfx("ok");}else if(s.op==="map"){st.map=1;set("d3.cal",st);commit();}else if(s.op==="hide"){var c=$("#cal5");if(c)c.remove();return Promise.resolve();}paintCal5();return Promise.resolve();};
+
+/* 句框写作：几个空连成一句话。{t:"frame",key,q,example,parts:[{label,ph,min}],nudge:{field,re,text,who},replies:[{field,re,text,who}],button,obs} */
+H.frame=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.q)task.append(q(s.q));if(s.example)task.append(el("div",{class:"banner",html:fill(s.example)}));
+  var old=get(s.key)||{},ins=[];s.parts.forEach(function(pt,i){var inp=el("input",{type:"text",id:"in-"+s.key.replace(/\./g,"-")+"-"+i,placeholder:fill(pt.ph||""),autocomplete:"off"});inp.value=old["p"+i]||"";ins.push(inp);task.append(el("label",{class:"fr"},[el("span",{class:"frl",text:fill(pt.label)}),inp]));});
+  var b=btn(s.button||"写好了");task.append(el("div",{class:"row"},[b]));ins[0].focus();var nudged=false;
+  b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);var v={};for(var i=0;i<ins.length;i++){var x=ins[i].value.trim();if(x.replace(/[，。！？、\s]/g,"").length<(s.parts[i].min||1)){ins[i].focus();sayQ(s.parts[i].short||"这一空再多写几个字。",coach(),tok);return;}v["p"+i]=x;}
+    var nd=s.nudge;if(nd&&!nudged&&!new RegExp(nd.re).test(v["p"+nd.field])){nudged=true;logStep(s.obs,{miss:"nudge"});sayQ(fill(nd.text),nd.who||lead(),tok);return;}
+    var whole=s.parts.map(function(pt,i){var t=v["p"+i].replace(/[，,。.！!？?；;]+$/,"");return fill(pt.label).replace(/[:：]\s*$/,"：")+t;}).join("。")+"。";v.text=whole;set(s.key,v);logStep(s.obs,{try:1,answer:whole});commit();res(v);});})
+  .then(function(v){logMe(v.text);var rs=s.replies||[];for(var i=0;i<rs.length;i++){var r=rs[i];if(!r.re||new RegExp(r.re).test(v["p"+(r.field||0)]))return line(fill(r.text),r.who||s.who,tok);}});};
+
 function runSteps(steps,tok){return steps.reduce(function(p,s,i){return p.then(function(){if(tok!==RUN.token)throw CANCEL;var h=H[s.t];if(!h)throw new Error("未知步骤类型："+s.t);NEXT=steps[i+1]?steps[i+1].t:"end";return h(s,tok);});},Promise.resolve());}
 
 /* ================= 天、环节、老师模式 ================= */
@@ -584,9 +658,9 @@ function setTMode(on){TMODE=on;app.classList.toggle("tmode",on);$("#bTMode").set
 $("#bTMode").addEventListener("click",function(){setTMode(!TMODE);});
 bSkip.addEventListener("click",function(){var n=S.day,i=(S.beat[n]||0)+1;runFrom(n,i);});
 function startDay(n,resume){S.day=n;if(!resume)S.beat[n]=0;save();paintDays();runFrom(n,S.beat[n]||0);}
-function resetUI(){VOICE.stop();stopNarr();R.onPick=null;R.onMark=null;R.onCut=null;R.picks={};R.keys={};R.marks={};R.cuts={};setMode("none");clearTask();closePop();paintMarks();bCont.hidden=true;app.classList.remove("hush");bChat.disabled=false;TALK=false;}
+function resetUI(){unstrike();var c5=$("#cal5");if(c5)c5.remove();VOICE.stop();stopNarr();R.onPick=null;R.onMark=null;R.onCut=null;R.picks={};R.keys={};R.marks={};R.cuts={};setMode("none");clearTask();closePop();paintMarks();bCont.hidden=true;app.classList.remove("hush");bChat.disabled=false;TALK=false;}
 function runFrom(n,b){RUN.token++;var tok=RUN.token;resetUI();
-  var beats=DAYS[n-1].beats;(function loop(i){if(tok!==RUN.token)return;if(i>=beats.length){S.done[n]=1;S.beat[n]=beats.length;commit();paintDays();paintStages(n,beats.length);endOfDay(n,tok);return;}S.beat[n]=i;save();paintStages(n,i);var bt=beats[i];SOUND.mood(bt.mood||(L.sound&&L.sound.mood)||"calm");
+  var beats=DAYS[n-1].beats;(function loop(i){if(tok!==RUN.token)return;if(i>=beats.length){S.done[n]=1;S.beat[n]=beats.length;commit();paintDays();paintStages(n,beats.length);endOfDay(n,tok);return;}S.beat[n]=i;save();paintStages(n,i);clearTask();bCont.hidden=true;var bt=beats[i];SOUND.mood(bt.mood||(L.sound&&L.sound.mood)||"calm");
     if(bt.skipIf&&get(bt.skipIf)&&!TMODE){loop(i+1);return;}
     runSteps(bt.steps,tok).then(function(){loop(i+1);}).catch(function(e){if(e!==CANCEL)console.error(e);});})(b);}
 function endOfDay(n,tok){clearTask();var d=DAYS[n-1],last=n===DAYS.length;$("#stTitle").textContent=last?"读完了":"今天读完了";

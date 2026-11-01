@@ -341,3 +341,38 @@ body.figs-on .actors .actor.sprite{display:none}
 @media (max-width:860px){.circ{width:56px;height:56px}.actor.sprite .nm{display:none}}
 
 .topq{margin-top:12px}.topq .topl{display:block;font-size:.82rem;color:var(--accent);font-weight:700;letter-spacing:.06em;margin:0 0 4px 4px}
+
+/* ===== 第3天新增：单选、找字、删除试验、换词、五页日历条、句框 ===== */
+.mc{display:flex;flex-direction:column;gap:8px}
+.mco{text-align:left;border:1.5px solid var(--line);background:var(--page);border-radius:12px;padding:10px 14px;font:inherit;line-height:1.6;cursor:pointer;transition:transform .15s,background .2s,border-color .2s}
+.mco:hover:not(:disabled){border-color:var(--cool);transform:translateX(3px)}
+.mco.ok{background:var(--cool);border-color:var(--cool);color:var(--page)}
+.mco.no{opacity:.45;text-decoration:line-through;text-decoration-color:rgba(160,40,30,.5)}
+.mco.half{border-color:#c99a3a;background:#fbf1dc;opacity:.8}
+.mco:disabled{cursor:default}
+.wcount{font-weight:700;color:var(--accent);font-size:1.05rem}
+mark.wd{background:none;color:var(--accent);font-weight:900;border-bottom:2px solid var(--accent);animation:wdpop .5s ease-out}
+@keyframes wdpop{0%{background:rgba(200,40,40,.25)}100%{background:none}}
+#rbody p{transition:opacity .5s}
+#rbody p.struck{opacity:.28;text-decoration:line-through;text-decoration-color:rgba(160,40,30,.55)}
+mark.qflag{background:rgba(220,60,40,.18);color:#b2281c;font-weight:900;border-radius:4px;padding:0 2px;position:relative;animation:qpulse 1.2s ease-in-out infinite}
+mark.qflag::after{content:attr(data-tag);position:absolute;left:100%;top:-1.4em;white-space:nowrap;font-size:.8rem;background:#b2281c;color:#fff;border-radius:8px;padding:0 6px;margin-left:2px}
+@keyframes qpulse{50%{background:rgba(220,60,40,.35)}}
+.swaptag{display:inline-block;font-size:.8rem;font-weight:700;color:var(--page);background:var(--accent);border-radius:999px;padding:1px 10px;margin-bottom:-4px}
+mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed #b2281c}
+.cal5{margin:0 0 10px}
+.c5row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.c5p{position:relative;background:var(--page);border:1px solid var(--line);border-top:6px solid #b8322a;border-radius:6px 6px 4px 4px;padding:6px 6px 8px;text-align:center;min-height:86px;box-shadow:0 3px 8px -6px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:2px;align-items:center}
+.c5p small{color:var(--muted);font-size:.72rem}
+.c5p .c5m{font-family:var(--f-text);font-size:1.15rem;color:var(--line);transition:color .3s}
+.c5p.on .c5m{color:#b8322a;animation:stamp .45s cubic-bezier(.2,1.6,.4,1)}
+.c5p .c5f{font-size:.75rem;line-height:1.35;color:var(--ink)}
+@keyframes stamp{0%{transform:scale(2.2) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}
+.c5h{font-weight:700;margin-bottom:4px}
+.c5map{margin:0;padding-left:1.6em;display:flex;flex-direction:column;gap:3px;font-size:.92rem}
+.c5map li b{margin-right:.6em}.c5map li span{color:var(--muted)}
+.c5map li.k-q,.c5map li.k-a{color:var(--accent)}
+.fr{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fr .frl{font-weight:700;white-space:nowrap}
+.fr input{flex:1;min-width:12em}
+@media (max-width:700px){.c5row{grid-template-columns:repeat(5,minmax(52px,1fr));overflow-x:auto}.c5p .c5f{display:none}}
