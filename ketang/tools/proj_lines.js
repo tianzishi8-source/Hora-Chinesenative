@@ -24,5 +24,10 @@ L.segments.forEach(sg => sg.steps.forEach(st => {
   if (st.say) add(st.who, voiceText(st));
   if (st.read) st.read.paras.forEach(pk => L.paras[pk].forEach(s => add("fan", voiceText({ say: s }))));
   if (st.respond) st.respond.opts.forEach(o => add(o.who, voiceText(o)));
+  // 屏幕提示的朗读（和 proj.js 的 promptOf 一致）
+  if (!st.say && !st.quiet) {
+    if (st.respond) add(st.respond.by || "qx", voiceText({ say: st.respond.ask || "被点到的同学，请读一读你写的。" }));
+    else if (st.ask || st.note) add(st.by || "qx", voiceText({ say: st.ask || st.note }));
+  }
 }));
 process.stdout.write(JSON.stringify(out, null, 1));

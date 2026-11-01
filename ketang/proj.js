@@ -475,8 +475,8 @@
   function setTip(s) { tipEl.textContent = s || ""; }
   function showLine(who, text, isNote) {
     if (typing) { clearInterval(typing); typing = null; }
-    whoEl.className = "who w-" + (isNote ? "note" : who || "none");
-    whoEl.textContent = isNote ? "请大家" : (CAST[who] ? CAST[who].name : "");
+    whoEl.className = "who w-" + (CAST[who] ? who : isNote ? "note" : "none");
+    whoEl.textContent = CAST[who] ? CAST[who].name : isNote ? "请大家" : "";
     txtEl.className = "txt" + (isNote ? " note" : "");
     var html = esc(text).replace(/（([^）]*)）/g, '<span class="sd">（$1）</span>');
     if (isNote) { txtEl.innerHTML = html; return; }
@@ -498,6 +498,7 @@
     if (!c) { el.hidden = true; return; }
     var k = CUE[c.k] || ["！", ""];
     el.innerHTML = '<div class="seal">' + k[0] + '</div><div class="ct"><small>' + k[1] + "</small>" + esc(c.t) + "</div>";
+    var st = STEPS[cur]; if (st && st.note) el.querySelector(".ct").insertAdjacentHTML("beforeend", '<span class="cn">' + esc(st.note) + "</span>");
     el.hidden = false; el.classList.remove("in"); void el.offsetWidth; el.classList.add("in");
     sfx("block");
   }
@@ -570,13 +571,19 @@
     $("#next").textContent = last ? "完" : "继续 ▶";
     // 步骤本身
     var run;
-    if (st.read) run = doRead(st, token);
+    var pr = promptOf(st);
+    var sayPrompt = function () {
+      spotlight(pr.who); showLine(pr.who, pr.text, true); talking(pr.who, true);
+      return say(pr.who, voiceText({ say: pr.text }), token).then(function () { if (token === TOKEN) talking(pr.who, false); });
+    };
+    if (st.read) run = (pr ? sayPrompt() : Promise.resolve()).then(function () { return token === TOKEN ? doRead(st, token) : null; });
+    else if (pr) run = sayPrompt();
     else if (st.say) { spotlight(st.who); showLine(st.who, st.say); talking(st.who, true); run = say(st.who, voiceText(st), token).then(function () { if (token === TOKEN) talking(st.who, false); }); }
     else if (st.note) { spotlight(null); showLine(null, st.note, true); run = Promise.resolve(); }
     else { spotlight(null); run = Promise.resolve(); }
     if (st.note && st.say) { /* 不会同时出现 */ }
-    if (st.timer) { if (!st.say && !st.read) showLine(null, st.note || st.timer.label, true); startTimer(st.timer, token); }
-    if (st.respond) { spotlight(null); showLine(null, "被点到的同学，请读一读你写的。", true); showRespond(st.respond, token); }
+    if (st.timer) { if (!st.say && !st.read && !pr) showLine(null, st.note || st.timer.label, true); startTimer(st.timer, token); }
+    if (st.respond) showRespond(st.respond, token);
     run.then(function () {
       if (token !== TOKEN) return;
       var stop = st.hold || st.timer || st.respond || st.btns || last;
@@ -587,6 +594,13 @@
       else $("#next").classList.add("pulse");
     });
     store.set("pos", n);
+  }
+  // 屏幕提示由伴学读出来（不用老师读）：ask 是读出来的话（不写就读 note），by 是谁读（默认清弦），quiet 不读
+  function promptOf(st) {
+    if (st.say || st.quiet) return null;
+    if (st.respond) return { who: st.respond.by || "qx", text: st.respond.ask || "被点到的同学，请读一读你写的。" };
+    var t = st.ask || st.note; if (!t) return null;
+    return { who: st.by || "qx", text: t };
   }
   function doRead(st, token) {
     var r = st.read, list = [];
