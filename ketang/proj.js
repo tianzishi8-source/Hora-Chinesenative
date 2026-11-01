@@ -322,7 +322,7 @@
           .replace(/（(\d+分[^）]*)）/g, '<span class="pt">（$1）</span>');
       };
       var block = function (lines, cls) { return '<div class="' + cls + '">' + lines.map(function (x) { if (x === "") return '<div class="gap"></div>';
-        var m = /^(原|译)：/.exec(x); return m ? '<p class="' + (m[1] === "原" ? "yw" : "yi") + '">' + MK(x.slice(2)) + "</p>" : "<p>" + MK(x) + "</p>"; }).join("") + "</div>"; };
+        var m = /^(原|译|改)：/.exec(x); return m ? '<p class="' + ({ 原: "yw", 译: "yi", 改: "gai" })[m[1]] + '">' + MK(x.slice(2)) + "</p>" : "<p>" + MK(x) + "</p>"; }).join("") + "</div>"; };
       var h = '<div class="ch">' + (v.n ? '<span class="qn">' + esc(v.n) + "</span>" : "") + '<span class="qt">' + MK(v.title || "") + "</span>" + (v.score ? '<span class="sc">' + esc(v.score) + "</span>" : "") + "</div>";
       if (v.cols) h += '<div class="cols">' + v.cols.map(function (c) { return '<div class="col ' + (c.tone || "") + '"><div class="colh">' + esc(c.h) + "</div>" + block(c.lines, "cl") + "</div>"; }).join("") + "</div>";
       if (v.q) h += block(v.q, "cq");

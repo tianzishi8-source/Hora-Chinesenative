@@ -274,8 +274,11 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .lay-exam .dlg .who{top:18px;font-size:26px;width:58px}
 .lay-exam .dlg .txt{font-size:31px;line-height:1.5}
 .lay-exam .dlg .txt.note{font-size:30px}
-.lay-exam .cue{top:878px;height:180px}
-.lay-exam .cue .ct{font-size:40px}
+.lay-exam .cue{top:866px;height:132px;padding:10px 30px 10px 22px;gap:20px}
+.lay-exam .cue .seal{width:96px;height:96px;font-size:66px}
+.lay-exam .cue .ct small{font-size:19px;margin-bottom:2px}
+.lay-exam .cue .ct .cn{font-size:21px;margin-top:2px}
+.lay-exam .cue .ct{font-size:38px;line-height:1.2}
 .lay-exam .cardpane{padding:26px 40px 22px;gap:14px}
 .lay-exam .cardpane .qn{font-size:32px}
 .lay-exam .cardpane .qt{font-size:40px}
@@ -290,3 +293,5 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .cardpane .pt{white-space:nowrap;font-size:.8em;color:var(--ink2)}
 .lay-exam .cardpane .yw::before{content:"原文　";color:var(--shi);font-weight:700;font-family:var(--f-ui);font-size:.7em;letter-spacing:.1em}
 .lay-exam .cardpane .yi::before{content:"译文　";color:var(--zhu);font-weight:700;font-family:var(--f-ui);font-size:.7em;letter-spacing:.1em}
+.lay-exam .cardpane .gai{color:var(--ink)}
+.lay-exam .cardpane .gai::before{content:"示范　";color:var(--shi);font-weight:700;font-family:var(--f-ui);font-size:.7em;letter-spacing:.1em}
