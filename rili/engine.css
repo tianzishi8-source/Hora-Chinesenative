@@ -376,3 +376,13 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 .fr .frl{font-weight:700;white-space:nowrap}
 .fr input{flex:1;min-width:12em}
 @media (max-width:700px){.c5row{grid-template-columns:repeat(5,minmax(52px,1fr));overflow-x:auto}.c5p .c5f{display:none}}
+/* 讲到第几段：那几段加框，其余变淡 */
+.rbody p{transition:opacity .35s,box-shadow .35s,background .35s}
+.rbody.pmask p{opacity:.38}
+.rbody.pmask p.pfocus{opacity:1;background:color-mix(in srgb,#fff8e6 70%,transparent);box-shadow:0 0 0 2px #b8432f,0 8px 22px -10px rgba(120,40,20,.45);border-radius:10px;position:relative}
+/* 要学生回答：任务卡凸显 */
+#task.ask{position:relative;border-color:#b8432f!important;box-shadow:0 0 0 3px rgba(184,67,47,.85),0 0 0 9px rgba(184,67,47,.14),0 14px 34px -14px rgba(120,40,20,.55)!important;background:#fffaf0!important;animation:askin .9s ease-out 1}
+#task.ask::before{content:"请你回答";position:absolute;top:-13px;left:18px;background:#b8432f;color:#fff;font:700 13px/1 'Noto Sans SC',system-ui,sans-serif;padding:6px 12px;border-radius:999px;letter-spacing:.12em;z-index:2}
+#task.ask .task-q{color:#8e2f1f}
+@keyframes askin{0%{transform:scale(.985);box-shadow:0 0 0 0 rgba(184,67,47,.6)}60%{transform:scale(1.008)}100%{transform:none}}
+#task.ask{margin-top:14px}

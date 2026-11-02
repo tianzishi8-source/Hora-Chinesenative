@@ -131,7 +131,7 @@ function renderText(){rbody.innerHTML="";
     if(pi<PARAS.length-1){var gp=el("span",{class:"gap","data-after":String(pi)});gp.append(el("button",{type:"button","aria-label":"在第"+(pi+1)+"段后面分层"},["在这里分层"]));rbody.append(gp);}});
   if(L.source)rbody.append(el("p",{class:"src",text:L.source}));paintMarks();}
 function paintMarks(){$$(".s",rbody).forEach(function(s){var id=s.getAttribute("data-id");s.classList.toggle("hl-mark",!!R.marks[id]);s.classList.toggle("hl-pick",!!R.picks[id]);s.classList.toggle("hl-key",!!R.keys[id]);});$$(".gap",rbody).forEach(function(g){g.classList.toggle("on",!!R.cuts[g.getAttribute("data-after")]);});}
-function setMode(m,label){R.mode=m;reader.classList.toggle("picking",m==="pick"||m==="mark");reader.classList.toggle("cutting",m==="cut");rmode.hidden=!label;rmode.className="rmode"+(m==="mark"?" mark":m==="cut"?" cut":"");rmode.textContent=label||"";if(label&&isNarrow())openReader();}
+function setMode(m,label){R.mode=m;if(m==="pick"||m==="mark")unmaskParas();reader.classList.toggle("picking",m==="pick"||m==="mark");reader.classList.toggle("cutting",m==="cut");rmode.hidden=!label;rmode.className="rmode"+(m==="mark"?" mark":m==="cut"?" cut":"");rmode.textContent=label||"";if(label&&isNarrow())openReader();}
 function flashSent(id){var s=$('.s[data-id="'+id+'"]',rbody);if(!s)return;s.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});s.classList.remove("flash");void s.offsetWidth;s.classList.add("flash");}
 var gpop=null;function closePop(){if(gpop){gpop.remove();gpop=null;}}
 rbody.addEventListener("click",function(e){
@@ -310,8 +310,8 @@ var VOICE=(function(){var tts=!!(window.speechSynthesis&&window.SpeechSynthesisU
   function device(w,text){if(!tts)return;load();var v=devPick(w);var t=String(text);FIX.forEach(function(f){t=t.replace(f[0],f[1]);});var u=new SpeechSynthesisUtterance(t),c=PEOPLE[w].voice||{};u.lang="zh-CN";if(v){u.voice=v;u.lang=v.lang;}u.pitch=c.pitch||1;u.rate=(c.rate||1)*V.rate;var my=seq;u.onstart=function(){SOUND.duck(true);};u.onend=u.onerror=function(){if(my===seq)SOUND.duck(false);};setTimeout(function(){if(my===seq)try{speechSynthesis.speak(u);}catch(e){}},60);}
   function clip(w,text){var c=choice(w);if(!c)return null;var k=vhash(w,c.id,text);return CL.keys[k]?k:null;}
   function play(key,w,text,force){var my=seq,a=new Audio((CL.dir||"voice/")+key+".mp3");a.playbackRate=V.rate;try{a.preservesPitch=true;}catch(e){}cur=a;SOUND.duck(true);
-    a.onended=function(){if(cur===a){cur=null;SOUND.duck(false);}};a.onerror=function(){if(my===seq){cur=null;SOUND.duck(false);if(V.fb||force)device(w,text);}};
-    var p=a.play();if(p&&p.catch)p.catch(function(){if(my===seq){SOUND.duck(false);}});}
+    a.onended=function(){a._done=true;if(cur===a){cur=null;SOUND.duck(false);}};a.onerror=function(){a._done=true;if(my===seq){cur=null;SOUND.duck(false);if(V.fb||force)device(w,text);}};
+    var p=a.play();if(p&&p.catch)p.catch(function(){a._done=true;if(my===seq){SOUND.duck(false);}});}
   function say(w,text,kind,force){stop();if(!text||!(V.on||force))return;if(w==="me"&&!V.me&&!force)return;
     if(kind==="ai"){if(V.ai||force)device(w,text);return;}
     var k=clip(w,text)||(TPL[text]?clip(w,voiceText(TPL[text])):null);if(k){play(k,w,text,force);return;}(window.HORA.voiceMiss=window.HORA.voiceMiss||[]).push(w+"："+text);if(V.fb||force)device(w,text);}
@@ -341,7 +341,10 @@ var VOICE=(function(){var tts=!!(window.speechSynthesis&&window.SpeechSynthesisU
     $$("[data-dt]",panelEl).forEach(function(b){b.addEventListener("click",function(){stop();device(b.getAttribute("data-dt"),"这是设备自带的语音，用来读带名字的话和 AI 的回复。");});});}
   function paintBtn(){if(btnV){btnV.setAttribute("aria-pressed",String(!!V.on));btnV.textContent=V.on?"配音":"配音（关）";}}
   if(btnV){paintBtn();btnV.addEventListener("click",openPanel);}
-  return{say:say,stop:stop,busy:function(){return !!(cur&&!cur.paused&&!cur.ended)||(tts&&speechSynthesis.speaking);}};})();
+  var WARM={};function warm(list){var ws=Object.keys(PEOPLE);list.forEach(function(t){if(!t||typeof t!=="string"||t.length<2)return;var tt=fill(t);ws.forEach(function(w){var k=clip(w,tt)||(TPL[tt]?clip(w,voiceText(TPL[tt])):null);if(k&&!WARM[k]){WARM[k]=1;try{fetch((CL.dir||"voice/")+k+".mp3").catch(function(){});}catch(e){}}});});}
+  /* 等这句录音放完（还没开始播的也算在等）；最长 25 秒 */
+  function wait(){var t0=Date.now();return new Promise(function(res){(function chk(){var b=(cur&&!cur.ended&&!cur._done)||(tts&&(speechSynthesis.speaking||speechSynthesis.pending));if(!b||Date.now()-t0>25000)return res();setTimeout(chk,120);})();});}
+  return{say:say,stop:stop,wait:wait,warm:warm,dur:function(){return cur&&isFinite(cur.duration)&&cur.duration>0?cur.duration/(cur.playbackRate||1):0;},busy:function(){return !!(cur&&!cur.paused&&!cur.ended)||(tts&&speechSynthesis.speaking);}};})();
 
 /* ================= 对话框 ================= */
 var RUN={token:0};var CANCEL={};
@@ -350,18 +353,23 @@ var SAYSEQ=0;
 /* 新的一句开始，上一句还没打完的字就停下（不然两句会在同一个框里来回闪） */
 function say(txt,who,tok){who=who||lead();return new Promise(function(res,rej){if(tok!==RUN.token)return rej(CANCEL);var my=++SAYSEQ;
   SPEAKER=who;NOD[who]=performance.now()/1000;dWho.textContent=nameOf(who);dWho.style.background=inkOf(who);DLOG.push({who:who,text:txt});VOICE.say(who,txt);
-  if(reduce){dTxt.textContent=txt;return res();}
+  paraMention(txt);if(reduce){dTxt.textContent=txt;return VOICE.wait().then(function(){res();});}
   var i=0,skip=false;TALK=true;var k=function(){skip=true;};dTxt.addEventListener("click",k,{once:true});
-  (function step(){if(tok!==RUN.token){TALK=false;return rej(CANCEL);}if(my!==SAYSEQ){dTxt.removeEventListener("click",k);return res();}if(skip||i>=txt.length){dTxt.textContent=txt;dTxt.removeEventListener("click",k);TALK=false;return res();}i++;dTxt.textContent=txt.slice(0,i);setTimeout(step,/[。！？]/.test(txt[i-1])?320:/[，；：、]/.test(txt[i-1])?200:62);})();});}
+  (function step(){if(tok!==RUN.token){TALK=false;return rej(CANCEL);}if(my!==SAYSEQ){dTxt.removeEventListener("click",k);return res();}if(skip||i>=txt.length){dTxt.textContent=txt;dTxt.removeEventListener("click",k);if(skip){TALK=false;return res();}var k2=function(){skip=true;};dTxt.addEventListener("click",k2,{once:true});var wv=VOICE.wait();var gone=setInterval(function(){if(skip||my!==SAYSEQ||tok!==RUN.token){clearInterval(gone);if(skip&&my===SAYSEQ)VOICE.stop();fin();}},100);function fin(){if(fin.d)return;fin.d=1;clearInterval(gone);dTxt.removeEventListener("click",k2);TALK=false;if(tok!==RUN.token)return rej(CANCEL);res();}wv.then(fin);return;}i++;dTxt.textContent=txt.slice(0,i);var vd=VOICE.dur();setTimeout(step,vd?Math.max(30,vd*1000*.86/txt.length):/[。！？]/.test(txt[i-1])?320:/[，；：、]/.test(txt[i-1])?200:62);})();});}
+/* 讲到“第几段”：原文里那几段加框，其余变淡；连着两句不再提段落就撤掉 */
+var PMASK=0;function paraNums(t){var out=[];String(t).replace(/第([0-9０-９、和到至\-–~]+)段/g,function(m,g){var a=g.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-65248);});var r=a.match(/^(\d+)[到至\-–~](\d+)$/);if(r){for(var x=+r[1];x<=+r[2]&&x-r[1]<20;x++)out.push(x);}else a.split(/[、和]/).forEach(function(x){if(/^\d+$/.test(x))out.push(+x);});});return out;}
+function unmaskParas(){PMASK=0;rbody.classList.remove("pmask");$$("p.pfocus",rbody).forEach(function(p){p.classList.remove("pfocus");});}
+function maskParas(ns){var ps=ns.map(function(n){return $('p[data-p="'+(n-1)+'"]',rbody);}).filter(Boolean);if(!ps.length)return false;$$("p.pfocus",rbody).forEach(function(p){p.classList.remove("pfocus");});ps.forEach(function(p){p.classList.add("pfocus");});rbody.classList.add("pmask");PMASK=1;if(!rbody.querySelector("mark.qflag,mark.wd.hot"))ps[0].scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});return true;}
+function paraMention(t){if(R.mode==="pick"||R.mode==="mark")return;var ns=paraNums(t);if(ns.length&&maskParas(ns))return;if(PMASK&&++PMASK>2)unmaskParas();}
 function sayQ(txt,who,tok){say(txt,who,tok).catch(function(){});}
 /* 一段话说完，等学生点“继续”再往下（下一步本来就是“继续”按钮时不重复） */
 var NEXT="end";
 function line(txt,who,tok){return say(txt,who,tok).then(function(){if(NEXT==="next")return;return next("继续",tok,true);});}
 function logMe(txt){DLOG.push({who:"me",text:txt});}
-function clearTask(){task.innerHTML="";task.classList.remove("plain");}
+function clearTask(){task.innerHTML="";task.classList.remove("plain","ask");}
 function btn(label){return el("button",{class:"btn",type:"button",text:label});}
 var contKey=null;
-function next(label,tok,keep){return new Promise(function(res,rej){bCont.hidden=false;bCont.textContent=(label||"继续")+" ▸";bCont.focus({preventScroll:true});
+function next(label,tok,keep){return new Promise(function(res,rej){task.classList.remove("ask");bCont.hidden=false;bCont.textContent=(label||"继续")+" ▸";bCont.focus({preventScroll:true});
   function go(){if(tok!==RUN.token)return rej(CANCEL);SOUND.sfx("page");VOICE.stop();bCont.hidden=true;bCont.onclick=null;removeEventListener("keydown",contKey);contKey=null;if(!keep)clearTask();res();}
   if(contKey)removeEventListener("keydown",contKey);
   contKey=function(e){if((e.key==="Enter"||e.key===" ")&&!/TEXTAREA|INPUT|SELECT|BUTTON/.test(document.activeElement.tagName)){e.preventDefault();go();}};
@@ -375,7 +383,7 @@ function pickMulti(label,tok,preset,okLabel){return new Promise(function(res,rej
 function sleepTick(ms){return new Promise(function(r){setTimeout(r,reduce?10:ms);});}
 function textBox(id,rows,ph,val){var ta=el("textarea",{id:id,rows:String(rows||3),placeholder:ph||""});ta.value=val||"";return ta;}
 function inPara(id,paras){return paras.indexOf(SENT[id].p)>=0;}
-function q(text){return el("div",{class:"task-q",text:fill(text)});}
+function q(text){var t=fill(text);setTimeout(function(){task.classList.add("ask");var ns=paraNums(t);if(ns.length)maskParas(ns);try{task.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}},0);return el("div",{class:"task-q",text:t});}
 
 /* ================= 步骤类型 ================= */
 var H={};
@@ -584,11 +592,11 @@ H.openBook=function(){openBook();return Promise.resolve();};
    {t:"mc",who,ask,q,key,options:[{text,ok,reply,who,value}],obs,feedbackWho,wait} */
 H.mc=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.ask?say(fill(variant(s,"ask")),s.who,tok):Promise.resolve();
   return pre.then(function(){return new Promise(function(res,rej){clearTask();if(s.q)task.append(q(s.q));var box=el("div",{class:"mc"});
-    s.options.forEach(function(o,i){var b=el("button",{class:"mco",type:"button",text:fill(o.text)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
+    var ord=s.options.map(function(o,i){return i;});if(!s.stance&&!s.fixed)for(var z=ord.length-1;z>0;z--){var r=Math.floor(Math.random()*(z+1)),tz=ord[z];ord[z]=ord[r];ord[r]=tz;}ord.forEach(function(i){var o=s.options[i];var b=el("button",{class:"mco",type:"button",text:fill(o.text)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
         logStep(s.obs,{try:1});var ok=s.stance||o.ok===true;
-        if(ok){$$(".mco",box).forEach(function(x){x.disabled=true;});b.classList.add("ok");SOUND.sfx(s.stance?"page":"ok");if(s.key)set(s.key,o.value!=null?o.value:i);logStep(s.obs,{answer:fill(o.text)});logMe(fill(o.text));commit();
+        if(ok){task.classList.remove("ask");$$(".mco",box).forEach(function(x){x.disabled=true;});b.classList.add("ok");SOUND.sfx(s.stance?"page":"ok");if(s.key)set(s.key,o.value!=null?o.value:i);logStep(s.obs,{answer:fill(o.text)});logMe(fill(o.text));commit();
           var r=o.reply?say(fill(o.reply),o.who||fbWho,tok):Promise.resolve();r.then(function(){res();},function(){});}
-        else{b.classList.add(o.ok==="half"?"half":"no");b.disabled=true;SOUND.sfx("no");logStep(s.obs,{miss:"o"+i});if(o.reply)sayQ(fill(o.reply),o.who||fbWho,tok);}});box.append(b);});
+        else{b.classList.add(o.ok==="half"?"half":"no");b.disabled=true;SOUND.sfx("no");if(s.wrongFlag)addFlag(s.wrongFlag);logStep(s.obs,{miss:"o"+i});if(o.reply)sayQ(fill(o.reply),o.who||fbWho,tok);}});box.append(b);});
     task.append(box);});}).then(function(){if(s.wait===false)return;return next(s.next||"继续",tok,!!s.keep);});};
 
 /* 在原文里找一个字：每段算一处，找齐为止。{t:"findWord",who,ask,task,word,paras:[段号(0起)],misses:[{paras,text}],other,hint,hintAfter,found,doneText,key,obs} */
@@ -617,9 +625,9 @@ H.focus=function(s){if(s.clear!==false)R.keys={};PSENT[s.para].forEach(function(
 
 /* 删除试验：把一段划掉、淡出，再把出问题的那个词标红打问号。{t:"strike",para,flag:{para,text,tag}}；{t:"unstrike"} */
 function unstrike(){$$("p.struck",rbody).forEach(function(p){p.classList.remove("struck");});$$("mark.qflag",rbody).forEach(function(m){m.replaceWith(document.createTextNode(m.textContent));});}
+function addFlag(f){var fp=$('p[data-p="'+f.para+'"]',rbody);if(!fp||fp.querySelector("mark.qflag"))return;var walk=document.createTreeWalker(fp,NodeFilter.SHOW_TEXT),n;while((n=walk.nextNode())){var i=n.nodeValue.indexOf(f.text);if(i>=0){var r=document.createRange();r.setStart(n,i);r.setEnd(n,i+f.text.length);var m=el("mark",{class:"qflag","data-tag":f.tag||"？"});r.surroundContents(m);m.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});break;}}}
 H.strike=function(s){var pe=$('p[data-p="'+s.para+'"]',rbody);if(pe)pe.classList.add("struck");if(isNarrow())openReader();
-  if(s.flag){var fp=$('p[data-p="'+s.flag.para+'"]',rbody);if(fp){var walk=document.createTreeWalker(fp,NodeFilter.SHOW_TEXT),n;while((n=walk.nextNode())){var i=n.nodeValue.indexOf(s.flag.text);if(i>=0){var r=document.createRange();r.setStart(n,i);r.setEnd(n,i+s.flag.text.length);var m=el("mark",{class:"qflag","data-tag":s.flag.tag||"？"});r.surroundContents(m);m.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});break;}}}}
-  else if(pe)pe.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});
+  if(s.flag)addFlag(s.flag);else if(pe)pe.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});
   return Promise.resolve();};
 H.unstrike=function(){unstrike();return Promise.resolve();};
 
@@ -658,13 +666,13 @@ function setTMode(on){TMODE=on;app.classList.toggle("tmode",on);$("#bTMode").set
 $("#bTMode").addEventListener("click",function(){setTMode(!TMODE);});
 bSkip.addEventListener("click",function(){var n=S.day,i=(S.beat[n]||0)+1;runFrom(n,i);});
 function startDay(n,resume){S.day=n;if(!resume)S.beat[n]=0;save();paintDays();runFrom(n,S.beat[n]||0);}
-function resetUI(){unstrike();var c5=$("#cal5");if(c5)c5.remove();VOICE.stop();stopNarr();R.onPick=null;R.onMark=null;R.onCut=null;R.picks={};R.keys={};R.marks={};R.cuts={};setMode("none");clearTask();closePop();paintMarks();bCont.hidden=true;app.classList.remove("hush");bChat.disabled=false;TALK=false;}
+function resetUI(){unstrike();unmaskParas();var c5=$("#cal5");if(c5)c5.remove();VOICE.stop();stopNarr();R.onPick=null;R.onMark=null;R.onCut=null;R.picks={};R.keys={};R.marks={};R.cuts={};setMode("none");clearTask();closePop();paintMarks();bCont.hidden=true;app.classList.remove("hush");bChat.disabled=false;TALK=false;}
 function runFrom(n,b){RUN.token++;var tok=RUN.token;resetUI();
-  var beats=DAYS[n-1].beats;(function loop(i){if(tok!==RUN.token)return;if(i>=beats.length){S.done[n]=1;S.beat[n]=beats.length;commit();paintDays();paintStages(n,beats.length);endOfDay(n,tok);return;}S.beat[n]=i;save();paintStages(n,i);clearTask();bCont.hidden=true;var bt=beats[i];SOUND.mood(bt.mood||(L.sound&&L.sound.mood)||"calm");
+  var beats=DAYS[n-1].beats;(function loop(i){if(tok!==RUN.token)return;if(i>=beats.length){S.done[n]=1;S.beat[n]=beats.length;commit();paintDays();paintStages(n,beats.length);endOfDay(n,tok);return;}S.beat[n]=i;save();paintStages(n,i);clearTask();bCont.hidden=true;unmaskParas();var bt=beats[i];try{var strs=[];JSON.stringify(bt.steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});if(beats[i+1])JSON.stringify(beats[i+1].steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});VOICE.warm(strs);}catch(e){}SOUND.mood(bt.mood||(L.sound&&L.sound.mood)||"calm");
     if(bt.skipIf&&get(bt.skipIf)&&!TMODE){loop(i+1);return;}
     runSteps(bt.steps,tok).then(function(){loop(i+1);}).catch(function(e){if(e!==CANCEL)console.error(e);});})(b);}
 function endOfDay(n,tok){clearTask();var d=DAYS[n-1],last=n===DAYS.length;$("#stTitle").textContent=last?"读完了":"今天读完了";
-  say(fill(d.end||(last?"读完了。":"第"+n+"天读完了。下次见。")),d.endWho||lead(),tok).then(function(){if(d.after)task.append(el("div",{class:"banner",text:d.after}));var r=el("div",{class:"row"});var b1=btn("打开"+L.notebook.button);b1.addEventListener("click",openBook);r.append(b1);
+  say(fill(d.end||(last?"读完了。":"第"+n+"天读完了。下次见。")),d.endWho||lead(),tok).then(function(){if(d.after)task.append(el("div",{class:"banner",html:fill(d.after)}));var r=el("div",{class:"row"});var b1=btn("打开"+L.notebook.button);b1.addEventListener("click",openBook);r.append(b1);
     if(!last){var b2=el("button",{class:"ghost",type:"button",text:"去第"+(n+1)+"天"});b2.addEventListener("click",function(){startDay(n+1,false);});r.append(b2);}
     var b3=el("button",{class:"ghost",type:"button",text:"这一天从头再来"});b3.addEventListener("click",function(){startDay(n,false);});r.append(b3);task.append(r);}).catch(function(){});}
 
