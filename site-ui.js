@@ -29,8 +29,31 @@
     function paint() { b.textContent = fsEl() ? "退出全屏" : "全屏"; }
     D.addEventListener("fullscreenchange", paint); D.addEventListener("webkitfullscreenchange", paint);
     /* 换页后浏览器会退出全屏；学生第一次点页面时自动回到全屏（浏览器规定必须由点击触发） */
-    D.addEventListener("pointerup", function () { if (want() && !fsEl()) goFs(); }, true);
+    /* 只在打开新页面后的第一次点击时回到全屏。之后如果全屏被系统退出（比如 iPad 弹出键盘），不再自动反复进出，学生要全屏就点“全屏”。 */
+    var reFs = false;
+    D.addEventListener("pointerup", function (e) {
+      if (reFs) return; reFs = true;
+      var t = e.target; if (t && (t.closest && t.closest("input,textarea,select,[contenteditable]"))) return;
+      if (want() && !fsEl()) goFs();
+    }, true);
     (D.body ? Promise.resolve() : new Promise(function (r) { D.addEventListener("DOMContentLoaded", r); })).then(function () { D.body.appendChild(b); });
+  }
+
+  /* ---------- 课文页：防止误划“返回” ----------
+     iPad 上从屏幕左边缘往右一划，浏览器会退回首页（开场动画），学生就得从头选。
+     课文页（引用 ../site-ui.js 的页面）第一次点击后放一个“挡板”；误划返回时留在本页，并提示用页面上的按钮。 */
+  var me = D.currentScript && D.currentScript.getAttribute("src") || "";
+  if (/^\.\.\//.test(me) && window.history && history.pushState) {
+    var armed = false, tip = null, tipT = 0;
+    function arm() { if (armed) return; armed = true; try { history.pushState({ xgStay: 1 }, "", location.href); } catch (e) {} }
+    D.addEventListener("pointerup", arm, true);
+    addEventListener("popstate", function () {
+      if (!armed) return;
+      try { history.pushState({ xgStay: 1 }, "", location.href); } catch (e) {}
+      if (!tip) { tip = D.createElement("div"); tip.style.cssText = "position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:200;max-width:86vw;padding:10px 16px;border-radius:12px;background:rgba(21,35,42,.9);color:#f3ecdc;font:600 15px/1.5 'Noto Sans SC',system-ui,sans-serif;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);text-align:center"; D.body.appendChild(tip); }
+      tip.textContent = "刚才往回划了一下，已经帮你留在这一页。要换课文，请点页面上方的“课文地图”。"; tip.hidden = false;
+      clearTimeout(tipT); tipT = setTimeout(function () { tip.hidden = true; }, 3500);
+    });
   }
 
   /* ---------- 往下滑提示 ---------- */

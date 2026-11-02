@@ -478,6 +478,8 @@
   if (me && location.hash === "#wardrobe") showWardrobe(1);
   else if ((me || teacher) && /^#(album|map)$/.test(location.hash) && g0 && byGrade(g0).length) showAlbum(g0);
   else if (location.hash === "#login") { me = null; showLogin("请重新签到：班级码、名字、4 位数字都照老师发给你的写。"); }
+  else if (me && !location.hash && g0 && byGrade(g0).length) showAlbum(g0);   /* 已签到的学生回到首页：直接回到上次的册页，不再从开场重新选 */
+  else if (me && !location.hash) showShelf();
   else showOpen();
   try { document.fonts.load('150px "Ma Shan Zheng"', "弦歌"); } catch (e) {}
 })();
