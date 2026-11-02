@@ -392,3 +392,15 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 
 #rbody.pmask p.pfocus,#rbody.pmask p:has(mark.qflag),#rbody.pmask p:has(mark.wd.hot){opacity:1}
 #rbody.pmask p.pfocus.struck{color:#6d5f52}
+
+/* 对听 */
+.listen{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+@media(max-width:700px){.listen{grid-template-columns:1fr}}
+.lcard{border:1.5px solid color-mix(in srgb,var(--ink,#3a2f25) 18%,transparent);border-radius:14px;padding:12px 14px 10px;background:color-mix(in srgb,#fff 55%,transparent);display:flex;flex-direction:column;gap:8px;transition:box-shadow .2s,border-color .2s}
+.lcard.lb{border-style:dashed}
+.lcard.on{border-color:#b8432f;box-shadow:0 0 0 2px #b8432f33,0 8px 20px -12px rgba(120,40,20,.5)}
+.ltag{font-size:.8em;font-weight:700;color:#b8432f;letter-spacing:.08em}
+.lcard.lb .ltag{color:#3d5a7a}
+.ltext{line-height:1.8;font-size:1.02em}
+.lplay{align-self:flex-start;border:0;border-radius:999px;padding:4px 12px;background:#efe4d4;color:#5a4636;font:inherit;font-size:.85em;cursor:pointer}
+.lplay:disabled{opacity:.4;cursor:default}

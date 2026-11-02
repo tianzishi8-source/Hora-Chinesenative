@@ -600,7 +600,7 @@ H.openBook=function(){openBook();return Promise.resolve();};
    {t:"mc",who,ask,q,key,options:[{text,ok,reply,who,value}],obs,feedbackWho,wait} */
 H.text=function(s){if(s.id!==CURTEXT)useText(s.id);return Promise.resolve();};
 H.mc=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.ask?say(fill(variant(s,"ask")),s.who,tok):Promise.resolve();
-  return pre.then(function(){return new Promise(function(res,rej){clearTask();if(s.q)task.append(q(s.q));var box=el("div",{class:"mc"});
+  return pre.then(function(){return new Promise(function(res,rej){clearTask();if(s.feedbackWho==="xiaoman")closeReaderIfNarrow();if(s.q)task.append(q(s.q));var box=el("div",{class:"mc"});
     var ord=s.options.map(function(o,i){return i;});if(!s.stance&&!s.fixed)for(var z=ord.length-1;z>0;z--){var r=Math.floor(Math.random()*(z+1)),tz=ord[z];ord[z]=ord[r];ord[r]=tz;}ord.forEach(function(i){var o=s.options[i];var b=el("button",{class:"mco",type:"button",text:fill(o.text)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
         logStep(s.obs,{try:1});var ok=s.stance||o.ok===true;
         if(ok){task.classList.remove("ask");$$(".mco",box).forEach(function(x){x.disabled=true;});b.classList.add("ok");SOUND.sfx(s.stance?"page":"ok");if(s.key)set(s.key,o.value!=null?o.value:i);logStep(s.obs,{answer:fill(o.text)});logMe(fill(o.text));commit();
@@ -644,6 +644,18 @@ H.unstrike=function(){unstrike();return Promise.resolve();};
 H.swap=function(s){clearTask();var bq=el("blockquote",{class:"quote swap"});var t=fill(s.text),parts=[t];(s.marks||[]).forEach(function(m){var out=[];parts.forEach(function(x){if(typeof x!=="string"){out.push(x);return;}var seg=x.split(m);seg.forEach(function(y,k){if(k)out.push({m:m});out.push(y);});});parts=out;});
   parts.forEach(function(x){bq.append(typeof x==="string"?document.createTextNode(x):el("mark",{class:"swapw",text:x.m}));});
   task.append(el("div",{class:"swaptag",text:s.label||"换一换"}),bq);return Promise.resolve();};
+
+/* 对听：两版并排，各配音读一遍，可以再点着听。{t:"listen",ask,who,q,a:{who,label,text,marks},b:{…},next} */
+function markedText(t,marks){var parts=[t];(marks||[]).forEach(function(m){var out=[];parts.forEach(function(x){if(typeof x!=="string"){out.push(x);return;}x.split(m).forEach(function(y,k){if(k)out.push({m:m});out.push(y);});});parts=out;});
+  var d=el("div",{class:"ltext"});parts.forEach(function(x){d.append(typeof x==="string"?document.createTextNode(x):el("mark",{class:"swapw",text:x.m}));});return d;}
+H.listen=function(s,tok){var pre=s.ask?say(fill(s.ask),s.who||lead(),tok):Promise.resolve();
+  return pre.then(function(){clearTask();closeReaderIfNarrow();var box=el("div",{class:"listen"}),cards=[];
+    [s.a,s.b].forEach(function(x,i){var c=el("div",{class:"lcard"+(i?" lb":" la")});var pb=el("button",{class:"lplay",type:"button",text:"▶ 再听一遍"});pb.disabled=true;
+      pb.addEventListener("click",function(){if(tok!==RUN.token)return;cards.forEach(function(k){k.classList.remove("on");});c.classList.add("on");sayQ(fill(x.text),x.who,tok);});
+      c.append(el("div",{class:"ltag",text:x.label||(i?"改过的":"原文")}),markedText(fill(x.text),x.marks),pb);cards.push(c);box.append(c);});
+    task.append(el("div",{class:"task-q",text:fill(s.q||"听一听：两版读起来有什么不一样？")}),box);
+    function play(i){cards.forEach(function(k){k.classList.remove("on");});cards[i].classList.add("on");var x=i?s.b:s.a;return say(fill(x.text),x.who,tok);}
+    return play(0).then(function(){return play(1);}).then(function(){cards.forEach(function(k){k.classList.remove("on");$(".lplay",k).disabled=false;});return next(s.next||"听好了",tok,true);});});};
 
 /* 五页日历条：做完一处盖一枚心情章、写上比喻；最后变成结构图。{t:"cal5",op:"show"|"stamp"|"map",page,mood,fig}  页上的内容存在 S.data.d3.cal */
 function cal5El(){var c=$("#cal5");if(!c){c=el("div",{class:"cal5",id:"cal5"});task.parentNode.insertBefore(c,task);}return c;}
