@@ -14,7 +14,8 @@
     "box-shadow:0 6px 18px -8px rgba(40,30,20,.45);color:#5b4a35;font:600 13px/1.15 'Noto Serif SC',serif;cursor:pointer;transition:opacity .3s;pointer-events:auto}" +
     ".xg-hint span{writing-mode:vertical-rl;letter-spacing:.18em}" +
     ".xg-hint b{font-size:15px;animation:xghb 1.4s ease-in-out infinite}@keyframes xghb{50%{transform:translateY(4px)}}" +
-    ".xg-hint[hidden]{display:none}";
+    ".xg-hint[hidden]{display:none}"+
+    "html,body{overscroll-behavior-x:none}";
   D.head.appendChild(css);
 
   /* ---------- 全屏 ---------- */
@@ -51,7 +52,7 @@
       if (!armed) return;
       try { history.pushState({ xgStay: 1 }, "", location.href); } catch (e) {}
       if (!tip) { tip = D.createElement("div"); tip.style.cssText = "position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:200;max-width:86vw;padding:10px 16px;border-radius:12px;background:rgba(21,35,42,.9);color:#f3ecdc;font:600 15px/1.5 'Noto Sans SC',system-ui,sans-serif;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);text-align:center"; D.body.appendChild(tip); }
-      tip.textContent = "刚才往回划了一下，已经帮你留在这一页。要换课文，请点页面上方的“课文地图”。"; tip.hidden = false;
+      tip.textContent = "刚才触发了“返回上一页”（多半是触控板左右划了一下），已经帮你留在这一页。要换课文，请点页面上方的“课文地图”。"; tip.hidden = false;
       clearTimeout(tipT); tipT = setTimeout(function () { tip.hidden = true; }, 3500);
     });
   }
