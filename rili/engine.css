@@ -389,3 +389,6 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 .rtabs{display:flex;gap:4px;margin-left:8px;flex-wrap:wrap}
 .rtab{border:1px solid var(--line);background:transparent;border-radius:999px;padding:3px 10px;font:600 12px/1.3 'Noto Sans SC',system-ui,sans-serif;color:var(--muted);cursor:pointer}
 .rtab.on{background:#b8432f;border-color:#b8432f;color:#fff}
+
+#rbody.pmask p.pfocus,#rbody.pmask p:has(mark.qflag),#rbody.pmask p:has(mark.wd.hot){opacity:1}
+#rbody.pmask p.pfocus.struck{color:#6d5f52}
