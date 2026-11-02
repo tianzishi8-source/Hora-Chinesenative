@@ -22,7 +22,7 @@
     parts.forEach(function (p) { if (cur && (cur + p).length > MAX) { chunks.push(cur); cur = p; } else cur += p; });
     if (cur) chunks.push(cur);
     if (chunks.length < 2) return [st];
-    var tail = ["hold", "btns", "timer", "tip", "respond", "id"];
+    var tail = ["hold", "copy", "btns", "timer", "tip", "respond", "id"];
     return chunks.map(function (c, i) {
       var o = {};
       if (i === 0) Object.keys(st).forEach(function (k) { if (tail.indexOf(k) < 0) o[k] = st[k]; });
@@ -132,7 +132,7 @@
 
   /* ---------- 声音 ---------- */
   var VOICE_IDX = window.PROJ_VOICE || {};   // 录好的 mp3：{哈希: 秒数}
-  var soundOn = store.get("sound", true), speed = store.get("speed", 1);
+  var soundOn = store.get("sound", true), speed = store.get("speed", 1), boost = store.get("boost", 2), boostNode = null;
   var zhVoices = [];
   function loadVoices() {
     if (!("speechSynthesis" in window)) return;
@@ -174,8 +174,13 @@
         var au = new Audio("voice/" + h + ".mp3?v=" + (window.PROJ_VOICE_V || "")); curAudio = au; au.playbackRate = speed;
         try {
           actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-          if (!analyser) { analyser = actx.createAnalyser(); analyser.fftSize = 512; abuf = new Uint8Array(analyser.fftSize); analyser.connect(actx.destination); }
-          actx.createMediaElementSource(au).connect(analyser); lipUsesAudio = true;
+          if (!analyser) {
+            analyser = actx.createAnalyser(); analyser.fftSize = 512; abuf = new Uint8Array(analyser.fftSize);
+            boostNode = actx.createGain(); boostNode.gain.value = boost;
+            var comp = actx.createDynamicsCompressor(); comp.threshold.value = -20; comp.knee.value = 8; comp.ratio.value = 4; comp.attack.value = 0.004; comp.release.value = 0.2;
+            boostNode.connect(comp); comp.connect(analyser); analyser.connect(actx.destination);
+          }
+          actx.createMediaElementSource(au).connect(boostNode); lipUsesAudio = true;
         } catch (e) { lipUsesAudio = false; }
         au.onended = fin; au.onerror = function () { speakTTS(); };
         au.play().catch(function () { speakTTS(); });
@@ -511,11 +516,25 @@
     return { svg: svg };
   })();
 
+  function fitCards() {
+    var p = vis.querySelector(".cardpane"); if (!p) return;
+    p.style.fontSize = "";
+    var fs = parseFloat(getComputedStyle(p).fontSize), min = fs * 0.72;
+    var over = function () {
+      if (p.scrollHeight > p.clientHeight + 2) return true;
+      var cs = p.querySelectorAll(".col"); for (var i = 0; i < cs.length; i++) if (cs[i].scrollHeight > cs[i].clientHeight + 2) return true;
+      return false;
+    };
+    while (over() && fs > min) { fs -= 1.5; p.style.fontSize = fs + "px"; }
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCards);
+
   /* ---------- 计时 ---------- */
   var timer = null;
   function startTimer(t, token) {
     stopTimer();
     var total = t.s, left = t.s, halfDone = false;
+    var nudgeAt = total >= 60 && t.nudge !== false ? [Math.round(total * 0.62), Math.round(total * 0.3)] : [];
     var big = vis.querySelector(".big-clock"); if (big) { big.hidden = false; big.querySelector(".lab").textContent = t.label || ""; }
     var top = $(".tclock"); top.classList.add("run");
     function paint() {
@@ -527,6 +546,7 @@
     timer = { paused: false, id: setInterval(function () {
       if (timer.paused || token !== TOKEN) return;
       left--; paint();
+      if (nudgeAt.indexOf(left) >= 0) nudge(token);
       if (t.half && !halfDone && left <= Math.floor(total / 2)) { halfDone = true; chime(1); toast(t.half); }
       if (left <= 0) { stopTimer(true); chime(2); setTip("时间到。点“继续”往下。"); $("#next").classList.add("pulse"); }
     }, 1000) };
@@ -557,8 +577,70 @@
   }
   function finishTyping() { if (typing) { clearInterval(typing); typing = null; var st = STEPS[cur]; if (st && st.say) txtEl.innerHTML = esc(st.say).replace(/（([^）]*)）/g, '<span class="sd">（$1）</span>'); } }
 
+  /* ---------- 点名 ---------- */
+  // 名单：先用助教在页面上输入的（存在这台电脑），没有就用 roster.js 里给这个班的
+  var KLASS = L.klass || "default";
+  function rkey(k) { return "hora-roster-" + k + "-" + KLASS; }
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function roster() {
+    var own = lsGet(rkey("list"), null);
+    if (own && own.length) return own;
+    return ((window.PROJ_ROSTER || {})[KLASS] || []).slice();
+  }
+  var CALLS = L.callLines || ["{n}，你来说说。", "请{n}回答。", "{n}，说说你的想法。", "{n}，你来试试。"];
+  var callNo = 0, curName = "";
+  function pickName() {
+    var all = roster(); if (!all.length) return "";
+    var done = lsGet(rkey("called"), []);
+    var pool = all.filter(function (n) { return done.indexOf(n) < 0 && n !== curName; });
+    if (!pool.length) { lsSet(rkey("called"), []); pool = all.filter(function (n) { return n !== curName; }); if (!pool.length) pool = all; }
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  // skip：刚才点的同学不在／不方便，换一个（不算点过）
+  function callName(skip, token) {
+    var el = $(".cue .nm"); if (!el) return;
+    var done = lsGet(rkey("called"), []);
+    if (skip && curName) done = done.filter(function (x) { return x !== curName; });
+    lsSet(rkey("called"), done);
+    var n = pickName(); if (!n) return;
+    curName = n; el.textContent = n; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+    lsSet(rkey("called"), lsGet(rkey("called"), []).concat([n]));
+    var line = CALLS[callNo++ % CALLS.length].replace("{n}", n);
+    stopVoice(); spotlight(LEAD); talking(LEAD, true);
+    say(LEAD, voiceText({ say: line }), token).then(function () { if (token === TOKEN) talking(LEAD, false); });
+  }
+  function openRoster() {
+    var d = $(".dialog"); d.hidden = false;
+    var h = "<h3>点名单</h3>";
+    h += '<div class="hint">每行一个名字（也可以用空格、顿号、逗号隔开）。名单存在这台电脑的浏览器里，换电脑要重新输入。把名单发给课件制作人，可以录成老师的声音点名。</div>';
+    h += '<textarea id="rlist" rows="8" style="font-size:24px;padding:10px;font-family:inherit">' + esc(roster().join("\n")) + "</textarea>";
+    h += '<div class="hint">已点过：' + esc(lsGet(rkey("called"), []).join("、") || "（还没有）") + "</div>";
+    h += '<div style="display:flex;gap:12px;justify-content:flex-end"><button class="btn ghost" id="rreset">清空“已点过”</button><button class="btn" id="rok">保存</button></div>';
+    d.querySelector(".box").innerHTML = h;
+    $("#rreset").onclick = function () { lsSet(rkey("called"), []); toast("已清空，重新从头点"); d.hidden = true; };
+    $("#rok").onclick = function () {
+      var list = $("#rlist").value.split(/[\s,，、;；]+/).map(function (x) { return x.trim(); }).filter(Boolean);
+      lsSet(rkey("list"), list); d.hidden = true; toast("名单已保存：" + list.length + " 人");
+      var st = STEPS[cur]; if (st && st.cue && st.cue.k === "call") showCue(st.cue);
+    };
+  }
+
+  /* ---------- 提醒专心（计时中自动，也可以随时点“提醒”） ---------- */
+  var NUDGES = L.nudges || [];
+  var nudgeNo = 0;
+  function nudge(token) {
+    if (!NUDGES.length) return;
+    var n = NUDGES[nudgeNo++ % NUDGES.length], st = STEPS[cur];
+    stopVoice(); spotlight(n.who); showLine(n.who, n.say); talking(n.who, true);
+    say(n.who, voiceText(n), token).then(function () {
+      if (token !== TOKEN) return; talking(n.who, false);
+      if (st && st.timer) showLine(null, st.note || st.timer.label, true);
+    });
+  }
+
   /* ---------- 全班互动大提示 ---------- */
-  var CUE = { say: ["说", "全班一起说"], hand: ["举", "举手"], stand: ["站", "站队"], gesture: ["比", "比划"], catch: ["错", "抓错"], race: ["赛", "比赛读"] };
+  var CUE = { call: ["点", "点名回答"], say: ["说", "全班一起说"], hand: ["举", "举手"], stand: ["站", "站队"], gesture: ["比", "比划"], catch: ["错", "抓错"], race: ["赛", "比赛读"] };
   function showCue(c) {
     var el = $(".cue");
     stage.classList.toggle("cueing", !!c);
@@ -566,6 +648,11 @@
     var k = CUE[c.k] || ["！", ""];
     el.innerHTML = '<div class="seal">' + k[0] + '</div><div class="ct"><small>' + k[1] + "</small>" + esc(c.t) + "</div>";
     var st = STEPS[cur]; if (st && st.note) el.querySelector(".ct").insertAdjacentHTML("beforeend", '<span class="cn">' + esc(st.note) + "</span>");
+    if (c.k === "call") {
+      el.insertAdjacentHTML("beforeend", '<div class="callbox"><div class="nm">' + (roster().length ? "……" : "请老师点一位同学") + '</div><div class="cb2">' +
+        (roster().length ? '<button class="btn gold" data-call="more">再点一位</button><button class="btn ghost" data-call="skip">换一个</button>' : '<button class="btn ghost" data-call="list">输入名单</button>') + "</div></div>");
+      el.querySelectorAll("[data-call]").forEach(function (b) { b.onclick = function () { var a = b.dataset.call; if (a === "list") openRoster(); else callName(a === "skip", TOKEN); }; });
+    }
     el.hidden = false; el.classList.remove("in"); void el.offsetWidth; el.classList.add("in");
     sfx("block");
   }
@@ -621,10 +708,13 @@
     // 顶栏
     segBox.querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === st._seg); b.classList.toggle("done", i < st._seg); });
     renderVis(S.v, S.board, S.corner);
+    fitCards();
+    var ob = vis.querySelector(".copyb"); if (ob) ob.remove();
+    if (st.copy) vis.insertAdjacentHTML("beforeend", '<div class="copyb">✎ ' + esc(typeof st.copy === "string" ? st.copy : "抄下来") + "</div>");
     actors[LEAD].el.classList.toggle("away", !S.fanIn);
     respEl.hidden = true;
     $("#next").classList.remove("pulse");
-    setTip(st.tip || "");
+    setTip(st.tip || (st.copy ? "抄好了，再点“继续”。" : ""));
     // 人物表情
     Object.keys(actors).forEach(function (k) { actors[k].mood = (st.think && k !== LEAD) ? "think" : (st.who === k && st.face) ? st.face : "idle"; setFace(k, restFace(k)); });
     // 额外按钮
@@ -645,6 +735,7 @@
     };
     if (st.read) run = (pr ? sayPrompt() : Promise.resolve()).then(function () { return token === TOKEN ? doRead(st, token) : null; });
     else if (pr) run = sayPrompt();
+    if (st.cue && st.cue.k === "call" && roster().length) { curName = ""; run = run.then(function () { if (token === TOKEN) callName(false, token); }); }
     else if (st.say) { spotlight(st.who); showLine(st.who, st.say); talking(st.who, true); run = say(st.who, voiceText(st), token).then(function () { if (token === TOKEN) talking(st.who, false); }); }
     else if (st.note) { spotlight(null); showLine(null, st.note, true); run = Promise.resolve(); }
     else { spotlight(null); run = Promise.resolve(); }
@@ -653,9 +744,9 @@
     if (st.respond) showRespond(st.respond, token);
     run.then(function () {
       if (token !== TOKEN) return;
-      var stop = st.hold || st.timer || st.respond || st.btns || last;
+      var stop = st.hold || st.copy || st.timer || st.respond || st.btns || last;
       var nextSeg = !last && STEPS[n + 1]._seg !== st._seg;
-      if (nextSeg) { setTip("本环节结束。下一环节：" + L.segments[STEPS[n + 1]._seg].t + "。准备好了点“继续”。"); $("#next").classList.add("pulse"); return; }
+      if (nextSeg) { setTip((st.copy ? "抄好了再点“继续”。" : "本环节结束。") + "下一环节：" + L.segments[STEPS[n + 1]._seg].t + "。准备好了点“继续”。"); $("#next").classList.add("pulse"); return; }
       if (stop) { if (!st.timer) $("#next").classList.add("pulse"); return; }
       if (auto) autoTimer = setTimeout(function () { if (token === TOKEN) go(n + 1); }, st.note ? 2600 : 900);
       else $("#next").classList.add("pulse");
@@ -709,6 +800,8 @@
   $("#full").onclick = function () { var d = document.documentElement; if (!document.fullscreenElement) (d.requestFullscreen || d.webkitRequestFullscreen || function () {}).call(d); else document.exitFullscreen(); };
   if (A.sheet) $("#sheet").onclick = function () { window.open(A.sheet, "_blank"); }; else $("#sheet").hidden = true;
   $("#set").onclick = openSettings;
+  if ($("#roll")) $("#roll").onclick = openRoster;
+  if ($("#nudge")) { if (NUDGES.length) $("#nudge").onclick = function () { nudge(TOKEN); }; else $("#nudge").hidden = true; }
   document.addEventListener("keydown", function (e) {
     if ($(".dialog") && !$(".dialog").hidden) { if (e.key === "Escape") $(".dialog").hidden = true; return; }
     var k = e.key;
@@ -716,6 +809,8 @@
     else if (k === "ArrowLeft" || k === "PageUp" || k === "ArrowUp") { e.preventDefault(); prev(); }
     else if (/^[1-9]$/.test(k) && !respEl.hidden) { var bs = respEl.querySelectorAll("button"); if (bs[+k - 1]) bs[+k - 1].click(); }
     else if (k === "f" || k === "F") $("#full").click();
+    else if (k === "n" || k === "N") { if ($(".cue [data-call=more]")) callName(false, TOKEN); }
+    else if (k === "r" || k === "R") nudge(TOKEN);
     else if (k === "p" || k === "P") { if (timer) { timer.paused = !timer.paused; toast(timer.paused ? "计时暂停" : "计时继续"); } }
   });
 
@@ -734,12 +829,14 @@
         '</select><button class="btn ghost" data-try="' + k + '">试听</button></label>';
     });
     h += '<label><b>语速</b><select id="spd">' + [0.85, 0.9, 1, 1.1, 1.2].map(function (x) { return '<option value="' + x + '"' + (x === speed ? " selected" : "") + ">" + (x === 1 ? "正常" : x < 1 ? "慢一点（" + x + "）" : "快一点（" + x + "）") + "</option>"; }).join("") + "</select></label>";
-    h += '<div class="hint">键盘：空格／→／翻页遥控器＝继续；←＝上一步；1–5＝助教回应按钮；P＝暂停计时；F＝全屏。</div>';
+    h += '<label><b>音量增强</b><select id="bst">' + [[1, "不增强"], [1.5, "大一点"], [2, "大（默认）"], [2.6, "很大（大教室）"]].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === boost ? " selected" : "") + ">" + x[1] + "</option>"; }).join("") + "</select></label>";
+    h += '<div class="hint">键盘：空格／→／翻页遥控器＝继续；←＝上一步；1–5＝助教回应按钮；P＝暂停计时；F＝全屏；N＝再点一位；R＝提醒专心。</div>';
     h += '<div style="display:flex;justify-content:flex-end"><button class="btn" id="setok">好了</button></div>';
     d.querySelector(".box").innerHTML = h;
     d.querySelectorAll("select[data-k]").forEach(function (s) { s.onchange = function () { store.set("voice-" + s.dataset.k, s.value); }; });
     d.querySelectorAll("[data-try]").forEach(function (b) { b.onclick = function () { var k = b.dataset.try; stopVoice(); say(k, "同学们好，我是" + CAST[k].name + "。", TOKEN); }; });
     $("#spd").onchange = function () { speed = +this.value; store.set("speed", speed); };
+    $("#bst").onchange = function () { boost = +this.value; store.set("boost", boost); if (boostNode) boostNode.gain.value = boost; };
     $("#setok").onclick = function () { d.hidden = true; };
   }
 

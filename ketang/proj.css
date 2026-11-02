@@ -268,30 +268,43 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .cardpane .big-clock .num{font-size:56px}
 .dlg .who.w-hy{background:#4e5f8a}
 
-/* ---------- 讲评版式（layout:"exam"）：题卡放大，对话条压低 ---------- */
-.lay-exam .vis{left:360px;top:62px;width:1020px;height:806px}
+/* ---------- 讲评版式（layout:"exam"）：题卡放大，字号按 em 跟着 .cardpane 缩放（内容多时引擎自动缩小，最小 72%） ---------- */
+.lay-exam .vis{left:336px;top:56px;width:1068px;height:818px}
 .lay-exam .dlg{height:180px;padding:18px 40px 12px 112px}
 .lay-exam .dlg .who{top:18px;font-size:26px;width:58px}
-.lay-exam .dlg .txt{font-size:31px;line-height:1.5}
-.lay-exam .dlg .txt.note{font-size:30px}
-.lay-exam .cue{top:866px;height:132px;padding:10px 30px 10px 22px;gap:20px}
+.lay-exam .dlg .txt{font-size:34px;line-height:1.45}
+.lay-exam .dlg .txt.note{font-size:33px}
+.lay-exam .cue{top:866px;height:132px;padding:10px 26px 10px 22px;gap:20px}
 .lay-exam .cue .seal{width:96px;height:96px;font-size:66px}
+.lay-exam .cue .ct{font-size:42px;line-height:1.18;flex:1}
 .lay-exam .cue .ct small{font-size:19px;margin-bottom:2px}
 .lay-exam .cue .ct .cn{font-size:21px;margin-top:2px}
-.lay-exam .cue .ct{font-size:38px;line-height:1.2}
-.lay-exam .cardpane{padding:26px 40px 22px;gap:14px}
-.lay-exam .cardpane .qn{font-size:32px}
-.lay-exam .cardpane .qt{font-size:40px}
-.lay-exam .cardpane .sc{font-size:24px}
-.lay-exam .cardpane .cq{font-size:36px;line-height:1.6}
-.lay-exam .cardpane .cq p+p{margin-top:4px}
-.lay-exam .cardpane .ca .tag{font-size:28px}
-.lay-exam .cardpane .cb{font-size:34px;line-height:1.55}
-.lay-exam .cardpane .colh{font-size:32px}
-.lay-exam .cardpane .cl{font-size:33px;line-height:1.6}
-.lay-exam .cardpane .yw{color:var(--ink2);font-size:.92em}
-.cardpane .pt{white-space:nowrap;font-size:.8em;color:var(--ink2)}
-.lay-exam .cardpane .yw::before{content:"原文　";color:var(--shi);font-weight:700;font-family:var(--f-ui);font-size:.7em;letter-spacing:.1em}
-.lay-exam .cardpane .yi::before{content:"译文　";color:var(--zhu);font-weight:700;font-family:var(--f-ui);font-size:.7em;letter-spacing:.1em}
+.lay-exam .cardpane{font-size:46px;padding:22px 36px 18px;gap:.28em}
+.lay-exam .cardpane .qn{font-size:.7em}
+.lay-exam .cardpane .qt{font-size:1.02em;line-height:1.28}
+.lay-exam .cardpane .sc{font-size:.5em}
+.lay-exam .cardpane .cq{font-size:1em;line-height:1.5}
+.lay-exam .cardpane .cq p+p{margin-top:.08em}
+.lay-exam .cardpane .ca{padding:.25em .4em}
+.lay-exam .cardpane .ca .tag{font-size:.6em}
+.lay-exam .cardpane .cb{font-size:.92em;line-height:1.45}
+.lay-exam .cardpane .col{overflow:hidden;padding:.3em .4em}
+.lay-exam .cardpane .colh{font-size:.72em}
+.lay-exam .cardpane .cl{font-size:.9em;line-height:1.5}
+.lay-exam .cardpane .yw{color:var(--ink2);font-size:.94em}
+.lay-exam .cardpane .yw::before,.lay-exam .cardpane .yi::before,.lay-exam .cardpane .gai::before{font-weight:700;font-family:var(--f-ui);font-size:.62em;letter-spacing:.1em}
+.lay-exam .cardpane .yw::before{content:"原文　";color:var(--shi)}
+.lay-exam .cardpane .yi::before{content:"译文　";color:var(--zhu)}
 .lay-exam .cardpane .gai{color:var(--ink)}
-.lay-exam .cardpane .gai::before{content:"示范　";color:var(--shi);font-weight:700;font-family:var(--f-ui);font-size:.7em;letter-spacing:.1em}
+.lay-exam .cardpane .gai::before{content:"示范　";color:var(--shi)}
+.cardpane .pt{white-space:nowrap;font-size:.8em;color:var(--ink2)}
+.dlg .who.w-hy{background:#4e5f8a}
+/* 点名 */
+.cue .callbox{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding-left:22px;border-left:2px dashed rgba(163,56,42,.4)}
+.cue .callbox .nm{font-family:var(--f-brush);font-size:56px;line-height:1;color:var(--zhu);min-width:4em;text-align:center}
+.cue .callbox .nm.pop{animation:popnm .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes popnm{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.cue .callbox .cb2{display:flex;gap:8px}
+.cue .callbox .btn{font-size:19px;padding:4px 14px}
+/* 抄写提示 */
+.copyb{position:absolute;right:30px;top:40px;z-index:2;background:var(--zhu);color:#f6f1e3;font-family:var(--f-brush);font-size:30px;padding:4px 18px;transform:rotate(3deg);box-shadow:0 4px 12px -4px rgba(0,0,0,.5);animation:sealb 1.6s ease-in-out infinite}

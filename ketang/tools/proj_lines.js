@@ -27,7 +27,7 @@ function splitLong(st) {   // 太长的台词拆成几步（每步不超过约 5
   parts.forEach(function (p) { if (cur && (cur + p).length > MAX) { chunks.push(cur); cur = p; } else cur += p; });
   if (cur) chunks.push(cur);
   if (chunks.length < 2) return [st];
-  var tail = ["hold", "btns", "timer", "tip", "respond", "id"];
+  var tail = ["hold", "copy", "btns", "timer", "tip", "respond", "id"];
   return chunks.map(function (c, i) {
     var o = {};
     if (i === 0) Object.keys(st).forEach(function (k) { if (tail.indexOf(k) < 0) o[k] = st[k]; });
@@ -46,4 +46,14 @@ L.segments.forEach(sg => sg.steps.forEach(st0 => splitLong(st0).forEach(st => {
     else if (st.ask || st.note) add(st.by || "qx", voiceText({ say: st.ask || st.note }));
   }
 })));
+// 计时中的提醒
+(L.nudges || []).forEach(n => add(n.who, voiceText(n)));
+// 点名：roster.js 里这个班的名字 × 点名句式（由主讲读）
+try {
+  const rc = { window: {} };
+  vm.runInNewContext(fs.readFileSync(require("path").join(require("path").dirname(file), "roster.js"), "utf8"), rc);
+  const names = (rc.window.PROJ_ROSTER || {})[L.klass || "default"] || [];
+  const calls = L.callLines || ["{n}，你来说说。", "请{n}回答。", "{n}，说说你的想法。", "{n}，你来试试。"];
+  names.forEach(nm => calls.forEach(c => add(L.lead || "fan", voiceText({ say: c.replace("{n}", nm) }))));
+} catch (e) {}
 process.stdout.write(JSON.stringify(out, null, 1));

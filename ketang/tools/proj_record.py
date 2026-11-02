@@ -19,10 +19,12 @@ PROXY = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
 # 声音按人物分配（参数取自声音库）
 VOICES = {
     "fan": ("zh-CN-YunyangNeural", "-14%", "-6Hz"),   # 范仲淹：云扬·沉稳
-    "cg":  ("zh-CN-YunxiNeural", "-6%", "-8Hz"),      # 长歌：云希·温和（原网站长歌的声音之一）
-    "qx":  ("zh-CN-XiaoyiNeural", "-2%", "+10Hz"),    # 清弦：晓伊·活泼（11-01 改：晓晓让给徽音老师）
-    "hy":  ("zh-CN-XiaoxiaoNeural", "-6%", "-4Hz"),   # 徽音老师：晓晓·温和（晓伊压低后太年轻、偏男声）
+    "cg":  ("zh-CN-YunxiNeural", "+6%", "-2Hz"),      # 长歌：云希（11-02 课堂反馈“太柔太平”：调快、调亮）
+    "qx":  ("zh-CN-XiaoyiNeural", "+6%", "+12Hz"),    # 清弦：晓伊·活泼
+    "hy":  ("zh-CN-XiaoxiaoNeural", "+4%", "+2Hz"),   # 徽音老师：晓晓（11-02：语速、音调提回来，更有精神）
 }
+# 录完统一响度（-14 LUFS，和视频平台差不多响），教室里听得清；页面里还会再加增益和压缩
+LOUD = "loudnorm=I=-14:TP=-1.0:LRA=7"
 
 async def rec(item, out):
     path = os.path.join(out, item["hash"] + ".mp3")
@@ -33,7 +35,14 @@ async def rec(item, out):
                 await edge_tts.Communicate(item["text"], v, rate=rate, pitch=pitch, proxy=PROXY).save(path); break
             except Exception as e:
                 print("重试", item["hash"], e); await asyncio.sleep(2)
+        norm(path)
     return item["hash"], round(MP3(path).info.length, 2)
+
+def norm(path):
+    import subprocess
+    tmp = path + ".tmp.mp3"
+    r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", path, "-af", LOUD, "-ar", "24000", "-b:a", "64k", tmp])
+    if r.returncode == 0 and os.path.getsize(tmp) > 0: os.replace(tmp, path)
 
 async def main():
     lines = json.load(open(sys.argv[1], encoding="utf-8"))

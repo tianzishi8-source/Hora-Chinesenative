@@ -33,6 +33,8 @@ window.PROJ_LESSON = {
     paper: "../img/paper.webp",
     sheet: "yyl-1-sheet.html"
   },
+  klass: "g9",
+  nudges: [{ who: "qx", say: "嘿，你在认真写吗？" }, { who: "cg", say: "别走神，时间有限！" }, { who: "qx", say: "安静一点，大家都在写呢。" }, { who: "cg", say: "笔动起来！光看着，可写不出来。" }],
   cast: {
     fan: { name: "范仲淹", sprite: "fanzhongyan", outfit: "ancient", x: -150,
            voice: { prefer: ["Yunyang", "Kangkang", "Yunjian", "Yunxi", "男"], rate: 0.88, pitch: 0.8 } },
@@ -83,7 +85,7 @@ window.PROJ_LESSON = {
       { who: "qx", say: "同学们，你们知道我们穿的是哪个朝代的衣服吗？" },
       { who: "cg", say: "等等等等，先别说！你们看那边——" },
       { enter: "fan", who: "cg", say: "那位老先生的帽子，两边有两根长长的“翅膀”！看帽子，就知道是哪个朝代了。" },
-      { cue: { k: "hand", t: "举手猜：这是哪个朝代？" }, note: "知道的同学，举手说一说。", ask: "知道的同学，请举手：我们穿的是哪个朝代的衣服？", hold: true, tip: "请一两位同学说，然后点“继续”。" },
+      { cue: { k: "call", t: "猜一猜：这是哪个朝代？" }, note: "点到名的同学，站起来说。", ask: "我们穿的是哪个朝代的衣服？", hold: true, tip: "听一两位同学说完，点“继续”。" },
       { who: "qx", say: "我猜……是宋朝？" },
       { who: "fan", say: "（笑）没错。这叫幞头，我们大宋做官的人都这样戴。", sfx: "qing" },
       { who: "fan", say: "现在是庆历六年，也就是公元1046年。" },
@@ -101,7 +103,7 @@ window.PROJ_LESSON = {
       { who: "fan", say: "（笑）比那难一些。先说子京：庆历四年春天，他被人弹劾，贬到了巴陵郡。",
         vis: { type: "map", layers: ["kaifeng", "baling", "lineB"] }, corner: "庆历四年＝1044年" },
       { who: "qx", say: "离京城那么远……他一定很难受吧。", face: "think" },
-      { cue: { k: "hand", t: "你离开过熟悉的地方吗？" }, note: "举手的同学，用一个词说说那种感觉。", ask: "同学们，你离开过熟悉的地方吗？举手的同学，用一个词说说那种感觉。", hold: true,
+      { cue: { k: "call", t: "你离开过熟悉的地方吗？" }, note: "点到名的同学，用一个词说说那种感觉。", ask: "同学们，你离开过熟悉的地方吗？用一个词说说那种感觉。", hold: true,
         tip: "请一两位同学说一个词（比如：想家、害怕、孤单），然后点“继续”。" },
       { who: "qx", say: "嗯……我想，子京那时候，心里大概也是这样。" },
       { who: "fan", say: "第二年，新政得罪的人太多，我也被罢去参知政事，到地方上做官。如今，我在邓州。",
