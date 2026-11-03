@@ -311,3 +311,4 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .cue .callbox .btn{font-size:19px;padding:4px 14px}
 /* 抄写提示 */
 .copyb{position:absolute;right:30px;top:40px;z-index:2;background:var(--zhu);color:#f6f1e3;font-family:var(--f-brush);font-size:30px;padding:4px 18px;transform:rotate(3deg);box-shadow:0 4px 12px -4px rgba(0,0,0,.5);animation:sealb 1.6s ease-in-out infinite}
+.picover .cap{z-index:3}
