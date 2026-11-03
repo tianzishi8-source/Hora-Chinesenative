@@ -899,7 +899,7 @@ days:[
 ],end:"第9天读完了。",after:"<b>课后作业</b><br>1. 想好下次短文用哪一种写法、写什么，在作文本上列三行提纲。<br>2. 翻一翻“我的日历本”，挑出你想用进短文里的句子。"},
 
 /* ================= 第10天 ================= */
-{title:"我的一篇",bg:"img/bg-7.webp",short:"初稿",beats:[
+{title:"我的一篇",bg:"img/bg-6.webp",short:"初稿",beats:[
  {title:"挑写法",mood:"calm",steps:[
   {t:"say",who:"ri",text:"{name}，今天写你自己的一篇。题目自己定，三百字左右。"},
   {t:"mc",who:"ri",ask:"先挑写法。",q:"你用哪一种写法？",key:"d10.way",stance:true,
@@ -940,7 +940,7 @@ days:[
 ],end:"第10天写完了。",after:"<b>课后作业</b><br>把初稿读给家人听一遍，听听哪里读着别扭，用铅笔在作文本上标出来。"},
 
 /* ================= 第11天 ================= */
-{title:"改定与分享",bg:"img/bg-7.webp",short:"改定",beats:[
+{title:"改定与分享",bg:"img/bg-6.webp",short:"改定",beats:[
  {title:"读别人的",mood:"calm",steps:[
   {t:"say",who:"ri",text:"{name}，最后一天。先读读同学的短文，也有三位虚拟同学的。"},
   {t:"gallery",key:"d11.gal",from:"d10",who:"ri",maxReal:3,q:"读读别人的短文。每一位都可以私下点个反应，再挑一位回应一两句：他的比喻贴不贴切？哪件事撑得住道理？",
