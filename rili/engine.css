@@ -404,3 +404,15 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 .ltext{line-height:1.8;font-size:1.02em}
 .lplay{align-self:flex-start;border:0;border-radius:999px;padding:4px 12px;background:#efe4d4;color:#5a4636;font:inherit;font-size:.85em;cursor:pointer}
 .lplay:disabled{opacity:.4;cursor:default}
+
+/* 配图 */
+#task figure.simg{margin:0 0 12px;text-align:center;cursor:zoom-in}
+#task figure.simg img{max-width:100%;max-height:min(19vh,200px);border-radius:10px;box-shadow:0 8px 22px -12px rgba(60,40,20,.55);display:inline-block}
+.simg-big{position:fixed;inset:0;z-index:200;background:rgba(20,16,12,.82);display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:16px}
+.simg-big img{max-width:100%;max-height:100%;border-radius:8px}
+
+/* 背景画 */
+#scenebg{position:fixed;inset:0;z-index:0;background:center/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none;filter:blur(1.5px) saturate(.95)}
+#scenebg.on{opacity:.5}
+#scenebg::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(246,239,224,.55),rgba(246,239,224,.12) 70%)}
+#scenebg~.app,.app{position:relative;z-index:1}

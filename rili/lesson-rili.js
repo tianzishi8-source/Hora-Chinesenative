@@ -102,7 +102,7 @@ cast:{
         qingxian:[{id:"q1",name:"清亮",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-4%",pitch:"+14Hz"},{id:"q2",name:"温柔",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-10%",pitch:"+6Hz"},{id:"q3",name:"活泼",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-2%",pitch:"+10Hz"}],
         changge:[{id:"c1",name:"沉稳",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-10%",pitch:"-18Hz"},{id:"c2",name:"低沉",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-8%",pitch:"-12Hz"},{id:"c3",name:"温和",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-6%",pitch:"-8Hz"}]}},
   /* 第2天“看看别人怎么找”里的虚拟同学，第3天也出来说话（只在对话框里出现，没有立绘；配音设置里不列出） */
-  xiaoman:{name:"小满（同学）",extra:true,shape:"seal",glyph:"满",ink:"#b0662a",voice:{gender:"female",pitch:1.05,rate:1},voices:[{id:"a",name:"小满",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-6%",pitch:"-4Hz"}]},
+  xiaoman:{name:"小满（同学）",short:"小满",extra:true,fig:{a:"img/xm-a.webp",b:"img/xm-b.webp",head:[505,228]},shape:"seal",glyph:"满",ink:"#b0662a",voice:{gender:"female",pitch:1.05,rate:1},voices:[{id:"a",name:"小满",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-6%",pitch:"-4Hz"}]},
   linyi:{name:"林一（同学）",extra:true,shape:"seal",glyph:"一",ink:"#3d5a7a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"林一",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-6%",pitch:"+0Hz"}]},
   me:{name:"我",sprite:"me",shape:"seal",glyph:"我",seal:"同学",ink:"--warm",
       sample:"这是我的声音。读到我的话时，就用这个声音。",
@@ -138,7 +138,7 @@ totalDays:11,
 
 days:[
 /* ===== 第 1 天 ===== */
-{title:"为什么不用月历",short:"首问尾答",beats:[
+{title:"为什么不用月历",bg:"img/bg-1.webp",short:"首问尾答",beats:[
  {title:"那一页",mood:"memory",steps:[
   {t:"vis",name:"page1976"},
   {t:"say",who:"ri",text:"你好。我是一页日历：1976年7月28日，星期三，丙辰年七月初二。"},
@@ -192,7 +192,7 @@ days:[
 ],end:"第1天读完了。下次见。"},
 
 /* ===== 第 2 天 ===== */
-{title:"找几处不一致",short:"独立作答",beats:[
+{title:"找几处不一致",bg:"img/bg-1.webp",short:"独立作答",beats:[
  {title:"独立作答",mood:"focus",skipIf:"d2.at",steps:[
   {t:"say",who:"ri",text:"今天的题，你要自己做。我和{buddy|清弦}都不说话，也不给提示。"},
   {t:"independent",key:"d2",tag:"课上独立作答 · 不讨论 · 不查资料",pickHint:"点原文里的句子，它会加进你正在写的那一格；再点一下就拿掉",
@@ -234,7 +234,7 @@ days:[
 ],end:"第2天读完了。下次见。"},
 
 /* ===== 第 3 天（11-01 改版：剧本见 Claude Docs《〈日历〉第3天剧本（改版）》） ===== */
-{title:"五处扯日历",short:"扯日历",beats:[
+{title:"五处扯日历",bg:"img/bg-1.webp",short:"扯日历",beats:[
  {title:"一个字",mood:"calm",steps:[
   {t:"say",who:"ri",text:"今天先找一个字。全文有一个动作，作者写了好几回。没有这个动作，就没有这篇文章。"},
   {t:"say",who:"zhou",textBy:{changge:"动作？我懂了！是“挂”！日历不都挂在墙上嘛！",qingxian:"会不会是……那个让人有点舍不得的动作？"},text:"是“挂”吗？"},
@@ -308,7 +308,7 @@ days:[
   {t:"focus",para:6,has:"扯"},
   {t:"say",who:"ri",text:"第四处，在第7段：我伸手把它小心地扯下来。"},
   {t:"say",who:"ri",text:"他扯下来的那一页，就是我。",wait:false},
-  {t:"mc",q:"为什么是“小心地”扯？",obs:{id:"d3-m4",label:"“小心地扯”的原因",skill:"体会细节里的情感"},
+  {t:"mc",q:"为什么是“小心地”扯？",img:"img/d3-room.webp",alt:"地震后没有屋顶的房间，残墙上还挂着一页日历",obs:{id:"d3-m4",label:"“小心地扯”的原因",skill:"体会细节里的情感"},
    options:[{text:"因为这一页正是地震那一天，他一家从废墟里侥幸逃了出来",ok:true,reply:"他要“记下这一切”。我和那天拍的照片放在一起，成了“刻骨铭心的珍藏”。"},
             {text:"因为日历很旧，容易撕破",ok:"half",reply:"我确实蒙满了灰土。可他为什么要把一页旧纸保存得好好的？"},
             {text:"怕在房间里留下纸屑",ok:false,reply:"那个房间，已经“没有屋顶”了。"}]},
@@ -419,10 +419,10 @@ days:[
   {t:"mc",q:"后半句，你帮小满接上：",key:"d3.grape",stance:true,keep:true,obs:{id:"d3-grape1",label:"为小满的比喻接后半句",skill:"体会比喻的前后对应"},
    options:[{text:"……把岁月原样晒干，收起来",value:"dry",who:"xiaoman",reply:"啊……岁月晒干了……好像不太对。"},
             {text:"……致力把岁月变为永存的诗篇或画卷",value:"poem",who:"ri",reply:"可这一半，和葡萄干对不上了。前半句要换回什么，才接得上？"}]},
-  {t:"listen",q:"两版都听一听：葡萄变酒，和葡萄晒成葡萄干。",
+  {t:"listen",q:"两版都听一听：葡萄变酒，和葡萄晒成葡萄干。",img:"img/d3-grape.webp",alt:"左边葡萄干，中间一串葡萄，右边一瓶葡萄酒",
    a:{who:"ri",text:"正像保存葡萄最好的方式是把葡萄变为酒；保存岁月最好的方式是致力把岁月变为永存的诗篇或画卷。",marks:["变为酒","变为永存的诗篇或画卷"]},
    b:{who:"xiaoman",label:"小满的版本",text:"保存葡萄最好的方式是把葡萄晒成葡萄干；保存岁月最好的方式是把岁月原样晒干，收起来。",marks:["晒成葡萄干","原样晒干"]}},
-  {t:"mc",q:"作者为什么用“酒”，不用“葡萄干”？",obs:{id:"d3-grape2",label:"为什么是葡萄变酒",skill:"体会比喻的贴切：变为、永存"},
+  {t:"mc",q:"作者为什么用“酒”，不用“葡萄干”？",img:"img/d3-grape.webp",alt:"左边葡萄干，中间一串葡萄，右边一瓶葡萄酒",obs:{id:"d3-grape2",label:"为什么是葡萄变酒",skill:"体会比喻的贴切：变为、永存"},
    options:[{text:"酒是葡萄“变”成的新东西；保存不是原样留住，而是变成更长久的东西",ok:true,reply:"原文用的是“变为”和“永存”。葡萄干是原样缩着留下；酒，是变成了另一种东西。"},
             {text:"因为酒更贵",ok:false,reply:"文章里没有讲价钱。看看原文用的动词。"},
             {text:"因为作者喜欢喝酒",ok:false,reply:"文章里没有写他喜欢喝酒。找一找原句里的“变为”。"}]},
@@ -446,7 +446,7 @@ days:[
 ],end:"第3天读完了。打开“我的日历本”，看看你写下的东西。",after:"<b>课后作业</b><br>1. 课本整理：结构图抄在课文标题旁边；五处“扯”标上序号和心情。<br>2. 用今天的两个问题，判断第10段（“然而，人不能只是被动地被记忆……”）能不能删，写两三句理由。<br>3. 把“我的比喻”扩写成一段话（150字左右）：先写这样东西，再写比喻，最后写你想到的道理。<br>第4天开头，我们先看第2题。"},
 
 /* ================= 第4天 ================= */
-{title:"被记住，去创造",short:"记忆",beats:[
+{title:"被记住，去创造",bg:"img/bg-2.webp",short:"记忆",beats:[
  {title:"作业：第10段能删吗",mood:"focus",steps:[
   {t:"say",who:"ri",text:"{name}，先看上次作业的第2题：第10段能不能删？我们用那两个问题，一个一个来。"},
   {t:"strike",para:9},
@@ -546,7 +546,7 @@ days:[
 ],end:"第4天读完了。",after:"<b>课后作业</b><br>1. 课本整理：第9段旁写“被记住”，第10段旁写“去创造”；两句居中的话画框。<br>2. 熟读第2段“那么明天会怎样呢？……是不是？”，读出排比的节奏。<br>3. 带上第3天作业里“我的比喻”那一段，第5天要用。"},
 
 /* ================= 第5天 ================= */
-{title:"物·事·理",short:"写法",beats:[
+{title:"物·事·理",bg:"img/bg-3.webp",short:"写法",beats:[
  {title:"拆开三步",mood:"focus",steps:[
   {t:"say",who:"ri",text:"{name}，读了四天，我们把作者的本事拆开来看。整篇文章，是一步一步从“物”走到“理”的。"},
   {t:"say",who:"ri",text:"物，是看得见、摸得着的东西。事，是人和这样东西之间发生过的事。理，是从中想明白的道理。"},
@@ -615,7 +615,7 @@ days:[
 ],end:"第5天读完了。《日历》我们就读到这里。",after:"<b>课后作业</b><br>1. 把今天这一段誊在作文本上，读一遍，删掉一句可以删的话。<br>2. 预习《每天诞生一次》（周涛）：读两遍，用铅笔标出你觉得最奇怪的一句。"},
 
 /* ================= 第6天 ================= */
-{title:"每天诞生一次",short:"初读",text:"mt",beats:[
+{title:"每天诞生一次",bg:"img/bg-4.webp",short:"初读",text:"mt",beats:[
  {title:"换一篇",mood:"calm",steps:[
   {t:"say",who:"ri",text:"{name}，今天换一篇。也写每一天，作者是周涛。"},
   {t:"say",who:"ri",text:"我从《日历》里来，那一篇写的是日子一页一页地过去。这一篇，写的是每天早晨醒过来。"},
@@ -658,7 +658,7 @@ days:[
 ],end:"第6天读完了。",after:"<b>课后作业</b><br>1. 再读《每天诞生一次》，圈出所有写“婴儿”的句子。<br>2. 想一想：你同意小满说的“太夸张了”吗？下次课带着你的想法来。"},
 
 /* ================= 第7天 ================= */
-{title:"一个比喻贯穿全文",short:"贯穿",text:"mt",beats:[
+{title:"一个比喻贯穿全文",bg:"img/bg-4.webp",short:"贯穿",text:"mt",beats:[
  {title:"诞生在哪里",mood:"focus",steps:[
   {t:"say",who:"ri",text:"{name}，小满说作者太夸张。我们先数一数：“诞生”这个词，作者写了几回。"},
   {t:"findWord",who:"ri",ask:"在正文里找出写到“诞生”的地方。按段算，题目不算。",
@@ -687,7 +687,7 @@ days:[
  ]},
  {title:"三个婴儿",steps:[
   {t:"say",who:"ri",text:"作者说早晨的自己像婴儿。作业里你圈了“婴儿”，有三段的句子几乎一模一样。"},
-  {t:"mc",q:"第11、13、16段都是“我知道这和婴儿……是同样的，我诞生了……”。三处分别对着早晨的哪三件事？",obs:{id:"d7-baby",label:"三处婴儿对应的事",skill:"梳理结构"},
+  {t:"mc",q:"第11、13、16段都是“我知道这和婴儿……是同样的，我诞生了……”。三处分别对着早晨的哪三件事？",img:"img/d7-baby.webp",alt:"三格：婴儿牙牙学语、仰脸看天花板、无端地哭",obs:{id:"d7-baby",label:"三处婴儿对应的事",skill:"梳理结构"},
    options:[{text:"想说话；静下来沉思；唱歌、读书时会哭",ok:true,reply:"牙牙学语，对着说话；仰脸凝视天花板，对着沉思；无端的哭，对着哭。"},
             {text:"刷牙；洗脸；跑步",ok:false,reply:"刷牙、洗脸是“照搬程序”，他还说自己很少锻炼。三段“婴儿”，前面写的都是什么？"},
             {text:"吃早饭；打牛奶；上班",ok:false,reply:"打牛奶的是妻子。看看每一处“婴儿”前面那一段，作者在做什么。"}]},
@@ -747,7 +747,7 @@ days:[
 ],end:"第7天读完了。",after:"<b>课后作业</b><br>1. 课本整理：七处“诞生”标序号；第11、13、16段旁写“说话、沉思、哭”；首尾两个“海”连一条线。<br>2. 读第12段，数一数作者用了几个“像”。"},
 
 /* ================= 第8天 ================= */
-{title:"说不清的感觉",short:"博喻",text:"mt",beats:[
+{title:"说不清的感觉",bg:"img/bg-5.webp",short:"博喻",text:"mt",beats:[
  {title:"思维是什么样子",mood:"focus",steps:[
   {t:"focus",para:11},
   {t:"say",who:"ri",text:"{name}，早晨作者静下来想事情。想事情是什么感觉？很难说清。看第12段他怎么说。"},
@@ -771,10 +771,10 @@ days:[
    options:[{text:"刚刚开始：刚显影、最先升起、刚发动",ok:true,reply:"思维也是刚刚醒来，正好扣着“诞生”。博喻也在给贯穿全文的比喻帮忙。"},
             {text:"都很吵",ok:false,reply:"炊烟、云絮，会吵吗？看“最先”“刚”这几个字。"},
             {text:"都很热",ok:false,reply:"冬日、秋空、寒冷天气。看“最先”“刚”这几个字。"}]},
-  {t:"listen",who:"xiaoman",ask:"一句话里四个“像”，太多了吧？留一个就够了。",q:"听一听：四个“像”，和只留一个。",
+  {t:"listen",who:"xiaoman",ask:"一句话里四个“像”，太多了吧？留一个就够了。",q:"听一听：四个“像”，和只留一个。",img:"img/d8-four.webp",alt:"四格：显影盘里的相纸、雪村的炊烟、秋空的云絮、寒晨刚发动的汽车",
    a:{who:"ri",label:"原文",text:"这时的思维像白纸上似是而非的显影线条，也像冬日村庄上空最先升起的炊烟轮廓，还像一朵停留在无风的秋空之间的云絮，也像寒冷天气里汽车引擎刚发动时的声响。",marks:["像"]},
    b:{who:"xiaoman",label:"小满删的",text:"这时的思维像白纸上似是而非的显影线条。",marks:["像"]}},
-  {t:"mc",q:"只留一个“像”，少了什么？",obs:{id:"d8-one",label:"博喻删到一个",skill:"体会博喻的作用"},
+  {t:"mc",q:"只留一个“像”，少了什么？",img:"img/d8-four.webp",alt:"四格：显影盘里的相纸、雪村的炊烟、秋空的云絮、寒晨刚发动的汽车",obs:{id:"d8-one",label:"博喻删到一个",skill:"体会博喻的作用"},
    options:[{text:"只剩“刚显出来、看不真切”这一面，轻轻飘着、刚刚发动这些样子都没了",ok:true,reply:"一个比喻只写出一面。几个合起来，说不清的感觉才说清了。"},
             {text:"只少了几个字",ok:"half",reply:"不只是字数。删掉的三个“像”，各写出了思维的哪一面？"},
             {text:"什么都没少，意思一样",ok:false,reply:"再听一遍：云絮那种停着不动、引擎那种刚刚发动的感觉，还在吗？"}]},
@@ -783,11 +783,11 @@ days:[
  ]},
  {title:"换一个试试",steps:[
   {t:"say",who:"linyi",text:"我觉得“炊烟”不够有劲，换一个！"},
-  {t:"listen",q:"听一听：炊烟，和工厂浓烟。",
+  {t:"listen",q:"听一听：炊烟，和工厂浓烟。",img:"img/d8-smoke.webp",alt:"左边雪村上空一缕炊烟，右边工厂烟囱冒出滚滚黑烟",
    a:{who:"ri",text:"这时的思维像白纸上似是而非的显影线条，也像冬日村庄上空最先升起的炊烟轮廓，还像一朵停留在无风的秋空之间的云絮……",marks:["最先升起的炊烟轮廓"]},
    b:{who:"linyi",label:"林一换的",text:"这时的思维像白纸上似是而非的显影线条，也像冬日村庄上空滚滚冒出的工厂浓烟，还像一朵停留在无风的秋空之间的云絮……",marks:["滚滚冒出的工厂浓烟"]}},
   {t:"say",who:"zhou",textBy:{changge:"哈哈哈，脑子里冒浓烟？那是要着火了吧！",qingxian:"读起来……好像脑子里很乱、很闷。"},text:"好奇怪。"},
-  {t:"mc",q:"为什么换成“工厂浓烟”不行？",obs:{id:"d8-swap",label:"喻体为什么不能换",skill:"体会比喻的贴切"},
+  {t:"mc",q:"为什么换成“工厂浓烟”不行？",img:"img/d8-smoke.webp",alt:"左边雪村上空一缕炊烟，右边工厂烟囱冒出滚滚黑烟",obs:{id:"d8-swap",label:"喻体为什么不能换",skill:"体会比喻的贴切"},
    options:[{text:"浓烟又黑又重，不是“最先升起”的淡淡轮廓，和“简洁纯净”对不上",ok:true,reply:"喻体要和本体像在点子上。作者要写的是轻、淡、刚开始。"},
             {text:"工厂不在村庄里",ok:"half",reply:"这不是关键。最要紧的，是浓烟和这时的思维像不像。"},
             {text:"浓烟太长了",ok:false,reply:"不是长短。这时的思维是轻还是重？"}]},
@@ -817,7 +817,7 @@ days:[
 ],end:"第8天读完了。",after:"<b>课后作业</b><br>1. 课本整理：第12段的“像”都圈出，旁写“博喻”；《日历》第4段“风”“流光”画线。<br>2. 把“我的博喻”写成一段话（80字左右），读给家人听。"},
 
 /* ================= 第9天 ================= */
-{title:"两篇对读",short:"对读",text:"mt",beats:[
+{title:"两篇对读",bg:"img/bg-6.webp",short:"对读",text:"mt",beats:[
  {title:"都写每一天",mood:"calm",steps:[
   {t:"say",who:"ri",text:"{name}，《日历》和《每天诞生一次》，都写“每一天”。左边原文上面可以切换两篇。"},
   {t:"mc",q:"两篇文章，各从哪里写起？",obs:{id:"d9-start",label:"两篇各从哪里写起",skill:"比较阅读：切入点"},
@@ -899,7 +899,7 @@ days:[
 ],end:"第9天读完了。",after:"<b>课后作业</b><br>1. 想好下次短文用哪一种写法、写什么，在作文本上列三行提纲。<br>2. 翻一翻“我的日历本”，挑出你想用进短文里的句子。"},
 
 /* ================= 第10天 ================= */
-{title:"我的一篇",short:"初稿",beats:[
+{title:"我的一篇",bg:"img/bg-7.webp",short:"初稿",beats:[
  {title:"挑写法",mood:"calm",steps:[
   {t:"say",who:"ri",text:"{name}，今天写你自己的一篇。题目自己定，三百字左右。"},
   {t:"mc",who:"ri",ask:"先挑写法。",q:"你用哪一种写法？",key:"d10.way",stance:true,
@@ -940,7 +940,7 @@ days:[
 ],end:"第10天写完了。",after:"<b>课后作业</b><br>把初稿读给家人听一遍，听听哪里读着别扭，用铅笔在作文本上标出来。"},
 
 /* ================= 第11天 ================= */
-{title:"改定与分享",short:"改定",beats:[
+{title:"改定与分享",bg:"img/bg-7.webp",short:"改定",beats:[
  {title:"读别人的",mood:"calm",steps:[
   {t:"say",who:"ri",text:"{name}，最后一天。先读读同学的短文，也有三位虚拟同学的。"},
   {t:"gallery",key:"d11.gal",from:"d10",who:"ri",maxReal:3,q:"读读别人的短文。每一位都可以私下点个反应，再挑一位回应一两句：他的比喻贴不贴切？哪件事撑得住道理？",
