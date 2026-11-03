@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>弦歌 · 课堂剧本</title>
+<style>
+:root{--paper:#f6f1e3;--ink:#2a241b;--muted:#6f6455;--line:#d6c9ac;--zhu:#a3382a;--shi:#3c6f7a;--gold:#8a6a2a}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.75 "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+main{max-width:860px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:30px;margin:0 0 2px}
+.sub{color:var(--muted);margin:0 0 6px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px}
+nav.lessons{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+nav.lessons a{font-size:14px;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:2px 10px;background:#fffaf0}
+nav.lessons a.on{background:var(--ink);color:#fff}
+h2{font-size:21px;margin:28px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--line)}
+h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
+.st{margin:6px 0;padding-left:0}
+.who{display:inline-block;min-width:4.6em;font-weight:700}
+.w-fan{color:var(--zhu)}.w-hy{color:#4e5f8a}.w-cg{color:#2f5687}.w-qx{color:#a8741a}
+.sd{color:var(--muted);font-size:.9em}
+.box{border-left:4px solid var(--shi);background:#fffaf0;padding:8px 14px;margin:10px 0;font-size:16px}
+.box b.t{color:var(--shi)}
+.box .q p{margin:2px 0}
+.box .a{color:var(--zhu)}
+.cue{border-left-color:var(--zhu)}
+.cue b.t{color:var(--zhu)}
+.task{border-left-color:var(--gold)}
+.tip{color:var(--gold);font-size:14px}
+.copy{display:inline-block;background:var(--zhu);color:#fff;font-size:13px;padding:0 8px;border-radius:3px;margin-left:6px}
+.read{color:var(--shi);font-weight:700}
+@media print{nav.lessons{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<main>
+  <nav class="lessons" id="nav"></nav>
+  <div id="out">正在读取……</div>
+</main>
+<script>
+(function () {
+  var LIST = [["yyl-1","岳阳楼记 1"],["yyl-2","2"],["yyl-3","3"],["yyl-4","4"],["yyl-5","5"],["yyl-6","6"],["yyl-7","7"],["yyl-8","8"],["yyl-9","9"],["yyl-10","10"],["jp-g9-1","试卷讲评"],["jp-g9-2","作文讲评"]];
+  var cur = (location.search.match(/l=([\w-]+)/) || [])[1] || "yyl-1";
+  document.getElementById("nav").innerHTML = LIST.map(function (x) { return '<a href="?l=' + x[0] + '"' + (x[0] === cur ? ' class="on"' : "") + ">" + x[1] + "</a>"; }).join("");
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var MK = function (t) { return esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/~~(.+?)~~/g, "<s>$1</s>").replace(/__(.+?)__/g, "<u>$1</u>").replace(/\[\[(.+?)\]\]/g, "<mark>$1</mark>").replace(/^原：/, "【原文】").replace(/^译：/, "【译文】").replace(/^改：/, "【示范】"); };
+  var CUE = { call: "点名回答", say: "全班一起说", hand: "举手", stand: "站队", gesture: "比划", "catch": "抓错", race: "比赛读" };
+  var s = document.createElement("script");
+  s.src = cur + ".js?t=" + Date.now();
+  s.onerror = function () { document.getElementById("out").textContent = "这一节还没有做好。"; };
+  s.onload = function () {
+    var L = window.PROJ_LESSON, C = L.cast || {}, total = 0, h = "";
+    var name = function (k) { return C[k] ? C[k].name : k; };
+    L.segments.forEach(function (sg, i) {
+      total += sg.min || 0;
+      h += "<h2>" + (i + 1) + "　" + esc(sg.t) + "<small>" + (sg.min || "?") + " 分钟</small></h2>";
+      sg.steps.forEach(function (st) {
+        var v = st.vis;
+        if (v) {
+          if (v.type === "card") {
+            h += '<div class="box"><b class="t">屏幕题卡　' + esc(v.n || "") + " " + MK(v.title || "") + (v.score ? "（" + esc(v.score) + "）" : "") + "</b>";
+            if (v.cols) h += v.cols.map(function (c) { return '<div class="q"><b>' + esc(c.h) + "：</b>" + c.lines.map(MK).join(" ") + "</div>"; }).join("");
+            if (v.q) h += '<div class="q">' + v.q.map(function (x) { return x ? "<p>" + MK(x) + "</p>" : ""; }).join("") + "</div>";
+            if (v.ans) h += '<div class="a">' + esc(v.tag || "答案") + "：" + v.ans.map(MK).join("　") + "</div>";
+            h += "</div>";
+          } else if (v.type === "text") {
+            h += '<div class="box"><b class="t">屏幕原文</b>　' + (v.paras || []).map(function (p) { return "第" + p.slice(1) + "段"; }).join("、") + (v.mark ? "　标出：" + esc(v.mark.join("、")) : "") + "</div>";
+          } else {
+            h += '<div class="box"><b class="t">屏幕</b>　' + esc(v.type) + (v.cap ? "：" + esc(v.cap) : "") + (v.img ? "（" + esc(v.img) + "）" : "") + (v.title ? "：" + esc(v.title) : "") + (v.q ? "<div class='q'>" + v.q.map(function (x) { return "<p>" + MK(x) + "</p>"; }).join("") + "</div>" : "") + "</div>";
+          }
+        }
+        if (st.board && st.board.length) h += '<div class="box"><b class="t">黑板</b>　' + esc(st.board.join("；")) + "</div>";
+        if (st.cue) h += '<div class="box cue"><b class="t">【' + (CUE[st.cue.k] || st.cue.k) + "】</b>" + esc(st.cue.t) + (st.note ? "<br>" + esc(st.note) : "") + "</div>";
+        else if (!st.say && (st.note || st.ask)) h += '<div class="box task"><b class="t">屏幕提示</b>　' + esc(st.ask || st.note) + "</div>";
+        if (st.read) h += '<div class="st read">【' + (st.read.mode === "echo" ? "跟读" : "范读") + "】" + st.read.paras.map(function (p) { return "第" + p.slice(1) + "段"; }).join("、") + "</div>";
+        if (st.say) h += '<div class="st"><span class="who w-' + st.who + '">' + esc(name(st.who)) + "</span>" + esc(st.say).replace(/（([^）]*)）/g, '<span class="sd">（$1）</span>') + (st.copy ? '<span class="copy">✎ ' + esc(typeof st.copy === "string" ? st.copy : "抄下来") + "</span>" : "") + "</div>";
+        if (st.timer) h += '<div class="box task"><b class="t">计时 ' + Math.round(st.timer.s / 60 * 10) / 10 + " 分钟</b>　" + esc(st.timer.label || "") + "</div>";
+        if (st.respond) h += '<div class="box"><b class="t">助教按钮</b>' + st.respond.opts.map(function (o) { return "<div>【" + esc(o.k) + "】" + esc(name(o.who)) + "：" + esc(o.say) + "</div>"; }).join("") + "</div>";
+        if (st.tip) h += '<div class="tip">助教：' + esc(st.tip) + "</div>";
+      });
+    });
+    document.title = L.title + " " + (L.short || "") + " · 课堂剧本";
+    document.getElementById("out").innerHTML = "<h1>" + esc(L.title) + "</h1><p class='sub'>" + esc(L.sub || "") + "</p><p class='meta'>共 " + L.segments.length + " 个环节，" + total + " 分钟。主讲：" + esc(name(L.lead || "fan")) + "。本页由投屏配置自动生成，与投屏逐句一致；可直接打印。</p>" + h;
+  };
+  document.body.appendChild(s);
+})();
+</script>
+</body>
+</html>
