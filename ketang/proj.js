@@ -780,19 +780,19 @@
     return { who: st.by || "qx", text: t };
   }
   function doRead(st, token) {
-    var r = st.read, list = [];
+    var r = st.read, list = [], RD = r.who || L.reader || LEAD;
     r.paras.forEach(function (pk) { L.paras[pk].forEach(function (s, i) { list.push({ id: pk + "-" + i, s: s }); }); });
-    spotlight("fan");
-    if (st.note) showLine(null, st.note, true); else showLine("fan", r.mode === "echo" ? "（一句一句跟读）" : "（范读）");
+    spotlight(RD);
+    if (st.note) showLine(null, st.note, true); else showLine(RD, r.mode === "echo" ? "（一句一句跟读）" : "（范读）");
     var i = 0;
     return new Promise(function (res) {
       (function next() {
         if (token !== TOKEN) return;
-        if (i >= list.length) { highlight(null); talking("fan", false); res(); return; }
+        if (i >= list.length) { highlight(null); talking(RD, false); res(); return; }
         var it = list[i++];
-        highlight(it.id, "hi"); talking("fan", true);
-        say("fan", voiceText({ say: it.s }), token).then(function () {
-          if (token !== TOKEN) return; talking("fan", false);
+        highlight(it.id, "hi"); talking(RD, true);
+        say(RD, voiceText({ say: it.s }), token).then(function () {
+          if (token !== TOKEN) return; talking(RD, false);
           if (r.mode === "echo") {
             highlight(it.id, "echo");
             var wait = Math.max(1600, it.s.length * 330) / speed;

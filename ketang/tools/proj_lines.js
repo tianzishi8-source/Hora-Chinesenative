@@ -38,7 +38,7 @@ function splitLong(st) {   // 太长的台词拆成几步（每步不超过约 5
 }
 L.segments.forEach(sg => sg.steps.forEach(st0 => splitLong(st0).forEach(st => {
   if (st.say) add(st.who, voiceText(st));
-  if (st.read) st.read.paras.forEach(pk => L.paras[pk].forEach(s => add("fan", voiceText({ say: s }))));
+  if (st.read) st.read.paras.forEach(pk => L.paras[pk].forEach(s => add(st.read.who || L.reader || L.lead || "fan", voiceText({ say: s }))));
   if (st.respond) st.respond.opts.forEach(o => add(o.who, voiceText(o)));
   // 屏幕提示的朗读（和 proj.js 的 promptOf 一致）
   if (!st.say && !st.quiet) {
