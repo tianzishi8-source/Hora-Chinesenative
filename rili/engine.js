@@ -841,10 +841,12 @@ function showTeacherLogin(fromHash){var sh=overlay("ovTLogin");
   sh.innerHTML='<h3>老师</h3><label class="field"><span class="lab">老师密码</span><input type="password" id="tl-pw" autocomplete="off"></label><div class="row"><button type="button" class="btn" id="tl-go">进入</button><button type="button" class="ghost" id="tl-x">'+(fromHash?"我是学生":"取消")+'</button></div><p class="note" id="tl-msg">密码是部署表格时你自己设的。</p>';
   var pw=$("#tl-pw",sh),msg=$("#tl-msg",sh);pw.focus();
   $("#tl-x",sh).addEventListener("click",function(){$("#ovTLogin").hidden=true;if(fromHash&&!BK.me){var ss=getSess();if(ss)autoLogin(ss);else if(HOME)location.href=HOME;else showLogin();}});
-  function go(){msg.textContent="正在核对……";BK.tpw=pw.value;api("t_all",{pw:pw.value}).then(function(j){$("#ovTLogin").hidden=true;$("#bTMode").hidden=false;$("#bTeacher").hidden=false;$("#bTLogin").hidden=true;
+  function go(){msg.textContent="正在核对……";BK.tpw=pw.value;api("t_all",{pw:pw.value}).then(function(j){try{sessionStorage.setItem("hora-tpw",pw.value);}catch(e){}$("#ovTLogin").hidden=true;$("#bTMode").hidden=false;$("#bTeacher").hidden=false;$("#bTLogin").hidden=true;
       if(!BK.me){$("#ovLogin")&&($("#ovLogin").hidden=true);BK.me=null;KEY="hora-"+L.id+"-teacher-preview";setSaveSt("老师预览：不保存");restart();}
-      tDocs=[];openTeacher();}).catch(function(e){BK.tpw=null;msg.textContent=e.code==="pw"?"密码不对。":"连不上表格，稍后再试。";});}
-  $("#tl-go",sh).addEventListener("click",go);pw.addEventListener("keydown",function(e){if(e.key==="Enter")go();});}
+      tDocs=[];openTeacher();}).catch(function(e){BK.tpw=null;if(e.code==="pw"){try{sessionStorage.removeItem("hora-tpw");}catch(e2){}}msg.textContent=e.code==="pw"?"密码不对。":"连不上表格，稍后再试。";});}
+  $("#tl-go",sh).addEventListener("click",go);pw.addEventListener("keydown",function(e){if(e.key==="Enter")go();});
+  /* 同一个标签页里输过一次密码，换课文时自动填上（关掉标签页就忘） */
+  var saved=null;try{saved=sessionStorage.getItem("hora-tpw");}catch(e){}if(saved){pw.value=saved;go();}}
 
 }
 })();

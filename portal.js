@@ -254,7 +254,7 @@
     if ((b = document.getElementById("bTie"))) b.addEventListener("click", showTie);
     if ((b = document.getElementById("bWd"))) b.addEventListener("click", function () { showWardrobe(1); });
     if ((b = document.getElementById("bOut"))) b.addEventListener("click", function () {
-      try { sessionStorage.removeItem("hora-session"); sessionStorage.removeItem("hora-teacher"); } catch (e) {}
+      try { sessionStorage.removeItem("hora-session"); sessionStorage.removeItem("hora-teacher"); sessionStorage.removeItem("hora-tpw"); } catch (e) {}
       var l = get("hora-last"); if (l) { delete l.pin; put("hora-last", l); }
       me = null; teacher = false; showLogin();
     });
