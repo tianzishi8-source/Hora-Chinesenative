@@ -300,8 +300,11 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .cardpane .pt{white-space:nowrap;font-size:.8em;color:var(--ink2)}
 .dlg .who.w-hy{background:#4e5f8a}
 /* 点名 */
-.cue .callbox{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding-left:22px;border-left:2px dashed rgba(163,56,42,.4)}
-.cue .callbox .nm{font-family:var(--f-brush);font-size:56px;line-height:1;color:var(--zhu);min-width:4em;text-align:center}
+.cue .callbox{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;padding-left:22px;border-left:2px dashed rgba(163,56,42,.4)}
+.cue .callbox .queue{display:flex;gap:10px;font-size:20px;font-weight:700;color:var(--ink2)}
+.cue .callbox .queue .now{color:var(--zhu)}
+.cue .callbox .queue .done{text-decoration:line-through;opacity:.5}
+.cue .callbox .nm{font-family:var(--f-brush);font-size:44px;line-height:1;color:var(--zhu);min-width:4em;text-align:center}
 .cue .callbox .nm.pop{animation:popnm .6s cubic-bezier(.3,1.6,.5,1)}
 @keyframes popnm{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
 .cue .callbox .cb2{display:flex;gap:8px}

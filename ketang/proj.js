@@ -589,26 +589,45 @@
     return ((window.PROJ_ROSTER || {})[KLASS] || []).slice();
   }
   var CALLS = L.callLines || ["{n}，你来说说。", "请{n}回答。", "{n}，说说你的想法。", "{n}，你来试试。"];
-  var callNo = 0, curName = "";
-  function pickName() {
+  var callNo = 0, curName = "", group = [], gi = 0;
+  // 每个问题点 2～3 人（L.callCount，默认 [2,3] 随机），一次先排好，屏幕上看得到谁在后面
+  function pickName(avoid) {
     var all = roster(); if (!all.length) return "";
     var done = lsGet(rkey("called"), []);
-    var pool = all.filter(function (n) { return done.indexOf(n) < 0 && n !== curName; });
-    if (!pool.length) { lsSet(rkey("called"), []); pool = all.filter(function (n) { return n !== curName; }); if (!pool.length) pool = all; }
-    return pool[Math.floor(Math.random() * pool.length)];
-  }
-  // skip：刚才点的同学不在／不方便，换一个（不算点过）
-  function callName(skip, token) {
-    var el = $(".cue .nm"); if (!el) return;
-    var done = lsGet(rkey("called"), []);
-    if (skip && curName) done = done.filter(function (x) { return x !== curName; });
-    lsSet(rkey("called"), done);
-    var n = pickName(); if (!n) return;
-    curName = n; el.textContent = n; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+    var pool = all.filter(function (n) { return done.indexOf(n) < 0 && avoid.indexOf(n) < 0; });
+    if (!pool.length) { lsSet(rkey("called"), []); pool = all.filter(function (n) { return avoid.indexOf(n) < 0; }); if (!pool.length) pool = all; }
+    var n = pool[Math.floor(Math.random() * pool.length)];
     lsSet(rkey("called"), lsGet(rkey("called"), []).concat([n]));
-    var line = CALLS[callNo++ % CALLS.length].replace("{n}", n);
+    return n;
+  }
+  function paintCall() {
+    var box = $(".cue .callbox"); if (!box) return;
+    var nm = box.querySelector(".nm"); nm.textContent = curName; nm.classList.remove("pop"); void nm.offsetWidth; nm.classList.add("pop");
+    box.querySelector(".queue").innerHTML = group.map(function (n, i) { return '<span class="' + (i < gi ? "done" : i === gi ? "now" : "") + '">' + "①②③④⑤⑥"[i] + esc(n) + "</span>"; }).join("");
+  }
+  function voiceCall(token) {
+    var line = CALLS[callNo++ % CALLS.length].replace("{n}", curName);
     stopVoice(); spotlight(LEAD); talking(LEAD, true);
     say(LEAD, voiceText({ say: line }), token).then(function () { if (token === TOKEN) talking(LEAD, false); });
+  }
+  function startCall(c, token) {
+    var cnt = c.n || L.callCount || [2, 3];
+    if (cnt.length) cnt = cnt[Math.floor(Math.random() * cnt.length)];
+    group = []; for (var i = 0; i < cnt; i++) { var n = pickName(group); if (n) group.push(n); }
+    gi = 0; curName = group[0] || ""; if (!curName) return;
+    paintCall(); voiceCall(token);
+  }
+  // 下一位：排好的人点完了，就再加一位
+  function nextCall(token) {
+    if (!group.length) return;
+    gi++; if (gi >= group.length) group.push(pickName(group));
+    curName = group[gi]; paintCall(); voiceCall(token);
+  }
+  // 换一个：这位同学不在，不算点过
+  function swapCall(token) {
+    if (!group.length) return;
+    lsSet(rkey("called"), lsGet(rkey("called"), []).filter(function (x) { return x !== curName; }));
+    var n = pickName(group); group[gi] = n; curName = n; paintCall(); voiceCall(token);
   }
   function openRoster() {
     var d = $(".dialog"); d.hidden = false;
@@ -649,9 +668,9 @@
     el.innerHTML = '<div class="seal">' + k[0] + '</div><div class="ct"><small>' + k[1] + "</small>" + esc(c.t) + "</div>";
     var st = STEPS[cur]; if (st && st.note) el.querySelector(".ct").insertAdjacentHTML("beforeend", '<span class="cn">' + esc(st.note) + "</span>");
     if (c.k === "call") {
-      el.insertAdjacentHTML("beforeend", '<div class="callbox"><div class="nm">' + (roster().length ? "……" : "请老师点一位同学") + '</div><div class="cb2">' +
-        (roster().length ? '<button class="btn gold" data-call="more">再点一位</button><button class="btn ghost" data-call="skip">换一个</button>' : '<button class="btn ghost" data-call="list">输入名单</button>') + "</div></div>");
-      el.querySelectorAll("[data-call]").forEach(function (b) { b.onclick = function () { var a = b.dataset.call; if (a === "list") openRoster(); else callName(a === "skip", TOKEN); }; });
+      el.insertAdjacentHTML("beforeend", '<div class="callbox"><div class="nm">' + (roster().length ? "……" : "请老师点一位同学") + '</div><div class="queue"></div><div class="cb2">' +
+        (roster().length ? '<button class="btn gold" data-call="more">下一位</button><button class="btn ghost" data-call="skip">换一个</button>' : '<button class="btn ghost" data-call="list">输入名单</button>') + "</div></div>");
+      el.querySelectorAll("[data-call]").forEach(function (b) { b.onclick = function () { var a = b.dataset.call; if (a === "list") openRoster(); else if (a === "skip") swapCall(TOKEN); else nextCall(TOKEN); }; });
     }
     el.hidden = false; el.classList.remove("in"); void el.offsetWidth; el.classList.add("in");
     sfx("block");
@@ -735,7 +754,7 @@
     };
     if (st.read) run = (pr ? sayPrompt() : Promise.resolve()).then(function () { return token === TOKEN ? doRead(st, token) : null; });
     else if (pr) run = sayPrompt();
-    if (st.cue && st.cue.k === "call" && roster().length) { curName = ""; run = run.then(function () { if (token === TOKEN) callName(false, token); }); }
+    if (st.cue && st.cue.k === "call" && roster().length) { group = []; curName = ""; run = run.then(function () { if (token === TOKEN) startCall(st.cue, token); }); }
     else if (st.say) { spotlight(st.who); showLine(st.who, st.say); talking(st.who, true); run = say(st.who, voiceText(st), token).then(function () { if (token === TOKEN) talking(st.who, false); }); }
     else if (st.note) { spotlight(null); showLine(null, st.note, true); run = Promise.resolve(); }
     else { spotlight(null); run = Promise.resolve(); }
@@ -809,7 +828,7 @@
     else if (k === "ArrowLeft" || k === "PageUp" || k === "ArrowUp") { e.preventDefault(); prev(); }
     else if (/^[1-9]$/.test(k) && !respEl.hidden) { var bs = respEl.querySelectorAll("button"); if (bs[+k - 1]) bs[+k - 1].click(); }
     else if (k === "f" || k === "F") $("#full").click();
-    else if (k === "n" || k === "N") { if ($(".cue [data-call=more]")) callName(false, TOKEN); }
+    else if (k === "n" || k === "N") { if ($(".cue [data-call=more]")) nextCall(TOKEN); }
     else if (k === "r" || k === "R") nudge(TOKEN);
     else if (k === "p" || k === "P") { if (timer) { timer.paused = !timer.paused; toast(timer.paused ? "计时暂停" : "计时继续"); } }
   });
@@ -830,7 +849,7 @@
     });
     h += '<label><b>语速</b><select id="spd">' + [0.85, 0.9, 1, 1.1, 1.2].map(function (x) { return '<option value="' + x + '"' + (x === speed ? " selected" : "") + ">" + (x === 1 ? "正常" : x < 1 ? "慢一点（" + x + "）" : "快一点（" + x + "）") + "</option>"; }).join("") + "</select></label>";
     h += '<label><b>音量增强</b><select id="bst">' + [[1, "不增强"], [1.5, "大一点"], [2, "大（默认）"], [2.6, "很大（大教室）"]].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === boost ? " selected" : "") + ">" + x[1] + "</option>"; }).join("") + "</select></label>";
-    h += '<div class="hint">键盘：空格／→／翻页遥控器＝继续；←＝上一步；1–5＝助教回应按钮；P＝暂停计时；F＝全屏；N＝再点一位；R＝提醒专心。</div>';
+    h += '<div class="hint">键盘：空格／→／翻页遥控器＝继续；←＝上一步；1–5＝助教回应按钮；P＝暂停计时；F＝全屏；N＝下一位；R＝提醒专心。</div>';
     h += '<div style="display:flex;justify-content:flex-end"><button class="btn" id="setok">好了</button></div>';
     d.querySelector(".box").innerHTML = h;
     d.querySelectorAll("select[data-k]").forEach(function (s) { s.onchange = function () { store.set("voice-" + s.dataset.k, s.value); }; });
