@@ -305,7 +305,7 @@ textarea:focus,input[type=text]:focus,input[type=password]:focus{border-color:va
 /* ===== 立绘（伴学清弦/长歌、“我”） =====
    为了和宣纸、水墨放在一起：降一点饱和、略暖，用 multiply 叠在纸上（白衣服透出纸色）。
    空白少：底栏里的头像圈（.circ）；空白多：右下角的大图（.figs，半身或全身）。 */
-.actor.sprite{opacity:.8;transform:none;cursor:pointer}
+.actor.sprite{opacity:.8;transform:none}
 .actor.sprite.on{opacity:1}
 .hush .actor.sprite{opacity:.5}
 .circ{position:relative;display:block;width:76px;height:76px;border-radius:50%;overflow:hidden;background:var(--page);
@@ -316,21 +316,22 @@ textarea:focus,input[type=text]:focus,input[type=password]:focus{border-color:va
 .actor.sprite.on .circ{transform:scale(1.06);box-shadow:inset 0 0 0 2px #e9b860,0 0 0 3px #fff6dc,0 0 10px 3px rgba(255,200,110,.6)}
 /* 身体和表情补丁先正常叠好（补丁盖住原来的脸，不会重影），整组再和纸 multiply */
 .circ img,.fbox img{position:absolute;max-width:none;filter:saturate(.72) sepia(.07) contrast(.97);user-select:none;-webkit-user-drag:none}
-.fbox{mix-blend-mode:multiply}
+.fbox{mix-blend-mode:normal}
 .figs{position:fixed;z-index:3;display:none;align-items:flex-end;justify-content:flex-end;pointer-events:none}
 .figs.half,.figs.full{display:flex}
 body.figs-on .actors .actor.sprite{display:none}
-.fig{position:relative;pointer-events:auto;opacity:.88;transition:opacity .3s}
+.fig{position:relative;pointer-events:auto;transition:filter .3s}
+.fig:not(.on){filter:brightness(.97) saturate(.9)}
 .fbox{transition:transform .4s cubic-bezier(.2,.8,.2,1);transform-origin:50% 100%;transform:scale(.94)}
 .fig.on .fbox{transform:scale(1.07)}
 .fig.on .fbox{mix-blend-mode:normal;filter:drop-shadow(0 0 2px #fff8e6) drop-shadow(0 0 9px rgba(255,205,120,.9)) drop-shadow(0 0 22px rgba(255,190,90,.5))}
 .fig.on{z-index:2}
 .fig+.fig{margin-left:-6%}
 .fig.on{opacity:1}
-.fig[data-who="me"]{cursor:pointer}
+
 .fbox{position:relative;overflow:visible;background:radial-gradient(60% 9% at 50% 98%,rgba(55,62,60,.2),transparent 75%)}
-.figs.half .fbox{overflow:hidden;-webkit-mask-image:linear-gradient(#000 82%,transparent);mask-image:linear-gradient(#000 82%,transparent)}
-.fnm{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);font-size:.74rem;font-weight:700;color:var(--muted);background:color-mix(in srgb,var(--page) 80%,transparent);padding:0 8px;border-radius:999px;white-space:nowrap}
+.figs.half .fbox{overflow:hidden}
+.fnm{position:absolute;left:50%;bottom:calc(var(--sink,0px) + 8px);transform:translateX(-50%);font-size:.74rem;font-weight:700;color:var(--muted);background:color-mix(in srgb,var(--page) 80%,transparent);padding:0 8px;border-radius:999px;white-space:nowrap}
 @media (prefers-reduced-motion:no-preference){
   .fbox{animation:breathe-s 4.2s ease-in-out infinite}
   .fig.talking .fbox{animation:talk-s .5s ease-in-out infinite}
@@ -412,6 +413,6 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 .simg-big img{max-width:100%;max-height:100%;border-radius:8px}
 
 /* 背景画 */
-#scenebg{position:fixed;inset:0;z-index:0;background:70% center/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none}
+#scenebg{position:fixed;inset:0;z-index:-1;background:70% center/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none}
 #scenebg.on{opacity:.9}
-#scenebg~.app,.app{position:relative;z-index:1}
+#cast{position:relative;z-index:5}

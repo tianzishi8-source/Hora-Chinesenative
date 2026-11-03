@@ -226,17 +226,17 @@ function guestNote(who,txt){var P=PEOPLE[who];if(P&&P.fig){GUEST.who=who;GUEST.q
 function headPos(w,box){var h=spriteHair(w),gf=w==="me"&&guestFig(),c=gf?gf.head:HEAD[h]||HEAD[h.charAt(0)]||[480,300],sc=box/316;return {w:Math.round(1024*sc),l:Math.round(box/2-c[0]*sc),t:Math.round(box/2-c[1]*sc)};}
 function applyHead(o,w){var box=o.circle.clientWidth||76,p=headPos(w,box);[o.cb,o.cf].forEach(function(im){im.style.width=p.w+"px";im.style.left=p.l+"px";im.style.top=p.t+"px";});}
 function buildCast(){[["l",C.left],["r",C.right]].forEach(function(side){var host=$(".actors."+side[0]);side[1].forEach(function(w){var P=PEOPLE[w],spr=!!P.sprite;
-  var d=el("button",{class:"actor"+(spr?" sprite":""),type:"button","data-who":w,"aria-label":w==="me"?"我（点一下去换装间）":"和"+P.name+"聊一聊"});
+  var d=el("button",{class:"actor"+(spr?" sprite":""),type:"button","data-who":w,"aria-label":w==="me"?"我":"和"+P.name+"聊一聊"});
   d.innerHTML=spr?'<span class="circ"><img class="cb" alt="" draggable="false"><img class="cf" alt="" hidden draggable="false"></span><span class="nm"></span>':'<canvas width="220" height="220" aria-hidden="true"></canvas><span class="nm"></span>';
   $(".nm",d).textContent=nameOf(w);host.append(d);
   if(spr){if(!FIGS){FIGS=el("div",{class:"figs",id:"figs","aria-hidden":"true"});document.body.append(FIGS);}
     var fig=el("div",{class:"fig","data-who":w});fig.innerHTML='<div class="fbox"><img class="fb" alt="" draggable="false"><img class="ff" alt="" hidden draggable="false"></div><span class="fnm"></span>';$(".fnm",fig).textContent=nameOf(w);FIGS.append(fig);
-    if(w==="me")fig.addEventListener("click",goWardrobe);
+    
     var o={el:d,fig:fig,circle:$(".circ",d),cb:$(".cb",d),cf:$(".cf",d),fb:$(".fb",fig),ff:$(".ff",fig),cur:"",blinkAt:performance.now()/1000+2+Math.random()*3};SPR[w]=o;
     o.cb.onerror=function(){d.classList.remove("sprite");d.innerHTML='<canvas width="220" height="220" aria-hidden="true"></canvas><span class="nm"></span>';$(".nm",d).textContent=nameOf(w);CV[w]=$("canvas",d);fig.remove();delete SPR[w];};
     o.cb.src=o.fb.src=spriteSrc(w);applyHead(o,w);var ff=FACES[spriteHair(w)]||{};for(var fk in ff)loadFace(spriteSrc(w,fk));}
   else CV[w]=$("canvas",d);
-  if(w==="me"){if(spr)d.addEventListener("click",goWardrobe);}else d.addEventListener("click",function(){if(!bChat.hidden&&!bChat.disabled)openChat(w);});});});
+  if(w!=="me")d.addEventListener("click",function(){if(!bChat.hidden&&!bChat.disabled)openChat(w);});});});
   if(FIGS){addEventListener("resize",layoutFigs);setInterval(layoutFigs,400);requestAnimationFrame(layoutFigs);}}
 /* 摆法：量一下任务卡下面到底栏之间还有多高 */
 function layoutFigs(){if(!FIGS)return;var work=$(".work"),cast=$("#cast"),task=$("#task");if(!work||!cast)return;
@@ -255,7 +255,7 @@ function layoutFigs(){if(!FIGS)return;var work=$(".work"),cast=$("#cast"),task=$
   if(mode!=="circle"){h=Math.min(h,capH(mode));if(h<250)mode="circle";}
   if(mode!==FIGMODE){FIGMODE=mode;document.body.classList.toggle("figs-on",mode!=="circle");FIGS.className="figs "+mode;}
   if(mode==="circle"){for(var w in SPR)applyHead(SPR[w],w);return;}
-  FIGS.style.right=Math.max(16,innerWidth-wr.right)+"px";FIGS.style.bottom=Math.round(innerHeight-cr.top+4)+"px";FIGS.style.maxWidth=Math.round(wr.width)+"px";
+  FIGS.style.right=Math.max(16,innerWidth-wr.right)+"px";var SINK=mode==="half"?Math.min(70,Math.round(h*.16)):14;FIGS.style.bottom=Math.round(innerHeight-cr.top-SINK)+"px";FIGS.style.setProperty("--sink",SINK+"px");FIGS.style.maxWidth=Math.round(wr.width)+"px";
   /* 全身：原图 x20–1004、y30–1530；半身：x130–880、y20–900（四周留出发光的位置） */
   var R=mode==="full"?[20,30,1004,1530]:[130,20,880,900],sc=h/(R[3]-R[1]),bw=Math.round((R[2]-R[0])*sc);
   for(var w2 in SPR){var o=SPR[w2];o.fig.querySelector(".fbox").style.cssText="width:"+bw+"px;height:"+Math.round(h)+"px";[o.fb,o.ff].forEach(function(im){im.style.width=Math.round(1024*sc)+"px";im.style.left=Math.round(-R[0]*sc)+"px";im.style.top=Math.round(-R[1]*sc)+"px";});}}
