@@ -71,6 +71,9 @@
   }
   function scrollers() {
     var out = [], se = D.scrollingElement || R;
+    /* 有弹窗（老师密码、签到等）开着时，只提示弹窗里面的，不去提示被挡住的原文 */
+    var ov = [].filter.call(D.querySelectorAll(".ov"), function (o) { return !o.hidden && o.offsetParent !== null; })[0];
+    if (ov) { [].forEach.call(ov.querySelectorAll(SEL), function (e) { var oy = getComputedStyle(e).overflowY; if ((oy === "auto" || oy === "scroll") && e.scrollHeight - e.clientHeight - e.scrollTop > 40) { var r = e.getBoundingClientRect(); out.push([e, { top: Math.max(0, r.top), bottom: Math.min(innerHeight, r.bottom), right: Math.min(innerWidth, r.right) }]); } }); return out.slice(0, 1); }
     if (se.scrollHeight - innerHeight - se.scrollTop > 40) out.push([se, { top: 0, bottom: innerHeight, right: innerWidth }]);
     [].forEach.call(D.querySelectorAll(SEL), function (e) {
       if (e.clientHeight < 160 || e.offsetParent === null) return;
