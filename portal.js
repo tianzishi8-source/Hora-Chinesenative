@@ -29,13 +29,28 @@
   /* 课文页记下的“作业还没交几份”（读完的天里没交的） */
   function hwDue(l) { if (!me) return 0; var h = get("hora-hwdue-" + l.id + "-" + me.cls + "|" + me.name); return h && h.due ? h.due : 0; }
   function hwNote() { var due = LESSONS.filter(function (l) { return hwDue(l); }); if (!due.length) return ""; return '<div class="hwnote">' + due.map(function (l) { return '<button type="button" data-hw="' + esc(l.id) + '">《' + esc(l.title) + '》还有 ' + hwDue(l) + ' 份作业没交 →</button>'; }).join("") + '</div>'; }
-  function wireHw(root) { [].forEach.call(root.querySelectorAll("[data-hw]"), function (b) { b.addEventListener("click", function () { var l = LESSONS.filter(function (x) { return x.id === b.getAttribute("data-hw"); })[0]; if (l) { try { sessionStorage.setItem("hora-openhw", l.id); } catch (e) {} go(l); } }); }); }
+  function wireHw(root) { [].forEach.call(root.querySelectorAll("[data-hw]"), function (b) { b.addEventListener("click", function () { var l = LESSONS.filter(function (x) { return x.id === b.getAttribute("data-hw"); })[0]; if (l) { try { sessionStorage.setItem("hora-openhw", l.id); } catch (e) {} go(l, l.folder); } }); }); }
   function allDone() { return LESSONS.reduce(function (a, l) { return a + doneDays(l); }, 0); }
   function toast(t) { var o = document.createElement("div"); o.className = "toast"; o.textContent = t; sheet.append(o); setTimeout(function () { o.remove(); }, 2600); }
-  function go(l) {
+  function go(l, folder) {
+    if (l.choose && !folder && !teacher) return choose(l);
     put("hora-lastLesson", l.id);
     if (SITE.preview) return toast("这是预览：上线后，这里会打开《" + l.title + "》");
-    location.href = l.folder.replace(/\/?$/, "/") + (teacher ? "#teacher" : "");
+    location.href = (folder || l.folder).replace(/\/?$/, "/") + (teacher ? "#teacher" : "");
+  }
+  /* 一篇课文有两个版本时（lessons.js 里的 choose），先让学生选 */
+  function choose(l) {
+    if (!document.getElementById("chooseCss")) { var st = document.createElement("style"); st.id = "chooseCss";
+      st.textContent = ".choose .opts2{display:grid;gap:12px;margin-top:6px}.choose .op{display:block;width:100%;text-align:left;border:1.5px solid rgba(60,45,30,.2);border-radius:10px;background:rgba(255,252,244,.85);padding:14px 16px;cursor:pointer;font-family:var(--f-serif);color:var(--ink)}" +
+        ".choose .op:hover{border-color:var(--cinnabar)}.choose .op b{display:block;font-family:var(--f-brush);font-weight:400;font-size:1.6rem;color:var(--cinnabar)}.choose .op span{font-size:.92rem;color:var(--ink-mid)}";
+      document.head.appendChild(st); }
+    var o = document.createElement("div"); o.className = "ov";
+    o.innerHTML = '<div class="tie choose" role="dialog" aria-label="选一个版本"><button class="x" type="button" aria-label="关上">×</button><h3>《' + esc(l.title) + '》</h3><p>选一个版本：</p><div class="opts2">' +
+      l.choose.map(function (c, i) { return '<button type="button" class="op" data-c="' + i + '"><b>' + esc(c.label) + '</b><span>' + esc(c.desc || "") + '</span></button>'; }).join("") + '</div></div>';
+    sheet.append(o);
+    function close() { o.remove(); }
+    o.querySelector(".x").addEventListener("click", close); o.addEventListener("click", function (e) { if (e.target === o) close(); });
+    [].forEach.call(o.querySelectorAll("[data-c]"), function (b) { b.addEventListener("click", function () { var c = l.choose[+b.getAttribute("data-c")]; close(); pluck(392, .3); go(l, c.folder); }); });
   }
 
   /* ---------- 声音：古琴的拨弦（Karplus–Strong）加一点泛音 ---------- */
