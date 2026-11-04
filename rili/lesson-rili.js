@@ -607,8 +607,14 @@ days:[
    obs:{id:"d5-para",label:"写一段由物及理",skill:"写作：由物及理"}},
   {t:"mc",who:"ri",ask:"用“能不能删”的两个问题，检查一下你写的事。",q:"把你写的“事”删掉，你的“理”还站得住吗？",key:"d5.check",stance:true,
    options:[{text:"站不住，这件事不能删",value:"keep",who:"ri",reply:"那这件事就是你这一段的地震那一页。"},
-            {text:"好像站得住……",value:"weak",who:"ri",reply:"那就说明这件事和道理连得不紧。可以换一件更贴的事，回到日历本里再改。"}],
+            {text:"好像站得住……",value:"weak",who:"ri",reply:"那就说明这件事和道理连得不紧。现在就改一改：换一件更贴的事。"}],
    obs:{id:"d5-check",label:"自查：事能不能删",skill:"修改：自我检查"}},
+  {t:"frame",who:"ri",when:{key:"d5.check",is:"weak"},key:"d5.para",join:"plain",q:"改一改：换一件和你的道理连得更紧的事。物和理可以不动，也可以一起改。",
+   parts:[{label:"物：",ph:"它是什么样子？一两句",min:8,short:"物再写具体一点：颜色、声音、放在哪里。"},
+          {label:"事：",ph:"换一件更贴的事：哪一次，发生了什么",min:20,short:"事要写出“哪一次”和“发生了什么”。"},
+          {label:"理：",ph:"它像……；我想明白了……",min:10,short:"理这一步，用上你的比喻，说出想明白的道理。"}],
+   button:"改好了",replies:[{who:"ri",text:"改好了。日历本里换成了新的这一段。"}],
+   obs:{id:"d5-para2",label:"改一段由物及理（换事）",skill:"修改：由物及理缺环节"}},
   {t:"next",label:"看看我的日历本"},
   {t:"openBook"}
  ]}
@@ -811,8 +817,19 @@ days:[
           {label:"像",ph:"第一个比喻",min:4,short:"比喻再具体一点。"},
           {label:"也像",ph:"第二个比喻",min:4,short:"比喻再具体一点。"},
           {label:"还像",ph:"第三个比喻",min:4,short:"比喻再具体一点。"}],
-   replies:[{who:"ri",text:"读一读：三个比喻，是不是各写出了一个侧面？要是有一个和另外两个对不上，回日历本里换掉它。"}],
-   obs:{id:"d8-bo",label:"仿写：博喻",skill:"仿写：博喻写感觉"}}
+   replies:[{who:"ri",text:"它写进你的日历本了。"}],
+   obs:{id:"d8-bo",label:"仿写：博喻",skill:"仿写：博喻写感觉"}},
+  {t:"mc",who:"ri",ask:"读一读你的三个比喻。",q:"三个比喻，是不是各写出了那种感觉的一个侧面？",key:"d8.bocheck",stance:true,
+   options:[{text:"是，三个都对得上",value:"ok",who:"ri",reply:"好。三个“像”，各管一面，这就是博喻。"},
+            {text:"有一个对不上，我想换掉它",value:"fix",who:"ri",reply:"好，现在就换。"}],
+   obs:{id:"d8-bocheck",label:"自查：三个比喻",skill:"修改：自我检查"}},
+  {t:"frame",who:"ri",when:{key:"d8.bocheck",is:"fix"},key:"d8.bo",join:"plain",q:"把对不上的那个比喻换掉，其余的可以不动。",
+   parts:[{label:"那种感觉：",ph:"什么时候的感觉？",min:6,short:"先写清楚是什么时候的感觉。"},
+          {label:"像",ph:"第一个比喻",min:4,short:"比喻再具体一点。"},
+          {label:"也像",ph:"第二个比喻",min:4,short:"比喻再具体一点。"},
+          {label:"还像",ph:"第三个比喻",min:4,short:"比喻再具体一点。"}],
+   button:"改好了",replies:[{who:"ri",text:"换好了。日历本里是新的这一段。"}],
+   obs:{id:"d8-bo2",label:"改博喻（换比喻）",skill:"修改：自我检查"}}
  ]}
 ],end:"第8天读完了。",after:"<b>课后作业</b><br>1. 课本整理：第12段的“像”都圈出，旁写“博喻”；《日历》第4段“风”“流光”画线。<br>2. 把“我的博喻”写成一段话（80字左右），读给家人听。"},
 

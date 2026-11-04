@@ -74,7 +74,7 @@ function fill(str,extra){var out=String(str==null?"":str).replace(/\{([\w.]+)(?:
 /* ---- 学情 ---- */
 var OBS={},OBSORDER=[];
 function regObs(step,day){var o=step.obs;if(!o||OBS[o.id])return;var ml={};(step.misses||[]).forEach(function(m){if(m.id)ml[m.id]=m.label||m.text;});if(step.requireEnd)ml.noEnd=step.requireEnd.label||"没有按要求收尾";if(step.fallback)ml.other="点了其他不相关的句子";if(step.t==="layering"){ml.few="层分得太少";ml.many="层分得太密";ml.keyOut="关键句不在这一层";}OBS[o.id]={id:o.id,label:o.label,skill:o.skill||"",day:day,misses:ml};OBSORDER.push(o.id);}
-function logStep(obs,patch){if(!obs)return;var r=S.log[obs.id]||{tries:0,misses:{}};if(patch.try)r.tries++;if(patch.miss){r.misses[patch.miss]=(r.misses[patch.miss]||0)+1;}if(patch.answer!=null){r.answer=patch.answer;r.at=new Date().toISOString();}if(patch.ai!=null)r.ai=patch.ai;S.log[obs.id]=r;}
+function logStep(obs,patch){if(!obs)return;if(patch&&patch.answer!=null&&S.data._dr&&typeof task!=="undefined"){try{delete S.data._dr[draftSig()];}catch(e){}}var r=S.log[obs.id]||{tries:0,misses:{}};if(patch.try)r.tries++;if(patch.miss){r.misses[patch.miss]=(r.misses[patch.miss]||0)+1;}if(patch.answer!=null){r.answer=patch.answer;r.at=new Date().toISOString();}if(patch.ai!=null)r.ai=patch.ai;S.log[obs.id]=r;}
 
 /* ---- 作答存哪里：BK（后台）有三种
    sheet：老师的 Google 表格（网站版，学生不用任何账号，用“班级码＋名字＋4位数字”进入）
@@ -82,8 +82,8 @@ function logStep(obs,patch){if(!obs)return;var r=S.log[obs.id]||{tries:0,misses:
    local：哪里都不存，只在这台设备上 ---- */
 var SITE=window.HORA_SITE||{};
 var RESTORED=false,DB=null,UID=null,syncOK=null,writing=false,pending=false,CANEDIT=false;
-function payload(){return {name:S.data.name||"",data:S.data,log:S.log,done:S.done,day:S.day,beat:S.beat,savedAt:S.savedAt||"",chats:(S.chats||[]).slice(-30),updatedAt:new Date().toISOString()};}
-function mergeRemote(r){if(r&&r.savedAt&&(!S.savedAt||r.savedAt>S.savedAt)){["data","log","done","beat","chats"].forEach(function(k){if(r[k]!=null)S[k]=r[k];});if(r.day)S.day=r.day;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}return true;}return false;}
+function payload(){return {name:S.data.name||"",data:S.data,log:S.log,done:S.done,day:S.day,beat:S.beat,reach:S.reach||{},savedAt:S.savedAt||"",chats:(S.chats||[]).slice(-30),updatedAt:new Date().toISOString()};}
+function mergeRemote(r){if(r&&r.savedAt&&(!S.savedAt||r.savedAt>S.savedAt)){["data","log","done","beat","reach","chats"].forEach(function(k){if(r[k]!=null)S[k]=r[k];});if(r.day)S.day=r.day;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}return true;}return false;}
 var BK={mode:SITE.sheetUrl?"sheet":"claude",me:null,tpw:null};
 function online(){return BK.mode==="sheet"?!!BK.me:!!(DB&&UID);}
 /* 表格后台：一律用 POST、正文是 JSON 文本（不设 Content-Type，浏览器就不会先发预检请求） */
@@ -100,6 +100,20 @@ function sheetSave(){if(INFL||!BK.me)return;INFL=true;var v=SV,p=JSON.parse(JSON
   api("save",Object.assign(cred(),{payload:p,summary:studentText(p),progress:progressText(p)})).then(function(){INFL=false;if(SV===v){dirty=false;setSaveSt("已保存");}else sheetSave();})
     .catch(function(e){INFL=false;setSaveSt(e.code==="pin"||e.code==="roster"?"没保存：请重新签到":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)sheetSave();},15000);});}
 function commit(){save();sync();}
+/* 随时保存：作答框里每打几个字就存一份草稿（存本机，同时存表格）；换页、关页、切到别的应用时立刻存一次。
+   草稿按“第几天｜第几个环节｜题目｜第几个框”记；回到这道题时，空着的框自动填回草稿。 */
+var DRT=null;
+function draftFields(){return [].filter.call(task.querySelectorAll("textarea,input[type=text],input:not([type])"),function(f){return !f.disabled&&f.offsetParent!==null;});}
+function draftSig(){var qe=task.querySelector(".task-q");return S.day+"|"+((S.beat||{})[S.day]||0)+"|"+(qe?qe.textContent.slice(0,60):"");}
+task.addEventListener("input",function(e){var f=e.target;if(!f||!/^(TEXTAREA|INPUT)$/.test(f.tagName)||(f.type&&!/^(text|search)$/.test(f.type)))return;
+  var fs=draftFields(),i=fs.indexOf(f);if(i<0)return;var dr=S.data._dr||(S.data._dr={}),k=draftSig(),o=dr[k]||(dr[k]={v:[]});o.v[i]=f.value;o.q=k.split("|").slice(2).join("|");o.at=new Date().toISOString();
+  clearTimeout(DRT);DRT=setTimeout(save,700);});
+new MutationObserver(function(){var dr=S.data&&S.data._dr;if(!dr)return;var o=dr[draftSig()];if(!o||!o.v)return;draftFields().forEach(function(f,i){if(!f.value&&o.v[i]&&!f.dataset.drOk){f.dataset.drOk=1;f.value=o.v[i];try{f.dispatchEvent(new Event("input",{bubbles:true}));}catch(e){}}});}).observe(task,{childList:true,subtree:true});
+function flushSave(){
+  if(BK.mode!=="sheet"||!BK.me||!dirty)return;clearTimeout(saveT);var p=JSON.parse(JSON.stringify(payload()));var body=JSON.stringify(Object.assign({action:"save",lesson:L.id,lessonTitle:L.title},cred(),{payload:p,summary:studentText(p),progress:progressText(p)}));
+  try{fetch(SITE.sheetUrl,{method:"POST",body:body,keepalive:body.length<60000}).catch(function(){});}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"){if(DRT){clearTimeout(DRT);save();}flushSave();}});
+addEventListener("pagehide",function(){if(DRT){clearTimeout(DRT);save();}flushSave();});
 var leaving=false;
 function leaveTo(url){leaving=true;if(BK.mode!=="sheet"||!dirty||!BK.me){location.href=url;return;}clearTimeout(saveT);setSaveSt("保存中…");var done=false;function go(){if(!done){done=true;location.href=url;}}
   var p=JSON.parse(JSON.stringify(payload()));api("save",Object.assign(cred(),{payload:p,summary:studentText(p),progress:progressText(p)})).then(function(){dirty=false;go();}).catch(go);setTimeout(go,4000);}
@@ -694,7 +708,8 @@ DAYS.forEach(function(d,di){d.beats.forEach(function(b){b.steps.forEach(function
 var TMODE=false;
 function paintDays(){var nav=$("#days");nav.innerHTML="";DAYS.forEach(function(d,i){var n=i+1;var b=el("button",{class:"dpad"+(S.done[n]?" done":""),type:"button","aria-current":String(n===S.day),title:d.title},[el("small",{text:"第"}),el("b",{text:String(n)}),el("small",{text:"天"}),el("span",{text:S.done[n]?"读完":d.short||""})]);b.addEventListener("click",function(){startDay(n,false);});nav.append(b);});
   if(L.totalDays&&L.totalDays>DAYS.length)nav.append(el("span",{class:"more",text:"共 "+L.totalDays+" 天，已开放 "+DAYS.length+" 天"}));}
-function paintStages(n,cur){var nav=$("#stages");nav.innerHTML="";DAYS[n-1].beats.forEach(function(b,i){var c=el("button",{class:"st"+(i===cur?" on":"")+(i<cur||S.done[n]?" done":""),type:"button","aria-current":String(i===cur)},[el("i",{"aria-hidden":"true"}),b.title]);c.addEventListener("click",function(){if(TMODE)runFrom(n,i);});nav.append(c);});
+/* 环节条：做到过的环节（红色）都能点回去重看、重做；还没做到的要按顺序来（老师模式都能点） */
+function paintStages(n,cur){var nav=$("#stages");nav.innerHTML="";var reach=Math.max((S.reach||{})[n]||0,cur||0);DAYS[n-1].beats.forEach(function(b,i){var open=TMODE||S.done[n]||i<=reach;var c=el("button",{class:"st"+(i===cur?" on":"")+(i<cur||S.done[n]||i<reach?" done":"")+(open?"":" lock"),type:"button","aria-current":String(i===cur),title:open?"点一下到这个环节":"先做完前面的环节"},[el("i",{"aria-hidden":"true"}),b.title]);c.addEventListener("click",function(){if(open&&i!==cur)runFrom(n,i);});nav.append(c);});
   var b=DAYS[n-1].beats[cur];$("#stTitle").textContent=b?b.title:(DAYS[n-1].title);$("#stWhen").textContent="第 "+n+" 天 · "+DAYS[n-1].title+(b?" · 环节 "+(cur+1)+"/"+DAYS[n-1].beats.length:"");}
 function setTMode(on){TMODE=on;app.classList.toggle("tmode",on);$("#bTMode").setAttribute("aria-pressed",String(on));bSkip.hidden=!on;}
 $("#bTMode").addEventListener("click",function(){setTMode(!TMODE);});
@@ -704,7 +719,7 @@ function resetUI(){KEEPQ=null;unstrike();unmaskParas();var c5=$("#cal5");if(c5)c
 /* 背景画：lesson 写 bg（默认），某天 / 某个环节也可以写 bg；淡淡铺在整个页面后面，换环节时渐变 */
 function setBg(src){var d=$("#scenebg");if(!d){d=el("div",{id:"scenebg","aria-hidden":"true"});document.body.prepend(d);}if(!src){d.classList.remove("on");d.dataset.src="";return;}if(d.dataset.src===src)return;d.dataset.src=src;var im=new Image();im.onload=function(){if(d.dataset.src!==src)return;d.classList.remove("on");setTimeout(function(){d.style.backgroundImage='url("'+src+'")';d.classList.add("on");},d.style.backgroundImage?450:0);};im.src=src;}
 function runFrom(n,b){RUN.token++;var tok=RUN.token;resetUI();GUEST.who="";if(!S.data.name&&BK.tpw&&!BK.me)S.data.name="老师";var wantT=DAYS[n-1].text||"main";if(wantT!==CURTEXT)useText(wantT);
-  var beats=DAYS[n-1].beats;(function loop(i){if(tok!==RUN.token)return;if(i>=beats.length){S.done[n]=1;S.beat[n]=beats.length;commit();paintDays();paintStages(n,beats.length);endOfDay(n,tok);return;}S.beat[n]=i;save();paintStages(n,i);clearTask();bCont.hidden=true;unmaskParas();var bt=beats[i];GUEST.who="";setBg(bt.bg||DAYS[n-1].bg||L.bg);try{var strs=[];JSON.stringify(bt.steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});if(beats[i+1])JSON.stringify(beats[i+1].steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});VOICE.warm(strs);}catch(e){}SOUND.mood(bt.mood||(L.sound&&L.sound.mood)||"calm");
+  var beats=DAYS[n-1].beats;(function loop(i){if(tok!==RUN.token)return;if(i>=beats.length){S.done[n]=1;S.beat[n]=beats.length;commit();paintDays();paintStages(n,beats.length);endOfDay(n,tok);return;}S.beat[n]=i;S.reach=S.reach||{};if(!(S.reach[n]>=i))S.reach[n]=i;save();paintStages(n,i);clearTask();bCont.hidden=true;unmaskParas();var bt=beats[i];GUEST.who="";setBg(bt.bg||DAYS[n-1].bg||L.bg);try{var strs=[];JSON.stringify(bt.steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});if(beats[i+1])JSON.stringify(beats[i+1].steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});VOICE.warm(strs);}catch(e){}SOUND.mood(bt.mood||(L.sound&&L.sound.mood)||"calm");
     if(bt.skipIf&&get(bt.skipIf)&&!TMODE){loop(i+1);return;}
     runSteps(bt.steps,tok).then(function(){loop(i+1);}).catch(function(e){if(e!==CANCEL)console.error(e);});})(b);}
 function endOfDay(n,tok){clearTask();var d=DAYS[n-1],last=n===DAYS.length;$("#stTitle").textContent=last?"读完了":"今天读完了";
@@ -761,8 +776,8 @@ var tLoading=false,tErr="",tCls="";
 $("#bTeacher").addEventListener("click",openTeacher);
 function SUMMARY_PROMPT(){return "你是一位初中语文老师的助手。下面是一个班的学生在网页上读"+L.author+"《"+L.textTitle+"》时的作答（已去掉姓名）。请用简洁的现代汉语，给老师写一份课后小结，分三部分：一、大多数学生已经做到的；二、普遍的卡点和误解，各举一两句学生原话；三、下节课值得拿出来讨论的两三个说法。不评价个人、不排名、不打分，不超过400字，不用Markdown符号。";}
 /* 进度：每一天读完打 ✓；开始了没读完写“做到第几个环节/共几个”；没开始的不写 */
-function progressText(d){d=d||S;var out=[];(L.days||[]).forEach(function(dy,i){var n=i+1;if(d.done&&d.done[n])out.push(n+"✓");else if(d.beat&&d.beat[n]!=null)out.push(n+"("+Math.min(d.beat[n]+1,dy.beats.length)+"/"+dy.beats.length+")");});return (out.join(" ")||"还没开始")+(d.day?"　现在第"+d.day+"天":"");}
-function studentText(d){var lines=[(d.name||"未写名字")+"　进度："+progressText(d)];OBSORDER.forEach(function(id){var r=(d.log||{})[id];if(!r||r.answer==null)return;lines.push("【"+OBS[id].label+"】"+r.answer+(r.ai?"\n  （AI 的点评："+r.ai+"）":""));});return lines.join("\n");}
+function progressText(d){d=d||S;var out=[];(L.days||[]).forEach(function(dy,i){var n=i+1;if(d.done&&d.done[n])out.push(n+"✓");else if(d.beat&&d.beat[n]!=null){var rb=Math.max(d.beat[n],(d.reach||{})[n]||0);out.push(n+"("+Math.min(rb+1,dy.beats.length)+"/"+dy.beats.length+")");}});return (out.join(" ")||"还没开始")+(d.day?"　现在第"+d.day+"天":"");}
+function studentText(d){var lines=[(d.name||"未写名字")+"　进度："+progressText(d)];OBSORDER.forEach(function(id){var r=(d.log||{})[id];if(!r||r.answer==null)return;lines.push("【"+OBS[id].label+"】"+r.answer+(r.ai?"\n  （AI 的点评："+r.ai+"）":""));});var dr=(d.data||{})._dr||{};Object.keys(dr).forEach(function(k){var o=dr[k],v=(o.v||[]).filter(function(x){return x&&String(x).trim();});if(!v.length)return;var ks=k.split("|");lines.push("【草稿·第"+ks[0]+"天】"+(o.q||"")+"："+v.join(" / "));});return lines.join("\n");}
 function paintT(){var sh=$("#teacherSheet");sh.innerHTML="";var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);
   sh.append(x,el("h3",{text:"学生作答"}),el("p",{class:"note",style:"margin:0",text:(BK.mode==="sheet"?"只有知道老师密码的人看得到这里":"只有老师（编辑者）看得到这里")+"，学生之间互相看不到。现在 "+tDocs.length+" 人。"}));
   var tabs=el("div",{class:"tabs"});[["stuck","卡在哪里"],["each","每人作答"],["sum","课后小结"]].forEach(function(t){var b=el("button",{type:"button","aria-pressed":String(tTab===t[0]),text:t[1]});b.addEventListener("click",function(){tTab=t[0];paintT();});tabs.append(b);});sh.append(tabs);
