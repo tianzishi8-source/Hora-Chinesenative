@@ -25,7 +25,7 @@ const CLASS_CODES = [];   // 例：['G8A','G8B']。留空 [] 表示任何班级�
 /* ---------- 下面不用改 ---------- */
 const HEAD = {
   学生: ['编号', '班级', '名字', '数字指纹', '第一次'],
-  作答: ['键', '编号', '课文', '课文名', '班级', '名字', '最近保存', '读完几天', '作答摘要', '进度数据1', '进度数据2', '进度数据3', '进度数据4', '进度数据5'],
+  作答: ['键', '编号', '课文', '课文名', '班级', '名字', '最近保存', '进度', '作答摘要', '进度数据1', '进度数据2', '进度数据3', '进度数据4', '进度数据5'],
   分享: ['编号', '课文', '班级', '题目', '分享内容', '时间', '撤下'],
   回应: ['来自', '给', '课文', '班级', '题目', '内容', '时间'],
   名单: ['班级', '名字', '密码', '备注']
@@ -159,7 +159,7 @@ function save(me, q) {
   if (json.length > CHUNK * 5) fail('big');
   const cells = [];
   for (let i = 0; i < 5; i++) cells.push(json.slice(i * CHUNK, (i + 1) * CHUNK));
-  const done = Object.keys((q.payload && q.payload.done) || {}).length;
+  const done = q.progress ? String(q.progress).slice(0, 200) : Object.keys((q.payload && q.payload.done) || {}).length;   // 进度：每天 ✓ / 做到第几环节（网页算好传来）
   const row = answerRow(me, true);
   row.sh.getRange(row.r, 7, 1, 8).setValues([[new Date(), done, String(q.summary || '').slice(0, CHUNK)].concat(cells)]);
   return { ok: true };
