@@ -2,6 +2,17 @@
  * 学生扮演范仲淹在邓州的邻家少年（14岁，虚构）。{name} 由引擎替换成学生的名字。
  * who：fan 范仲淹 / me 我（学生）/ narr 旁白 / x 其他虚构人物（只出 name：阿娘、周伯＝范家老仆、阿青＝少年的好朋友，只在话里提到）
  * 节点：lines+next / ask+choices / quiz+next / write+next / end
+ * 画面 shot（加在节点上＝进这个节点时换；加在某一句台词上＝读到这句时换；每个 shot 是一整个画面，不继承上一个）：
+ *   bg    场景：yard 院子 / study 书房 / night 夜里书房烛光 / rain-yard 雨中的院子（从窗里往外看）/ harvest 田野打谷 / hill 城外土岗远望 / gate 邓州城门
+ *         （有 img/scene-{bg}.webp 就用真图，没有就用 scene.js 画的）；想象画面用现成图：lake 洞庭湖（画）/ rain-lake / spring-lake / moon-lake / tower / map
+ *   tone  色调：dusk 傍晚 / night 夜 / rain 雨天 / bare 收空的田（不写＝白天）
+ *   cam   镜头：push 慢推 / pull 慢拉 / panL、panR 左右平移 / up、down 上下摇 / still；dur 镜头秒数（默认 18）
+ *   fx    效果（空格分开）：rain 雨丝 / leaves 落叶 / dust 灰尘 / birds 飞鸟 / light 阳光光柱 / candle 烛光 / mist 薄雾
+ *   prop  道具特写：box 木匣（open:1 打开）/ letter 旧信（pt＝信封上的字，默认“范经略”）/ scroll 画轴（peek:1 只展开一点）/ draft 草稿纸（pt＝纸上的字）/ brush 笔砚 / kite 纸鸢
+ *   fan   范公（面前的人）：near 近（半身）/ mid 中（大半身）/ far 远 / 不写＝不在画面里；side：l 偏左 / c 居中 / r 偏右
+ *   tr    转场：fade 淡入（默认）/ slide 横移 / cut；dream:1 想象画面（旧色晕边），cap＝画面上方的小字说明
+ * “我”不出立绘（第一人称：画面就是“我”眼里看到的）；其他人物不出立绘，只出名签。
+ * 选项里“我”说出口的话（引号里的，或标了 say:true 的整句）会用学生选的“我的声音”读出来。
  * 史实口径见设计约定：信和画是范公在西边任上收到、一路带在身边的旧物；不提杜甫；不写眼睛不好；秋收是谷子、豆子。
  */
 window.YK_STORY = [
@@ -10,49 +21,52 @@ window.YK_STORY = [
     blurb: "帮范公晒书，木匣里滑出一封旧信、一幅旧画，牵出他的老朋友滕子京。",
     start: "s1",
     nodes: {
-      s1: { bg: "yard", lines: [
-        { who: "narr", say: "庆历六年，八月末，邓州。一连几天，都是大太阳。" },
+      s1: { shot: { bg: "yard", cam: "pull", fx: "light leaves", fan: "far", dur: 22 }, bg: "yard", lines: [
+        { who: "narr", say: "你慢慢睁开眼。这里是邓州，庆历六年的秋天。" },
+        { who: "narr", say: "你是范公家隔壁的少年，今年十四岁。（这个少年是虚构的。）" },
+        { who: "narr", say: "隔壁院门开着。院子里那位，就是范公——范仲淹，如今在邓州做知州。" },
+        { who: "narr", say: "庆历六年，八月末，邓州。一连几天，都是大太阳。", shot: { bg: "yard", cam: "panR", fx: "light leaves" } },
         { who: "narr", say: "你家就住在州衙后头的巷子里，平日常替隔壁范公家跑跑腿。" },
-        { who: "x", name: "周伯", say: "{name}，来得正好！老爷要晒书，你帮着搬一搬。" },
+        { who: "x", name: "周伯", say: "{name}，来得正好！老爷要晒书，你帮着搬一搬。", shot: { bg: "yard", fan: "far", side: "r", cam: "push", fx: "light" } },
         { who: "me", say: "来了！" },
-        { who: "narr", say: "院子里铺开几张竹席，书一摞一摞摊在日头底下。" },
-        { who: "fan", say: "{name}，轻一些。这几册书，比你的年纪还大。", face: "smile" },
+        { who: "narr", say: "院子里铺开几张竹席，书一摞一摞摊在日头底下。", shot: { bg: "yard", cam: "down", fx: "light dust" } },
+        { who: "fan", say: "{name}，轻一些。这几册书，比你的年纪还大。", face: "smile", shot: { bg: "yard", fan: "mid", cam: "push", fx: "light dust" } },
         { who: "me", say: "范公，书为什么要晒呀？" },
-        { who: "fan", say: "夏天潮，书里会生蠹虫。趁秋天日头好，晒一晒，虫就待不住了。" },
-        { who: "narr", say: "书堆底下压着一只旧木匣。你一抱，匣盖滑开了。" },
-        { who: "narr", say: "里面是一封信，折得整整齐齐；还有一卷画。" }
+        { who: "fan", say: "夏天潮，书里会生蠹虫。趁秋天日头好，晒一晒，虫就待不住了。", shot: { bg: "yard", fan: "near", cam: "push", fx: "dust light" } },
+        { who: "narr", say: "书堆底下压着一只旧木匣。你一抱，匣盖滑开了。", shot: { bg: "yard", prop: "box", cam: "push", fx: "dust" } },
+        { who: "narr", say: "里面是一封信，折得整整齐齐；还有一卷画。", shot: { bg: "yard", prop: "box", open: 1, cam: "push", fx: "dust" } }
       ], next: "s2" },
 
-      s2: { ask: "信封上写着“范经略”三个字。你——", choices: [
+      s2: { shot: { bg: "yard", prop: "letter", cam: "push", fx: "dust" }, ask: "信封上写着“范经略”三个字。你——", choices: [
         { t: "先把匣盖合上，双手递还给范公。", go: "s3a" },
         { t: "问范公：“范经略是谁？您不是知州吗？”", go: "s3b" },
         { t: "忍不住把画轴展开一点点，看看画的是什么。", go: "s3c" }
       ] },
-      s3a: { lines: [
+      s3a: { shot: { bg: "yard", fan: "near", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "你倒懂规矩。不妨，这两样不是什么秘密。", face: "smile" },
         { who: "fan", say: "打开吧。画轴慢慢展，别扯着。" }
       ], next: "s4" },
-      s3b: { lines: [
+      s3b: { shot: { bg: "yard", fan: "near", side: "r", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "问得细。“经略”，是我从前在西边边上管军务时的官名。", face: "smile" },
         { who: "me", say: "那这封信，是好久以前的了？" },
         { who: "fan", say: "一年多了。来，把画也打开看看。" }
       ], next: "s4" },
-      s3c: { lines: [
+      s3c: { shot: { bg: "yard", prop: "scroll", peek: 1, cam: "push", fx: "dust" }, lines: [
         { who: "narr", say: "画轴才展开一掌宽，就露出一片水。" },
-        { who: "fan", say: "（笑）手比嘴快。也罢，展开吧，慢一些，这画经不起扯。", face: "smile" }
+        { who: "fan", say: "（笑）手比嘴快。也罢，展开吧，慢一些，这画经不起扯。", face: "smile", shot: { bg: "yard", fan: "near", cam: "push", fx: "light" } }
       ], next: "s4" },
 
-      s4: { bg: "lake", lines: [
+      s4: { shot: { bg: "yard", prop: "scroll", cam: "push", fx: "dust" }, bg: "lake", lines: [
         { who: "narr", say: "画慢慢展开：一片望不到边的水，远处是淡淡的山，岸边有一座楼。" },
         { who: "narr", say: "范公说，这幅画叫《洞庭晚秋图》。" },
-        { who: "me", say: "好大的水……这是哪里？" },
-        { who: "fan", say: "洞庭湖。湖边这座楼，叫岳阳楼，在巴陵郡。" },
-        { who: "fan", say: "信和画，都是我的老朋友滕子京寄来的。那时我还在西边任上，所以信上写的是“范经略”。" },
-        { who: "fan", say: "后来我到了邓州，这只匣子，就一路跟着我过来了。" },
-        { who: "me", say: "滕子京……是什么人？" },
+        { who: "me", say: "好大的水……这是哪里？", shot: { bg: "lake", cam: "panR", fx: "mist birds", dream: 1, cap: "画上的洞庭湖" } },
+        { who: "fan", say: "洞庭湖。湖边这座楼，叫岳阳楼，在巴陵郡。", shot: { bg: "tower", cam: "push", fx: "mist", dream: 1, cap: "想象：巴陵的岳阳楼" } },
+        { who: "fan", say: "信和画，都是我的老朋友滕子京寄来的。那时我还在西边任上，所以信上写的是“范经略”。", shot: { bg: "yard", fan: "near", cam: "push", fx: "light" } },
+        { who: "fan", say: "后来我到了邓州，这只匣子，就一路跟着我过来了。", shot: { bg: "yard", prop: "box", open: 1, cam: "pull" } },
+        { who: "me", say: "滕子京……是什么人？", shot: { bg: "yard", fan: "near", side: "l", cam: "push", fx: "light leaves" } },
         { who: "fan", say: "我和他，是同一年考中进士的。算起来，相识三十多年了。", face: "smile" },
         { who: "fan", say: "他做事有魄力，也敢担当。庆历四年春天，他被人弹劾，贬到了巴陵。" },
-        { who: "fan", say: "这篇记要是写起来，我心里已经有了头一句。你看这个字——" }
+        { who: "fan", say: "这篇记要是写起来，我心里已经有了头一句。你看这个字——", shot: { bg: "yard", prop: "draft", pt: "庆历四年春，滕子京谪守巴陵郡。", cam: "push" } }
       ], next: "q1" },
 
       q1: { quiz: { q: "“滕子京谪守巴陵郡”，【谪守】是什么意思？", sent: "庆历四年春，滕子京【谪守】巴陵郡。",
@@ -60,39 +74,39 @@ window.YK_STORY = [
         ok: "对。谪，就是被贬；谪守，是被贬到那里去做地方长官。",
         no: "不是。谪，是被贬；谪守巴陵郡，就是被贬到巴陵去做地方长官。这可不是好事。" }, next: "s5" },
 
-      s5: { bg: "yard", lines: [
+      s5: { shot: { bg: "yard", fan: "near", side: "l", cam: "pull", fx: "leaves" }, bg: "yard", lines: [
         { who: "me", say: "被贬了……那滕大人一定很伤心吧？" },
         { who: "fan", say: "伤心，也不平。", face: "think" },
-        { who: "fan", say: "早几年，西边打仗。他在泾州做知州，官军在离泾州不远的定川吃了大败仗，城里人心惶惶。" },
+        { who: "fan", say: "早几年，西边打仗。他在泾州做知州，官军在离泾州不远的定川吃了大败仗，城里人心惶惶。", shot: { bg: "gate", tone: "dusk", cam: "push", fx: "mist", dream: 1, cap: "想象：多年前，西边的泾州城" } },
         { who: "fan", say: "他招集百姓穿上军装上城守着；又拿公家的钱犒劳赶来援救的将士，祭奠、抚恤战死的人家，人心才慢慢安定下来。那年我领兵赶去援救，是亲眼见过的。" },
-        { who: "fan", say: "后来有人上书，说他在泾州乱用公家的钱。账目上的事，一时说不清，他就被贬了。" },
+        { who: "fan", say: "后来有人上书，说他在泾州乱用公家的钱。账目上的事，一时说不清，他就被贬了。", shot: { bg: "yard", fan: "near", cam: "push", fx: "leaves" } },
         { who: "fan", say: "我替他说过话，可到底没能让他免于被贬。" },
         { who: "fan", say: "子京才大，性子也傲。到了巴陵，心里那口气，一直没有咽下去。听说，脸上都带出来了。" }
       ], next: "s6" },
 
       s6: { ask: "范公问你：“{name}，要是你觉得自己受了冤枉，你会怎样？”", choices: [
-        { t: "去找人说清楚。不是我的错，我就不认。", go: "s7a" },
-        { t: "先忍着。日子长了，大家自然会明白。", go: "s7b" },
-        { t: "我会很生气，什么都不想干了。", go: "s7c" }
+        { t: "去找人说清楚。不是我的错，我就不认。", say: true, go: "s7a" },
+        { t: "先忍着。日子长了，大家自然会明白。", say: true, go: "s7b" },
+        { t: "我会很生气，什么都不想干了。", say: true, go: "s7c" }
       ] },
-      s7a: { lines: [
+      s7a: { shot: { bg: "yard", fan: "near", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "有骨气。只是有时候，说清楚的路走不通，那时又怎么办？", face: "smile" },
         { who: "me", say: "……那就只好憋着？" },
         { who: "fan", say: "憋着，人会憋坏的。子京如今，就有一点像这样。", face: "think" }
       ], next: "s8" },
-      s7b: { lines: [
+      s7b: { shot: { bg: "yard", fan: "near", side: "r", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "你比好些大人还沉得住气。", face: "smile" },
         { who: "fan", say: "可是忍着不说，不等于心里不苦。子京嘴上不说，心里是苦的。", face: "think" }
       ], next: "s8" },
-      s7c: { lines: [
+      s7c: { shot: { bg: "yard", fan: "near", side: "l", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "你说的是实话。换了谁，起先都会这样。", face: "smile" },
         { who: "fan", say: "可是子京，偏偏没有撒手不干。" }
       ], next: "s8" },
 
-      s8: { lines: [
+      s8: { shot: { bg: "yard", fan: "mid", side: "r", cam: "panL", fx: "light leaves" }, lines: [
         { who: "fan", say: "你猜，他到了巴陵，做了些什么？" },
         { who: "fan", say: "到了第二年，政事顺当，百姓和乐，荒废了的事，一件一件全都办了起来。" },
-        { who: "fan", say: "我打算这样写：“越明年，政通人和，百废具兴……”" },
+        { who: "fan", say: "我打算这样写：“越明年，政通人和，百废具兴……”", shot: { bg: "yard", prop: "draft", pt: "越明年，政通人和，百废具兴", cam: "push" } },
         { who: "me", say: "“越明年”……“越”是“越来越”的越吗？" }
       ], next: "q2" },
 
@@ -101,14 +115,14 @@ window.YK_STORY = [
         ok: "对。越，是及、到；越明年，是到了第二年。庆历四年的第二年，就是庆历五年。",
         no: "这个“越”不是“越来越”，是及、到。越明年，是到了第二年。庆历四年的第二年，就是庆历五年。" }, next: "s9" },
 
-      s9: { lines: [
+      s9: { shot: { bg: "yard", fan: "near", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "还有“百废具兴”的“具”，同“俱”，是全、都。荒废的事，全都兴办起来了。" },
         { who: "me", say: "被贬了，还这么卖力……" },
-        { who: "fan", say: "所以我敬重他。事情办顺了，他就重修岳阳楼，把楼修得比原来更大。" },
+        { who: "fan", say: "所以我敬重他。事情办顺了，他就重修岳阳楼，把楼修得比原来更大。", shot: { bg: "tower", cam: "up", fx: "mist birds", dream: 1, cap: "想象：重修的岳阳楼" } },
         { who: "fan", say: "又把唐代名家和今人的诗赋，刻在楼上。" },
-        { who: "me", say: "那他自己写一篇不就好了？为什么要寄信给您？" },
+        { who: "me", say: "那他自己写一篇不就好了？为什么要寄信给您？", shot: { bg: "yard", fan: "near", cam: "push", fx: "light" } },
         { who: "fan", say: "他信里说：楼台要是没有文章记它，就传不久。后面还有几句，是夸我的，不念了。", face: "smile" },
-        { who: "fan", say: "这一句，我打算这样写：“属予作文以记之。”" }
+        { who: "fan", say: "这一句，我打算这样写：“属予作文以记之。”", shot: { bg: "yard", prop: "draft", pt: "属予作文以记之。", cam: "push" } }
       ], next: "q3" },
 
       q3: { quiz: { q: "“属予作文以记之”，【属】是什么意思？", sent: "【属】予作文以记之。",
@@ -116,36 +130,36 @@ window.YK_STORY = [
         ok: "对。属，读zhǔ，同“嘱”，是嘱托。他嘱托我写一篇文章，来记这件事。",
         no: "这里不是“属于”。属读zhǔ，同“嘱”，是嘱托：他嘱托我写一篇文章，来记这件事。" }, next: "s10" },
 
-      s10: { lines: [
+      s10: { shot: { bg: "yard", fan: "mid", side: "l", cam: "still", fx: "light dust" }, lines: [
         { who: "me", say: "信是一年多以前寄来的……那您还没写？" },
         { who: "fan", say: "一拖，就是一年多。这一年多里，我也从西边又到了邓州。", face: "think" },
-        { who: "fan", say: "有些话，那时候还写不出来。如今，好像知道该怎么写了。" }
+        { who: "fan", say: "有些话，那时候还写不出来。如今，好像知道该怎么写了。", shot: { bg: "yard", fan: "near", side: "l", cam: "push", fx: "light dust" } }
       ], next: "s11" },
 
-      s11: { ask: "你看看画，又看看范公，问——", choices: [
+      s11: { shot: { bg: "yard", prop: "scroll", cam: "pull", fx: "dust" }, ask: "你看看画，又看看范公，问——", choices: [
         { t: "“范公，您到过岳阳楼吗？”", go: "s12a" },
         { t: "“滕大人心里不平，您要在文章里替他出出气吗？”", go: "s12b" },
         { t: "“写一座楼，能写些什么呢？楼又不会说话。”", go: "s12c" }
       ] },
-      s12a: { lines: [
+      s12a: { shot: { bg: "yard", fan: "near", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "（看着画）这片湖，我在这画上，看过许多遍了。", face: "think" },
         { who: "fan", say: "动笔的时候，就对着它想吧。湖是什么样子，登楼的人是什么心思，我心里大概有数。" }
       ], next: "s13" },
-      s12b: { lines: [
+      s12b: { shot: { bg: "yard", fan: "near", side: "l", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "（摇摇头）出气，解不开他的心结。", face: "think" },
         { who: "fan", say: "我想写的，是另一种登楼的心思。他读了，自然会明白。" }
       ], next: "s13" },
-      s12c: { lines: [
+      s12c: { shot: { bg: "yard", fan: "near", side: "r", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "楼不说话，湖会说话，登楼的人也会说话。", face: "smile" },
-        { who: "fan", say: "同一片湖，有人看了要落泪，有人看了要发笑。我想写的，是这些人的心。" }
+        { who: "fan", say: "同一片湖，有人看了要落泪，有人看了要发笑。我想写的，是这些人的心。", shot: { bg: "lake", cam: "panL", fx: "mist", dream: 1, cap: "画上的洞庭湖" } }
       ], next: "s13" },
 
-      s13: { lines: [
+      s13: { shot: { bg: "yard", tone: "dusk", fan: "mid", cam: "pull", fx: "leaves" }, lines: [
         { who: "narr", say: "日头偏西了。周伯过来收书。" },
-        { who: "fan", say: "{name}，帮我把画卷好，放回匣子里。" },
-        { who: "fan", say: "子京等这篇记，等得够久了。我也该动笔了。" },
+        { who: "fan", say: "{name}，帮我把画卷好，放回匣子里。", shot: { bg: "yard", tone: "dusk", prop: "box", open: 1, cam: "push" } },
+        { who: "fan", say: "子京等这篇记，等得够久了。我也该动笔了。", shot: { bg: "yard", tone: "dusk", fan: "near", cam: "push", fx: "leaves" } },
         { who: "fan", say: "你回去想一想：一个被贬的人，为什么偏偏要请我来写？", face: "think" },
-        { who: "x", name: "阿娘", say: "{name}——回家吃饭啦！" },
+        { who: "x", name: "阿娘", say: "{name}——回家吃饭啦！", shot: { bg: "yard", tone: "dusk", cam: "panR", fx: "leaves", tr: "slide" } },
         { who: "me", say: "来了！范公，我明天再来帮您收书！" }
       ], next: "w1" },
 
@@ -153,9 +167,9 @@ window.YK_STORY = [
         hint: "可以说到：滕子京是谁，为什么在巴陵，他在那里做了什么，又请范公做什么。能用上“谪守”“嘱托”更好。",
         min: 20, max: 150 }, next: "end" },
 
-      end: { end: true, lines: [
+      end: { shot: { bg: "yard", tone: "night", cam: "pull" }, end: true, lines: [
         { who: "x", name: "阿娘", say: "原来范公要写文章了。那你可别去吵他。" },
-        { who: "narr", say: "那天夜里，你梦见一片很大很大的水，水边，有一座楼。" }
+        { who: "narr", say: "那天夜里，你梦见一片很大很大的水，水边，有一座楼。", shot: { bg: "lake", cam: "push", fx: "mist", dream: 1, dur: 24 } }
       ] }
     } },
 
@@ -164,15 +178,18 @@ window.YK_STORY = [
     blurb: "邓州连下了几天雨，你闷得发慌；天一放晴，范公说起他文章里两种登楼的人。",
     start: "s1",
     nodes: {
-      s1: { bg: "rain", lines: [
+      s1: { shot: { bg: "rain-yard", cam: "push", fx: "rain mist", dur: 22 }, bg: "rain", lines: [
+        { who: "narr", say: "你又睁开眼。还是邓州，庆历六年，九月初。" },
+        { who: "narr", say: "你还是范公家隔壁那个十四岁的少年。" },
+        { who: "narr", say: "这会儿，你面前只有窗外的雨。隔壁，就是范公——范仲淹的家。" },
         { who: "narr", say: "九月初，邓州下起了雨。一下，就是五天。" },
-        { who: "narr", say: "地里的谷子豆子还没收完，田埂上全是泥。" },
+        { who: "narr", say: "地里的谷子豆子还没收完，田埂上全是泥。", shot: { bg: "harvest", tone: "rain", cam: "panR", fx: "rain mist" } },
         { who: "x", name: "阿娘", say: "又下……再不停，谷穗都要在地里发芽了。" },
-        { who: "narr", say: "你趴在窗边，看着檐下的水，一串一串往下掉。" },
-        { who: "narr", say: "傍晚，周伯打着伞来敲门：老爷请你过去，帮着磨墨。" }
+        { who: "narr", say: "你趴在窗边，看着檐下的水，一串一串往下掉。", shot: { bg: "rain-yard", cam: "up", fx: "rain" } },
+        { who: "narr", say: "傍晚，周伯打着伞来敲门：老爷请你过去，帮着磨墨。", shot: { bg: "rain-yard", cam: "pull", fx: "rain mist" } }
       ], next: "s2" },
 
-      s2: { bg: "study", lines: [
+      s2: { shot: { bg: "study", tone: "rain", fan: "near", cam: "push", fx: "dust", tr: "slide" }, bg: "study", lines: [
         { who: "fan", say: "{name}，来了。你这张脸，怎么跟外头的天一个样？", face: "smile" }
       ], next: "s3" },
 
@@ -181,26 +198,26 @@ window.YK_STORY = [
         { t: "“地里的谷子还没收完，阿娘一天要叹好几回气。”", go: "s4b" },
         { t: "“其实我不讨厌下雨。只是一连下这么多天，就闷了。”", go: "s4c" }
       ] },
-      s4a: { lines: [
+      s4a: { shot: { bg: "study", tone: "rain", fan: "near", side: "l", cam: "push" }, lines: [
         { who: "fan", say: "（笑）是啊，整天关在屋里，人都要长青苔了。", face: "smile" },
         { who: "me", say: "本来说好，跟阿青去河边捉鱼的……" },
         { who: "fan", say: "原来，是一件盼着的事落空了。" }
       ], next: "s5" },
-      s4b: { lines: [
+      s4b: { shot: { bg: "study", tone: "rain", fan: "near", side: "l", cam: "push" }, lines: [
         { who: "fan", say: "嗯。秋雨连绵，种地的人家最怕的就是这个。", face: "think" },
         { who: "me", say: "我一看阿娘叹气，心里也沉。还有，本来要跟阿青去捉鱼，也去不成了。" },
         { who: "fan", say: "你闷，不全是为自己，也为家里的收成。这份心，难得。" }
       ], next: "s5" },
-      s4c: { lines: [
+      s4c: { shot: { bg: "study", tone: "rain", fan: "near", side: "r", cam: "push" }, lines: [
         { who: "fan", say: "说得实在。下一天雨，雨声是好听的；下五天，就叫人心烦了。", face: "smile" },
         { who: "me", say: "嗯。阿娘愁谷子，我也出不了门，捉鱼也去不成了。" },
         { who: "fan", say: "雨还是那场雨，下得久了，人心就变了。" }
       ], next: "s5" },
 
-      s5: { lines: [
+      s5: { shot: { bg: "study", tone: "rain", fan: "near", cam: "push" }, lines: [
         { who: "fan", say: "巧得很，我这几天写的，正好也是雨。" },
-        { who: "narr", say: "范公把一张纸推过来，上面的墨还没干透。" },
-        { who: "fan", say: "“若夫淫雨霏霏，连月不开……”淫雨，是下得太多、连绵不停的雨。" },
+        { who: "narr", say: "范公把一张纸推过来，上面的墨还没干透。", shot: { bg: "study", tone: "rain", prop: "draft", pt: "若夫淫雨霏霏，连月不开", cam: "push" } },
+        { who: "fan", say: "“若夫淫雨霏霏，连月不开……”淫雨，是下得太多、连绵不停的雨。", shot: { bg: "rain-lake", cam: "push", fx: "rain mist", dream: 1, cap: "想象：范公笔下的雨天洞庭湖" } },
         { who: "me", say: "那“霏霏”呢？" }
       ], next: "q1" },
 
@@ -209,7 +226,7 @@ window.YK_STORY = [
         ok: "对。霏霏，雨下得密，一层一层，看不透。就像窗外这样。",
         no: "霏霏，是雨（或雪）下得繁密。你看窗外，密密的一层又一层，就是霏霏。" }, next: "s6" },
 
-      s6: { lines: [
+      s6: { shot: { bg: "study", tone: "rain", fan: "near", side: "r", cam: "pull" }, lines: [
         { who: "fan", say: "那“连月不开”的“开”呢？可不是开门的开。" }
       ], next: "q2" },
 
@@ -218,27 +235,27 @@ window.YK_STORY = [
         ok: "是。开，是天放晴。连月不开，接连几个月都不放晴。",
         no: "这里的开，是天放晴。连月不开，接连几个月都不放晴。" }, next: "s7" },
 
-      s7: { lines: [
+      s7: { shot: { bg: "study", tone: "rain", fan: "near", cam: "push" }, lines: [
         { who: "me", say: "几个月都不放晴？我们才下了五天，我就受不了了。" },
-        { who: "fan", say: "所以我写：阴风怒号，浊浪排空，太阳星星都藏起了光，商人旅客也走不了路。" },
-        { who: "fan", say: "这时候登上楼的人，“去国怀乡，忧谗畏讥”：离开了京城，想念家乡，担心被人说坏话，惧怕被人批评指责。" },
+        { who: "fan", say: "所以我写：阴风怒号，浊浪排空，太阳星星都藏起了光，商人旅客也走不了路。", shot: { bg: "rain-lake", cam: "panL", fx: "rain mist", dream: 1, cap: "想象：阴风怒号，浊浪排空" } },
+        { who: "fan", say: "这时候登上楼的人，“去国怀乡，忧谗畏讥”：离开了京城，想念家乡，担心被人说坏话，惧怕被人批评指责。", shot: { bg: "tower", tone: "rain", cam: "pull", fx: "rain mist", dream: 1, cap: "想象：雨天登楼的人" } },
         { who: "fan", say: "满眼凄凉，感慨到了极点，就悲伤起来。" },
-        { who: "me", say: "那个人……跟我今天一样闷。" },
+        { who: "me", say: "那个人……跟我今天一样闷。", shot: { bg: "study", tone: "rain", fan: "near", cam: "push" } },
         { who: "fan", say: "（笑）只怕比你还闷。你先回去，明天看看天。", face: "smile" },
-        { who: "narr", say: "你回家的时候，雨还在下。" }
+        { who: "narr", say: "你回家的时候，雨还在下。", shot: { bg: "rain-yard", cam: "pull", fx: "rain mist" } }
       ], next: "s8" },
 
-      s8: { bg: "sunny", lines: [
+      s8: { shot: { bg: "yard", cam: "up", fx: "light dust", tr: "slide" }, bg: "sunny", lines: [
         { who: "narr", say: "第二天一早，你是被太阳晒醒的。" },
-        { who: "narr", say: "天蓝得发亮，院子里的水洼映着天。田里的人全出来了，割谷子的，收豆子的，有说有笑。" },
+        { who: "narr", say: "天蓝得发亮，院子里的水洼映着天。田里的人全出来了，割谷子的，收豆子的，有说有笑。", shot: { bg: "harvest", cam: "panR", fx: "birds light" } },
         { who: "me", say: "晴了！晴了！" },
-        { who: "narr", say: "你一路跑到范公家。范公正站在院子里，看天。" },
-        { who: "fan", say: "{name}，你这张脸，今天可是放晴了。", face: "smile" },
+        { who: "narr", say: "你一路跑到范公家。范公正站在院子里，看天。", shot: { bg: "yard", fan: "far", cam: "push", fx: "light" } },
+        { who: "fan", say: "{name}，你这张脸，今天可是放晴了。", face: "smile", shot: { bg: "yard", fan: "near", cam: "push", fx: "light" } },
         { who: "me", say: "范公，田里都在抢收呢！阿娘一早就笑了。" },
         { who: "fan", say: "好，好。昨天夜里，我也写到了晴天。" },
-        { who: "fan", say: "“至若春和景明，波澜不惊……”" },
-        { who: "me", say: "可现在是秋天呀？" },
-        { who: "fan", say: "文章里的晴天，借春天来写。春天的湖，最明亮。", face: "smile" }
+        { who: "fan", say: "“至若春和景明，波澜不惊……”", shot: { bg: "spring-lake", cam: "pull", fx: "light birds", dream: 1, cap: "想象：范公笔下的晴天洞庭湖" } },
+        { who: "me", say: "可现在是秋天呀？", shot: { bg: "yard", fan: "near", side: "l", cam: "push", fx: "light" } },
+        { who: "fan", say: "文章里的晴天，借春天来写。春天的湖，最明亮。", face: "smile", shot: { bg: "spring-lake", cam: "panR", fx: "light birds", dream: 1, cap: "想象：春和景明" } }
       ], next: "q3" },
 
       q3: { quiz: { q: "“春和景明”，【景】是什么意思？", sent: "至若春和【景】明，波澜不惊，",
@@ -246,10 +263,10 @@ window.YK_STORY = [
         ok: "对。这个景，是日光。春和景明：春风和暖，日光明亮。",
         no: "这里的景，不是景色，是日光。景明，就是日光明亮，像今天这样。" }, next: "s9" },
 
-      s9: { lines: [
+      s9: { shot: { bg: "spring-lake", cam: "panL", fx: "birds light", dream: 1, cap: "想象：沙鸥翔集，锦鳞游泳" }, lines: [
         { who: "fan", say: "湖面不起波浪，天光水色，一片碧绿。沙鸥飞飞停停，鱼儿游来游去。" },
         { who: "fan", say: "这样的日子登楼，人就“心旷神怡，宠辱偕忘”。" },
-        { who: "me", say: "“偕忘”……" },
+        { who: "me", say: "“偕忘”……", shot: { bg: "yard", fan: "near", cam: "push", fx: "light" } },
         { who: "fan", say: "偕，是一起。荣耀和屈辱，一起忘掉了。端起酒杯，迎着清风，喜气洋洋。" },
         { who: "me", say: "我现在就是喜气洋洋！" },
         { who: "fan", say: "（笑）那我考考你：昨天你闷，今天你乐。是什么叫你闷，又是什么叫你乐的？", face: "smile" }
@@ -260,27 +277,27 @@ window.YK_STORY = [
         { t: "“是我自己的事。能出门了，家里的谷子也能收了。”", go: "s11b" },
         { t: "“我也说不清。好像天一变，心就跟着变了。”", go: "s11c" }
       ] },
-      s11a: { lines: [
+      s11a: { shot: { bg: "yard", fan: "near", side: "r", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "天是一半。还有一半呢？昨天你闷，只是因为雨吗？", face: "think" },
         { who: "me", say: "……还因为捉不成鱼，阿娘又愁收成。" },
         { who: "fan", say: "那就是你自己的事，你家里的得失了。" }
       ], next: "s12" },
-      s11b: { lines: [
+      s11b: { shot: { bg: "yard", fan: "near", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "可要不是天晴，谷子收不了，鱼也捉不成呀。", face: "think" },
         { who: "me", say: "那……天，还有我自己的事，两样都有？" },
         { who: "fan", say: "正是。" }
       ], next: "s12" },
-      s11c: { lines: [
+      s11c: { shot: { bg: "yard", fan: "near", side: "l", cam: "push", fx: "light" }, lines: [
         { who: "fan", say: "心跟着变，这就说到点子上了。", face: "smile" },
         { who: "fan", say: "你细想：跟着变的，是天，还是天带来的那些事？" },
         { who: "me", say: "都有。雨叫我出不了门，也叫家里收不了谷子。" }
       ], next: "s12" },
 
-      s12: { lines: [
+      s12: { shot: { bg: "yard", fan: "near", cam: "pull", fx: "light dust" }, lines: [
         { who: "fan", say: "我在文章里写了两种登楼的人：雨天登楼的，悲；晴天登楼的，喜。" },
-        { who: "fan", say: "这两种人，我想用六个字来说：以物喜，以己悲。" },
+        { who: "fan", say: "这两种人，我想用六个字来说：以物喜，以己悲。", shot: { bg: "yard", prop: "draft", pt: "以物喜，以己悲", cam: "push" } },
         { who: "me", say: "以物喜……因为外物高兴；以己悲……因为自己悲伤？" },
-        { who: "fan", say: "字面上是这样。可这两句，要合起来看。", face: "think" },
+        { who: "fan", say: "字面上是这样。可这两句，要合起来看。", face: "think", shot: { bg: "yard", fan: "near", side: "l", cam: "push", fx: "light" } },
         { who: "fan", say: "因为外物的好坏、自己的得失，或喜或悲。外物也会叫人悲，自己的得失也会叫人喜。" },
         { who: "me", say: "那我昨天，是雨，再加上自己的事，所以闷；今天是天晴，再加上能出门、能收谷子，所以乐……" },
         { who: "me", say: "我就是那两种人嘛！" },
@@ -294,7 +311,7 @@ window.YK_STORY = [
         hint: "想一想：让你闷或者高兴的，是天气（物），还是你自己的事（己），还是两样都有？可以引一句第3段或第4段的原文。",
         min: 30, max: 200 }, next: "end" },
 
-      end: { end: true, lines: [
+      end: { shot: { bg: "harvest", tone: "dusk", cam: "panR", fx: "birds" }, end: true, lines: [
         { who: "narr", say: "那天傍晚，田里的谷子，收进来一大半。" },
         { who: "x", name: "阿娘", say: "{name}，明天跟我下地，把豆子收完。" }
       ] }
@@ -305,15 +322,18 @@ window.YK_STORY = [
     blurb: "九月十五夜，范公搁下笔。你读完刚写成的《岳阳楼记》，忍不住问：这是写给谁的？",
     start: "s1",
     nodes: {
-      s1: { bg: "study", lines: [
+      s1: { shot: { bg: "night", fan: "far", cam: "push", fx: "candle", dur: 22 }, bg: "study", lines: [
+        { who: "narr", say: "你睁开眼。邓州，庆历六年九月十五，夜里。" },
+        { who: "narr", say: "你是范公家隔壁的少年，十四岁。这一回，你站在范公的书房门口。" },
+        { who: "narr", say: "门半掩着。灯下坐着的，就是范公——范仲淹。" },
         { who: "narr", say: "庆历六年九月十五。夜里，月亮又大又圆。" },
         { who: "x", name: "周伯", say: "老爷在书房里坐了一整天，饭都是端进去吃的。你进去吧，轻一点。" },
-        { who: "narr", say: "你进去的时候，范公正好搁下笔。桌上一叠纸，最上面写着四个字：岳阳楼记。" },
-        { who: "fan", say: "{name}，来得巧。写完了。", face: "smile" },
+        { who: "narr", say: "你进去的时候，范公正好搁下笔。桌上一叠纸，最上面写着四个字：岳阳楼记。", shot: { bg: "night", prop: "draft", pt: "岳阳楼记", cam: "push", fx: "candle" } },
+        { who: "fan", say: "{name}，来得巧。写完了。", face: "smile", shot: { bg: "night", fan: "near", cam: "push", fx: "candle" } },
         { who: "me", say: "写完了！我能看吗？" },
         { who: "fan", say: "看吧。读出声来，我也听听。" },
-        { who: "narr", say: "你从头读起。读到“嗟夫”，范公靠在椅背上，轻轻叹了一口气。" },
-        { who: "narr", say: "读到最后一句——“噫！微斯人，吾谁与归？”——你停住了。" },
+        { who: "narr", say: "你从头读起。读到“嗟夫”，范公靠在椅背上，轻轻叹了一口气。", shot: { bg: "night", prop: "draft", pt: "嗟夫！予尝求古仁人之心", cam: "push", fx: "candle" } },
+        { who: "narr", say: "读到最后一句——“噫！微斯人，吾谁与归？”——你停住了。", shot: { bg: "night", prop: "draft", pt: "噫！微斯人，吾谁与归？", cam: "push", fx: "candle" } },
         { who: "fan", say: "这个“微”字，你懂吗？" }
       ], next: "q1" },
 
@@ -331,7 +351,7 @@ window.YK_STORY = [
         ok: "是。斯人，这样的人，就是前面说的古仁人。如果没有这样的人，我同谁一道呢？",
         no: "斯，是这；斯人，是这样的人，指前面说的古仁人。如果没有这样的人，我同谁一道呢？" }, next: "s3" },
 
-      s3: { lines: [
+      s3: { shot: { bg: "night", fan: "near", cam: "push", fx: "candle" }, lines: [
         { who: "me", say: "“我同谁一道呢”……范公，这句话是说给谁听的？" },
         { who: "me", say: "这篇文章，是写给滕大人的吧？" },
         { who: "fan", say: "你说呢？", face: "smile" }
@@ -342,35 +362,35 @@ window.YK_STORY = [
         { t: "“是写给去岳阳楼的人的。刻在楼上，谁来都能读。”", go: "s5b" },
         { t: "“我觉得，是写给您自己的。‘吾谁与归’，像是您在问自己。”", go: "s5c" }
       ] },
-      s5a: { lines: [
+      s5a: { shot: { bg: "night", fan: "near", side: "l", cam: "push", fx: "candle" }, lines: [
         { who: "fan", say: "你看到了一头一尾。", face: "smile" },
         { who: "fan", say: "开头说他政通人和，这是实话，也是我敬他的地方。" },
         { who: "fan", say: "结尾那一句……他读得出来。", face: "think" }
       ], next: "s6" },
-      s5b: { lines: [
+      s5b: { shot: { bg: "night", fan: "near", cam: "push", fx: "candle" }, lines: [
         { who: "fan", say: "这也不错。刻在楼上，往来的迁客骚人，谁都读得到。", face: "smile" },
         { who: "fan", say: "不过你再想想：谁会读得最多遍？" },
         { who: "me", say: "……请您写记的人。滕大人。" },
         { who: "fan", say: "嗯。" }
       ], next: "s6" },
-      s5c: { lines: [
+      s5c: { shot: { bg: "night", fan: "near", side: "r", cam: "push", fx: "candle" }, lines: [
         { who: "fan", say: "（停了一下）你这孩子……", face: "think" },
         { who: "fan", say: "这一问，我确实也在问自己。" },
         { who: "fan", say: "可这篇记，毕竟是子京托我写的。头一个读它的，是他。" }
       ], next: "s6" },
 
-      s6: { lines: [
+      s6: { shot: { bg: "night", fan: "near", cam: "pull", fx: "candle" }, lines: [
         { who: "fan", say: "{name}，那天晒书，我说子京心里不平。你还记得吗？" },
         { who: "me", say: "记得。他觉得自己冤枉，脸上都带出来了。" },
-        { who: "fan", say: "你再看第3段，那个下雨天登楼的人：去国怀乡，忧谗畏讥。" },
+        { who: "fan", say: "你再看第3段，那个下雨天登楼的人：去国怀乡，忧谗畏讥。", shot: { bg: "rain-lake", cam: "push", fx: "rain mist", dream: 1, cap: "想象：第3段里，雨天登楼的人" } },
         { who: "me", say: "离开京城……怕人说坏话……这不就像滕大人？" },
-        { who: "fan", say: "那一段里，我没有写他的名字。", face: "think" },
+        { who: "fan", say: "那一段里，我没有写他的名字。", face: "think", shot: { bg: "night", fan: "near", side: "l", cam: "push", fx: "candle" } },
         { who: "fan", say: "子京性子傲，当面劝，他未必听得进。我心里有些话，想对他说，就放进了文章里。" },
         { who: "fan", say: "他读到“不以物喜，不以己悲”，读到“微斯人，吾谁与归”，会懂的。" },
         { who: "me", say: "您是在……劝他？" },
         { who: "fan", say: "劝他，也是敬他，也是陪他。他在巴陵做的事，有几分古仁人的样子。我只盼他心里那口气，也能慢慢放下。" },
         { who: "fan", say: "可这记刻在楼上，天下登楼的人都会读；我写它，也是写给我自己。到底写给谁，你自己掂量。", face: "smile" },
-        { who: "fan", say: "再看这两句：“居庙堂之高，则忧其民，处江湖之远，则忧其君。”庙堂，是朝廷。那江湖呢？" }
+        { who: "fan", say: "再看这两句：“居庙堂之高，则忧其民，处江湖之远，则忧其君。”庙堂，是朝廷。那江湖呢？", shot: { bg: "night", prop: "draft", pt: "居庙堂之高则忧其民，处江湖之远则忧其君。", cam: "push", fx: "candle" } }
       ], next: "q3" },
 
       q3: { quiz: { q: "“处江湖之远”，【江湖】是什么意思？", sent: "处【江湖】之远，则忧其君。",
@@ -378,14 +398,14 @@ window.YK_STORY = [
         ok: "对。江湖，和庙堂相对。庙堂是朝廷；江湖，是远离朝廷的偏远地方。",
         no: "这里的江湖，是偏远的地方，远离朝廷，和“庙堂”相对。庙堂，是朝廷。" }, next: "s7" },
 
-      s7: { lines: [
+      s7: { shot: { bg: "night", fan: "near", cam: "pull", fx: "candle" }, lines: [
         { who: "me", say: "邓州，巴陵……都算江湖。" },
         { who: "fan", say: "是。我和子京，如今都处江湖之远。", face: "smile" },
         { who: "me", say: "那您离朝廷这么远，还要忧国君？" },
         { who: "fan", say: "人离得远，心不能跟着走远。" },
-        { who: "fan", say: "所以古仁人，进亦忧，退亦忧。那么，什么时候才乐呢？——先天下之忧而忧，后天下之乐而乐。" },
+        { who: "fan", say: "所以古仁人，进亦忧，退亦忧。那么，什么时候才乐呢？——先天下之忧而忧，后天下之乐而乐。", shot: { bg: "night", prop: "draft", pt: "先天下之忧而忧，后天下之乐而乐", cam: "push", fx: "candle" } },
         { who: "fan", say: "在天下人担忧之前先担忧，在天下人快乐之后才快乐。" },
-        { who: "fan", say: "{name}，你读了这两句，心里怎么想？说真话就好。", face: "smile" }
+        { who: "fan", say: "{name}，你读了这两句，心里怎么想？说真话就好。", face: "smile", shot: { bg: "night", fan: "near", cam: "push", fx: "candle" } }
       ], next: "s8" },
 
       s8: { ask: "“先天下之忧而忧，后天下之乐而乐”，你——", choices: [
@@ -393,20 +413,20 @@ window.YK_STORY = [
         { t: "“我不完全同意。忧可以先忧，可乐为什么一定要排在最后？”", go: "s9b" },
         { t: "“我有个疑问：天下那么大，总有人在忧。那先忧后乐的人，不就永远乐不成了？”", go: "s9c" }
       ] },
-      s9a: { lines: [
+      s9a: { shot: { bg: "night", fan: "near", side: "r", cam: "push", fx: "candle" }, lines: [
         { who: "fan", say: "你说“官”，说得对。", face: "smile" },
         { who: "fan", say: "可这话，不只说给做官的人。你在家里、在塾里，有没有哪一件小事，肯把自己排在后面？" },
         { who: "me", say: "……前几天抢收，我本想先去捉鱼，后来还是先帮阿娘把谷子背回来了。" },
         { who: "fan", say: "那就是了。一件小事，也算数。" }
       ], next: "s10" },
-      s9b: { lines: [
+      s9b: { shot: { bg: "night", fan: "near", cam: "push", fx: "candle" }, lines: [
         { who: "fan", say: "你把两句分开来想，这很好。忧和乐，本来不必一样回答。", face: "think" },
         { who: "fan", say: "我不是说不许乐。是说天下人还在受苦的时候，自己不好先安心享乐。" },
         { who: "me", say: "可第4段晴天登楼的人，也乐呀。他们乐，也不坏。" },
         { who: "fan", say: "（点头）不坏。只是那样的乐，天一阴，就没了。", face: "smile" },
         { who: "fan", say: "你若还是觉得乐不必排在最后，也可以。只是要说出理由，再从文章里找一句撑住。" }
       ], next: "s10" },
-      s9c: { lines: [
+      s9c: { shot: { bg: "night", fan: "near", side: "l", cam: "push", fx: "candle" }, lines: [
         { who: "fan", say: "（停了一下）这一问，很难。", face: "think" },
         { who: "fan", say: "古仁人之心，我也只是“求”，不敢说自己做到了。" },
         { who: "fan", say: "我想，他们不是没有乐，是乐得不只为自己。看见天下人乐了，那份乐，比一个人的乐更踏实。" },
@@ -414,18 +434,18 @@ window.YK_STORY = [
         { who: "fan", say: "想不通，就留着慢慢想。这比随口说一声“同意”好。", face: "smile" }
       ], next: "s10" },
 
-      s10: { lines: [
+      s10: { shot: { bg: "night", fan: "mid", cam: "pull", fx: "candle" }, lines: [
         { who: "fan", say: "同意也好，不同意也好，都要说出理由，还要用原文说话。" },
-        { who: "fan", say: "这篇记，过几天我就封好，托人带去巴陵。" },
+        { who: "fan", say: "这篇记，过几天我就封好，托人带去巴陵。", shot: { bg: "night", prop: "letter", pt: "", cam: "push", fx: "candle" } },
         { who: "me", say: "滕大人读到，会是什么样子呢？" },
-        { who: "fan", say: "（望着窗外的月亮）我也想知道。", face: "think" }
+        { who: "fan", say: "（望着窗外的月亮）我也想知道。", face: "think", shot: { bg: "night", fan: "mid", side: "l", cam: "panR", fx: "candle" } }
       ], next: "w1" },
 
       w1: { write: { prompt: "“先天下之忧而忧，后天下之乐而乐”，你同意吗？写两三句，说出理由，至少引一处原文（加引号）。",
         hint: "可以同意，可以不完全同意，也可以写出你的疑问。态度＋理由＋原文。比如：我……，因为……，文中说“……”。",
         min: 30, max: 200 }, next: "end" },
 
-      end: { end: true, lines: [
+      end: { shot: { bg: "yard", tone: "night", cam: "up", tr: "slide" }, end: true, lines: [
         { who: "narr", say: "那晚月亮很亮。回家的路上，你一直在想那一句：吾谁与归？" }
       ] }
     } },
@@ -435,18 +455,21 @@ window.YK_STORY = [
     blurb: "你心里堵着一件事，范公不讲道理，只带你到城外高处，看秋天。",
     start: "s1",
     nodes: {
-      s1: { bg: "yard", lines: [
+      s1: { shot: { bg: "harvest", tone: "bare", cam: "panR", fx: "leaves", dur: 22 }, bg: "yard", lines: [
+        { who: "narr", say: "你睁开眼。邓州，庆历六年，九月底。" },
+        { who: "narr", say: "你是范公家隔壁的少年，十四岁。这几天，你心里有事。" },
+        { who: "narr", say: "你面前，是范公家的院门。院子里等着你的，是范公——范仲淹。" },
         { who: "narr", say: "九月底。谷子豆子都收进了仓，场院上空荡荡的。" },
         { who: "narr", say: "这几天，你都没去范公家。" },
-        { who: "x", name: "周伯", say: "{name}，老爷问你，这几天怎么不过来了？" },
-        { who: "narr", say: "你低着头，跟周伯进了院子。" },
-        { who: "fan", say: "{name}，几天不见了。" }
+        { who: "x", name: "周伯", say: "{name}，老爷问你，这几天怎么不过来了？", shot: { bg: "yard", cam: "push", fx: "leaves" } },
+        { who: "narr", say: "你低着头，跟周伯进了院子。", shot: { bg: "yard", cam: "down", fx: "leaves" } },
+        { who: "fan", say: "{name}，几天不见了。", shot: { bg: "yard", fan: "mid", cam: "push", fx: "leaves" } }
       ], next: "s2" },
 
-      s2: { ask: "你心里堵着一件事。是——", choices: [
-        { t: "先生让背书，我背到一半，脑子一下全空了，在全塾的人面前站了好久。", go: "s3a" },
-        { t: "我跟阿青闹翻了，已经三天没说话。", go: "s3b" },
-        { t: "阿爹给我扎的纸鸢，前天线断了，飞过河去，再也找不着了。", go: "s3c" }
+      s2: { shot: { bg: "yard", fan: "near", cam: "push", fx: "leaves" }, ask: "你心里堵着一件事。是——", choices: [
+        { t: "先生让背书，我背到一半，脑子一下全空了，在全塾的人面前站了好久。", say: true, go: "s3a" },
+        { t: "我跟阿青闹翻了，已经三天没说话。", say: true, go: "s3b" },
+        { t: "阿爹给我扎的纸鸢，前天线断了，飞过河去，再也找不着了。", say: true, go: "s3c" }
       ] },
       s3a: { lines: [
         { who: "fan", say: "背到一半，忘了。" },
@@ -462,50 +485,50 @@ window.YK_STORY = [
       ], next: "s4" },
       s3c: { lines: [
         { who: "fan", say: "飞过河去了。" },
-        { who: "me", say: "那是阿爹熬了两个晚上扎的，上面还画了一只鹞子。" },
+        { who: "me", say: "那是阿爹熬了两个晚上扎的，上面还画了一只鹞子。", shot: { bg: "hill", prop: "kite", cam: "panL", fx: "birds" } },
         { who: "me", say: "我顺着河找了一下午，什么都没找着。" },
         { who: "fan", say: "（点点头）嗯。" }
       ], next: "s4" },
 
-      s4: { lines: [
+      s4: { shot: { bg: "yard", fan: "mid", side: "l", cam: "pull", fx: "leaves" }, lines: [
         { who: "narr", say: "范公没有多说。他站起来，拿起一根竹杖。" },
-        { who: "fan", say: "走，陪我出城走走。" }
+        { who: "fan", say: "走，陪我出城走走。", shot: { bg: "yard", fan: "near", cam: "push", fx: "leaves" } }
       ], next: "s5" },
 
-      s5: { bg: "hill", lines: [
+      s5: { shot: { bg: "gate", cam: "push", fx: "leaves", tr: "slide" }, bg: "hill", lines: [
         { who: "narr", say: "出了城，路越走越高。你们爬上城外一处土岗。" },
-        { who: "narr", say: "风很大。四下里的田都收空了，只剩一茬一茬的谷茬。" },
-        { who: "narr", say: "远处，一条河弯弯地流过去。几只雁从头顶飞过，往南去了。" },
-        { who: "fan", say: "{name}，你看看四周。先不用说心里怎么样，只说你看见了什么。" }
+        { who: "narr", say: "风很大。四下里的田都收空了，只剩一茬一茬的谷茬。", shot: { bg: "hill", cam: "down", fx: "leaves", tr: "slide" } },
+        { who: "narr", say: "远处，一条河弯弯地流过去。几只雁从头顶飞过，往南去了。", shot: { bg: "hill", cam: "panR", fx: "birds" } },
+        { who: "fan", say: "{name}，你看看四周。先不用说心里怎么样，只说你看见了什么。", shot: { bg: "hill", fan: "mid", side: "l", cam: "pull", fx: "birds" } }
       ], next: "s6" },
 
-      s6: { ask: "你看了一圈，先说——", choices: [
+      s6: { shot: { bg: "hill", cam: "pull", fx: "birds leaves" }, ask: "你看了一圈，先说——", choices: [
         { t: "“田都空了，只剩下谷茬子。”", go: "s7a" },
         { t: "“雁往南飞了……后面那一只，落得好远。”", go: "s7b" },
         { t: "“河那边，太阳照着，水一闪一闪的。”", go: "s7c" }
       ] },
-      s7a: { lines: [
+      s7a: { shot: { bg: "hill", cam: "down", fx: "leaves" }, lines: [
         { who: "fan", say: "空了。还看见什么？" },
         { who: "me", say: "地是灰黄的，一块连着一块。一个人也没有。" },
         { who: "fan", say: "嗯。" }
       ], next: "s8" },
-      s7b: { lines: [
+      s7b: { shot: { bg: "hill", cam: "up", fx: "birds" }, lines: [
         { who: "fan", say: "落在后头的那一只，你看得最久。" },
         { who: "me", say: "它飞得慢，前面的，也不等它。" },
         { who: "fan", say: "嗯。" }
       ], next: "s8" },
-      s7c: { lines: [
+      s7c: { shot: { bg: "hill", cam: "panR", fx: "light" }, lines: [
         { who: "fan", say: "你看的，是亮的那一处。" },
         { who: "me", say: "可太阳就要下去了。一会儿，就不亮了。" },
         { who: "fan", say: "嗯。" }
       ], next: "s8" },
 
-      s8: { lines: [
+      s8: { shot: { bg: "hill", fan: "near", side: "l", cam: "push", fx: "leaves" }, lines: [
         { who: "fan", say: "你刚才说的话里，没有一个“难过”。可我听出来了。" },
         { who: "me", say: "我……没说难过呀。" },
         { who: "fan", say: "你说的那些景，替你说了。" },
         { who: "fan", say: "我写雨天的湖，也是这样，景里没写一个“愁”字。", face: "smile" },
-        { who: "me", say: "那晴天的湖呢？“而或长烟一空，皓月千里”……" },
+        { who: "me", say: "那晴天的湖呢？“而或长烟一空，皓月千里”……", shot: { bg: "moon-lake", cam: "pull", fx: "mist", dream: 1, cap: "想象：长烟一空，皓月千里" } },
         { who: "fan", say: "你考考自己：“一空”，是什么意思？" }
       ], next: "q1" },
 
@@ -532,45 +555,45 @@ window.YK_STORY = [
         ok: "对。把，是拿、端；把酒，端起酒杯。临，是面对：临风，就是迎着风。",
         no: "把，是拿、端；把酒，是端起酒杯。临，是面对：临风，就是迎着风。" }, next: "s11" },
 
-      s11: { lines: [
+      s11: { shot: { bg: "hill", fan: "near", cam: "push", fx: "leaves" }, lines: [
         { who: "me", say: "临风……我们现在也算临风了。" },
         { who: "fan", say: "（笑）是。只差一杯酒。你还小，就免了。", face: "smile" },
-        { who: "narr", say: "风停了一下。太阳落到河那边去了。" },
-        { who: "me", say: "范公，您……怎么不劝劝我？阿娘总说，别想了，过几天就好了。" },
+        { who: "narr", say: "风停了一下。太阳落到河那边去了。", shot: { bg: "hill", tone: "dusk", cam: "panR", fx: "birds" } },
+        { who: "me", say: "范公，您……怎么不劝劝我？阿娘总说，别想了，过几天就好了。", shot: { bg: "hill", tone: "dusk", fan: "near", side: "l", cam: "push" } },
         { who: "fan", say: "过几天，大概真会好。可是现在，你心里就是不好受。" },
         { who: "fan", say: "我不劝你别难过。我只想带你站高一点，看远一点。" }
       ], next: "s12" },
 
-      s12: { ask: "你又看了看远处。这回你想说——", choices: [
+      s12: { shot: { bg: "hill", tone: "dusk", cam: "pull", fx: "birds" }, ask: "你又看了看远处。这回你想说——", choices: [
         { t: "“天地这么大……我那件事，好像也没那么大了。”", go: "s13a" },
         { t: "“我还是难过。看得再远，也还是难过。”", go: "s13b" },
         { t: "“我想把今天看见的，记下来。”", go: "s13c" }
       ] },
-      s13a: { lines: [
+      s13a: { shot: { bg: "hill", tone: "dusk", fan: "near", cam: "push" }, lines: [
         { who: "fan", say: "事还是那件事。只是你站的地方，高了。", face: "smile" },
         { who: "fan", say: "这不是把它忘了，是不让它把整片天都遮住。" }
       ], next: "s14" },
-      s13b: { lines: [
+      s13b: { shot: { bg: "hill", tone: "dusk", fan: "near", side: "l", cam: "push" }, lines: [
         { who: "fan", say: "那也好。你说的是实话。", face: "smile" },
         { who: "fan", say: "难过不丢人。明天，该做的事，照常去做。慢慢来。" }
       ], next: "s14" },
-      s13c: { lines: [
+      s13c: { shot: { bg: "hill", tone: "dusk", fan: "near", side: "r", cam: "push" }, lines: [
         { who: "fan", say: "好。那就写下来。", face: "smile" },
         { who: "fan", say: "不写“难过”两个字，只写你看见的。写完了，你自己也会看得清楚一些。" }
       ], next: "s14" },
 
-      s14: { lines: [
+      s14: { shot: { bg: "tower", tone: "dusk", cam: "pull", fx: "mist", dream: 1, cap: "想象：巴陵的岳阳楼" }, lines: [
         { who: "fan", say: "子京在巴陵，有他的楼；我在邓州，就有这个土岗。" },
-        { who: "fan", say: "{name}，你也有你的一座楼。心里堵的时候，就上去看看。" },
+        { who: "fan", say: "{name}，你也有你的一座楼。心里堵的时候，就上去看看。", shot: { bg: "hill", tone: "dusk", fan: "near", cam: "push" } },
         { who: "fan", say: "看见什么，写下什么。景写足了，心就在里头了。" },
-        { who: "narr", say: "下土岗的时候，天边只剩下一抹红。" }
+        { who: "narr", say: "下土岗的时候，天边只剩下一抹红。", shot: { bg: "hill", tone: "dusk", cam: "pull", fx: "birds", dur: 22 } }
       ], next: "w1" },
 
       w1: { write: { prompt: "写一段话：今天在城外土岗上，你看见了什么？用借景传情的办法（方法1）：正文不写“难过、伤心、失落”这类心情词，让读的人从景物里感到你的心情。60–120字。",
         hint: "想一想四个角度：颜色、光线、声音、动静。每一样景物，都朝着同一种心情。可以写空田、落单的雁、河上的夕阳，也可以写你自己看见的别的东西。",
         min: 60, max: 150 }, next: "end" },
 
-      end: { end: true, lines: [
+      end: { shot: { bg: "gate", tone: "dusk", cam: "push", fx: "leaves" }, end: true, lines: [
         { who: "narr", say: "回家的路上，你把那件事又在心里想了一遍。" },
         { who: "narr", say: "好像，没有那么重了。" }
       ] }

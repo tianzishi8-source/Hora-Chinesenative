@@ -2,13 +2,14 @@
  * 四个板块：沉浸体验《邓州的秋天》、背诵帮手＋练一练、字词卡＋练一练、模拟测验。不用 AI，所有回应都预先写好。
  * 内容在 data/：text.js（原文）、story.js（剧情）、words.js（字词）、tests.js（测验）。地址后加 ?sample=1 读 data/_sample/ 里的样例。
  * 签到：读首页的 sessionStorage hora-session（没签到就回首页签到）。进度存本机（按“班级|名字”分开），防抖同步到老师的表格（课文 id：g9-yueyanglou-ke）。
- * 录音：范公的台词如在 voice/index.js 里有录音（window.YK_VOICE 或 proj_record.py 生成的 window.PROJ_VOICE），就播放；没有就静音。 */
+ * 录音：沉浸体验里范公、旁白、其他人物和“我”（学生选的声音，8 种）的台词，在 voice/index.js（tools/yk_record.py 生成的 window.PROJ_VOICE）里有录音就播放；没有就静音。
+ * 画面：scene.js 画替代场景、道具和效果；有 img/scene-{名字}.webp 就用真图。 */
 (function () {
 "use strict";
 var SITE = window.HORA_SITE || {}, HOME = SITE.home || "../";
 var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11041930";
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11050010";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -209,23 +210,78 @@ function storyList() {
     h += '<a class="ch' + (st.done ? " done" : "") + '" href="#story/' + c.id + '"><span class="cn">' + NUM[i + 1] + '</span><span class="tx"><b>' + esc(c.title) + "</b><small>" + esc(c.blurb || "") + '</small><em>第 ' + (c.after || "?") + " 节后 · 约 " + (c.minutes || 9) + " 分钟</em></span>" +
       '<span class="st">' + (st.done ? "✓ 完成" : st.node ? "读到一半" : "") + "</span></a>";
   });
-  page(h + "</div>", ["#home", "首页"]);
+  h += '</div><div class="vrow"><span>“我”的声音：<b id="vNm">' + esc(myVoiceName()) + (pickedVoice() ? "" : "（还没选）") + '</b></span><button type="button" class="btn ghost" id="bVoice">换声音</button></div>';
+  page(h, ["#home", "首页"]);
+  $("#bVoice").addEventListener("click", function () { voicePicker(function () { $("#vNm").textContent = myVoiceName(); }, "换一个“我”的声音"); });
 }
 
-var BG = { lake: "lake", rain: "rain", sunny: "spring", spring: "spring", hill: "map", map: "map", tower: "tower", moon: "moon", bi: "bi" };
-function bgUrl(k) { if (!k) return ""; if (/\.(webp|jpe?g|png)$/i.test(k)) return k; return BG[k] ? "../yueyanglou/img/" + BG[k] + ".webp" : ""; }
+/* ---------- 画面（shot） ----------
+ * 节点或台词上的 shot：{ bg, tone, cam, fx, prop, pt, open, peek, fan, side, tr, dur, dream, cap }（详见 data/story.js 开头的说明）。
+ * 每个 shot 是一整个画面，不继承上一个；bg 相同（道具、色调也相同）时只换镜头、效果、范公的位置，不切画面。
+ * 场景图：有 img/scene-{bg}.webp 就用（启动时探一下），没有就用 scene.js 画的替代画面。 */
+var IMG = { lake: "lake", "rain-lake": "rain", "spring-lake": "spring", "moon-lake": "moon", tower: "tower", map: "map", bi: "bi" };
+var LEGACY = { rain: "rain-yard", sunny: "yard", spring: "spring-lake", moon: "moon-lake" };
+var SCENE_KEYS = ["study", "yard", "rain-yard", "harvest", "night", "hill", "gate"], SCENE_IMG = {};
+function probeScenes() { SCENE_KEYS.forEach(function (k) { var u = "img/scene-" + k + ".webp?v=" + VER, im = new Image(); im.onload = function () { if (im.naturalWidth) SCENE_IMG[k] = u; }; im.src = u; }); }
+var CAM = { still: ["scale(1.05)", "scale(1.06)"], push: ["scale(1.02)", "scale(1.16)"], pull: ["scale(1.17)", "scale(1.03)"],
+  panL: ["translateX(-4%) scale(1.12)", "translateX(4%) scale(1.12)"], panR: ["translateX(4%) scale(1.12)", "translateX(-4%) scale(1.12)"],
+  up: ["translateY(-4.5%) scale(1.12)", "translateY(4.5%) scale(1.12)"], down: ["translateY(4.5%) scale(1.12)", "translateY(-4.5%) scale(1.12)"] };
+function normShot(s) {
+  if (!s) return null; if (typeof s === "string") s = { bg: s };
+  var o = {}; for (var k in s) o[k] = s[k];
+  o.bg = LEGACY[o.bg] || o.bg || "yard"; o.tone = o.tone || ""; o.cam = CAM[o.cam] ? o.cam : "push";
+  o.fx = typeof o.fx === "string" ? o.fx.split(/\s+/).filter(Boolean) : (o.fx || []);
+  o.fan = /^(near|mid|far)$/.test(o.fan) ? o.fan : "off"; o.side = /^[lcr]$/.test(o.side) ? o.side : "c";
+  return o;
+}
+function nodeShot(n) { return n ? normShot(n.shot || (n.lines && n.lines[0] && n.lines[0].shot) || (n.bg ? { bg: n.bg, fan: "mid" } : null)) : null; }
+function sceneHTML(s) {
+  var inner;
+  if (IMG[s.bg]) inner = '<img class="photo" src="../yueyanglou/img/' + IMG[s.bg] + '.webp" alt="" draggable="false">';
+  else if (SCENE_IMG[s.bg]) inner = '<img class="photo" src="' + SCENE_IMG[s.bg] + '" alt="" draggable="false">' + (s.tone ? '<i class="tint t-' + s.tone + '"></i>' : "");
+  else inner = window.YK_SCENE ? YK_SCENE.svg(s.bg, s.bg === "night" ? "night" : s.tone) : "";
+  if (IMG[s.bg] && s.tone) inner += '<i class="tint t-' + s.tone + '"></i>';
+  var prop = s.prop && window.YK_SCENE ? YK_SCENE.prop(s.prop, { t: s.pt, open: s.open, peek: s.peek }) : "";
+  return '<div class="cam"><div class="scene">' + inner + "</div></div>" + (s.dream ? '<i class="dreamv"></i>' : "") + (prop ? '<div class="pwrap">' + prop + "</div>" : "");
+}
 
-/* 范公的录音：哈希算法和朗读文字处理与 ketang/proj.js 相同 */
+/* ---------- 声音 ----------
+ * 录音编号＝hash(说话人键 + "|" + 朗读文字)，和 ketang/proj.js、tools/yk_lines.js 一样。
+ * 说话人键：fan / narr / x-名字 / me-b1…me-g4（学生选的“我的声音”）。没有录音的句子不出声（不用设备语音）。 */
+var MYV = [
+  { k: "me-b1", n: "云希·清朗", g: "b" }, { k: "me-b2", n: "云夏·少年", g: "b" }, { k: "me-b3", n: "云希·温和", g: "b" }, { k: "me-b4", n: "云健·爽朗", g: "b" },
+  { k: "me-g1", n: "晓伊·活泼", g: "g" }, { k: "me-g2", n: "晓晓·温柔", g: "g" }, { k: "me-g3", n: "晓伊·清亮", g: "g" }, { k: "me-g4", n: "晓晓·柔和", g: "g" }];
+var VSAMPLE = "范公，我来帮您晒书吧。";
+function myvOK(k) { return MYV.some(function (v) { return v.k === k; }); }
+function pickedVoice() { var k = (S && S.myVoice) || lsGet("yk-myvoice"); return myvOK(k) ? k : ""; }
+function myVoice() { return pickedVoice() || (/^b/.test(myHair()) ? "me-b1" : "me-g1"); }
+function myVoiceName() { var k = myVoice(); return MYV.filter(function (v) { return v.k === k; })[0].n; }
+function vkey(who, name) { return who === "me" ? myVoice() : who === "x" ? "x-" + (name || "") : who; }
+/* 选项里“我”说出口的话：say 是字符串就用它；say:true 用整句；否则取引号里的话（没有引号＝动作，不出声） */
+function spoken(c) { if (typeof c.say === "string") return c.say; if (c.say === true) return c.t; var m = String(c.t || "").match(/“[^”]*”/g); return m ? m.map(function (s) { return s.slice(1, -1); }).join("") : ""; }
+
 function hashStr(s) { var h = 0x811c9dc5; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return ("0000000" + h.toString(16)).slice(-8); }
 function voiceText(t) { t = String(t || "").replace(/（[^）]*）/g, ""); ((TEXT && TEXT.voiceFix) || []).forEach(function (p) { t = t.split(p[0]).join(p[1]); }); return t.replace(/[“”‘’「」]/g, "").replace(/——/g, "，").replace(/……/g, "，"); }
 var curAudio = null, soundOn = lsGet("yk-sound") !== false;
 function stopVoice() { if (curAudio) { try { curAudio.pause(); } catch (e) {} curAudio = null; } }
-function playVoice(who, say) {
-  stopVoice(); if (!soundOn || who !== "fan" || /\{name\}/.test(say)) return;
-  var h = hashStr("fan|" + voiceText(say)); if (!VOICE[h]) return;
-  try { var a = new Audio("voice/" + h + ".mp3" + (VOICE_V ? "?v=" + VOICE_V : "")); curAudio = a; var p = a.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+/* 放一句录音；返回录音长度（秒），没有录音返回 0 */
+function playVoice(key, say, force) {
+  stopVoice(); if ((!soundOn && !force) || !say || /\{name\}/.test(say)) return 0;
+  var h = hashStr(key + "|" + voiceText(say)); if (!VOICE[h]) return 0;
+  try { var a = new Audio("voice/" + h + ".mp3" + (VOICE_V ? "?v=" + VOICE_V : "")); curAudio = a; var p = a.play(); if (p && p.catch) p.catch(function () {}); } catch (e) { return 0; }
+  return VOICE[h];
 }
 function fillName(s) { return String(s || "").replace(/\{name\}/g, ME.name); }
+
+/* 选“我的声音”：两组按钮，点一下试听；选定存本机和存档 */
+function voicePicker(then, title) {
+  var cur = myVoice(), box = document.createElement("div"); box.className = "ov vpick"; document.body.appendChild(box);
+  function grp(g, label) { return '<div class="vg"><b>' + label + "</b><div class=\"vbs\">" + MYV.filter(function (v) { return v.g === g; }).map(function (v) { return '<button type="button" class="vb' + (v.k === cur ? " on" : "") + '" data-k="' + v.k + '" aria-pressed="' + (v.k === cur) + '"><span class="ic" aria-hidden="true">▶</span>' + esc(v.n) + "</button>"; }).join("") + "</div></div>"; }
+  box.innerHTML = '<div class="sheet"><h3>' + esc(title || "选一个“我”的声音") + '</h3><p class="muted small">故事里“我”说的话，会用这个声音读出来。点一下听听看，男孩、女孩的声音都可以选。</p>' + grp("b", "男孩的声音") + grp("g", "女孩的声音") +
+    '<div class="row"><button type="button" class="btn" id="vOk">就用这个</button></div></div>';
+  $$(".vb", box).forEach(function (b) { b.addEventListener("click", function () { cur = b.getAttribute("data-k"); $$(".vb", box).forEach(function (x) { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); }); playVoice(cur, VSAMPLE, true); }); });
+  $("#vOk", box).addEventListener("click", function () { stopVoice(); S.myVoice = cur; lsPut("yk-myvoice", cur); save(); box.remove(); if (then) then(); });
+}
 
 function playChapter(id) {
   if (!STORY.length) return notReady("沉浸体验《邓州的秋天》");
@@ -233,15 +289,21 @@ function playChapter(id) {
   var ch = STORY[ci], st = S.story[ch.id] || (S.story[ch.id] = {});
   st.choices = st.choices || {}; st.quiz = st.quiz || {}; st.writes = st.writes || {};
   document.body.className = "playing";
-  app.innerHTML = '<div class="stage" id="stage"><div class="bg" id="bg"></div><div class="figs">' + fanFig("l gone") + meFig("r gone") + "</div>" +
+  app.innerHTML = '<div class="stage" id="stage" data-fan="off"><div class="scn" id="scn"></div>' +
+    '<div class="fanL" id="fanL" data-pos="off" data-side="c"><div class="fw"><img src="' + fanSrc() + '" alt="范仲淹" draggable="false"></div></div>' +
+    '<i class="fxl" aria-hidden="true"></i><i class="fxm" aria-hidden="true"></i><i class="fxk" aria-hidden="true"></i><canvas class="fxc" id="fxc" aria-hidden="true"></canvas>' +
+    '<p class="cap" id="cap" hidden></p><span class="xtag" id="xtag" hidden></span>' +
+    '<div class="eyes shut" id="eyes" aria-hidden="true"><i class="lid t"></i><i class="lid b"></i></div>' +
     '<div class="sbar"><a class="tb" href="#story">← 章节</a><span class="ct">' + NUM[ci + 1] + "　" + esc(ch.title) + '</span><span class="sp"></span><button type="button" class="tb" id="bLog">回看</button><button type="button" class="tb" id="bSnd" aria-pressed="' + soundOn + '">' + (soundOn ? "声音 开" : "声音 关") + "</button></div>" +
     '<div class="panel" id="panel" hidden></div><div class="choices" id="choices" hidden></div>' +
-    '<div class="dlg" id="dlg" role="button" tabindex="0" aria-live="polite"><span class="nm" id="nm" hidden></span><p class="say" id="say"></p><span class="more" id="more" aria-hidden="true">▼</span></div>' +
+    '<div class="dlg off" id="dlg" role="button" tabindex="0" aria-live="polite"><span class="nm" id="nm" hidden></span><p class="say" id="say"></p><span class="more" id="more" aria-hidden="true">▼</span></div>' +
     '<div class="ov" id="ov" hidden></div></div>';
-  var stage = $("#stage"), dlg = $("#dlg"), sayEl = $("#say"), nmEl = $("#nm"), panel = $("#panel"), chEl = $("#choices"), ov = $("#ov");
-  var figL = $(".fig.fan", stage), figR = $(".fig.me", stage), faceR = $(".fig.me .f", stage);
-  var log = [], typing = null, onNext = null, alive = true, flap = null;
-  cleanup = function () { alive = false; clearInterval(typing && typing.t); clearInterval(flap); stopVoice(); document.body.className = ""; };
+  var stage = $("#stage"), scn = $("#scn"), dlg = $("#dlg"), sayEl = $("#say"), nmEl = $("#nm"), panel = $("#panel"), chEl = $("#choices"), ov = $("#ov");
+  var fanL = $("#fanL"), capEl = $("#cap"), xtag = $("#xtag"), eyes = $("#eyes");
+  var fx = window.YK_SCENE ? new YK_SCENE.FX($("#fxc")) : null;
+  var log = [], typing = null, onNext = null, alive = true, cur = null, curKey = "", timers = [];
+  function later(f, ms) { var t = setTimeout(function () { if (alive) f(); }, ms); timers.push(t); return t; }
+  cleanup = function () { alive = false; clearInterval(typing && typing.t); timers.forEach(clearTimeout); stopVoice(); if (fx) fx.stop(); document.body.className = ""; var vp = $(".vpick"); if (vp) vp.remove(); };
   $("#bSnd").addEventListener("click", function () { soundOn = !soundOn; lsPut("yk-sound", soundOn); this.textContent = soundOn ? "声音 开" : "声音 关"; this.setAttribute("aria-pressed", soundOn); if (!soundOn) stopVoice(); });
   $("#bLog").addEventListener("click", function () {
     ov.hidden = false; ov.innerHTML = '<div class="sheet"><button type="button" class="x" aria-label="关上">×</button><h3>本章读过的话</h3><div class="log">' +
@@ -249,49 +311,71 @@ function playChapter(id) {
     $(".x", ov).addEventListener("click", function () { ov.hidden = true; }); ov.onclick = function (e) { if (e.target === ov) ov.hidden = true; };
     var lg = $(".log", ov); lg.scrollTop = lg.scrollHeight;
   });
-  function setFace(k) { if (!faceR) return; var src = k ? faceSrc(k) : ""; if (src) { faceR.src = src; faceR.hidden = false; } else faceR.hidden = true; }
-  function speaker(who, face) {
-    [figL, figR].forEach(function (f) { f.classList.remove("on"); });
-    clearInterval(flap); setFace(restFace());
-    if (who === "fan") { figL.classList.remove("gone"); figL.classList.add("on"); }
-    if (who === "me") { figR.classList.remove("gone"); figR.classList.add("on");
-      if (face && faceSrc(face)) setFace(face);
-      else if (faceSrc("talk")) { var o = false; flap = setInterval(function () { o = !o; setFace(o ? "talk" : restFace()); }, 150); }
-    }
-    stage.setAttribute("data-who", who);
+
+  /* 换画面：bg/道具/色调变了就新开一层，旧层淡出或横移出去；只是镜头变了就在原层上接着动 */
+  function shot(s) {
+    s = normShot(s); if (!s) return;
+    var key = [s.bg, s.tone, s.prop || "", s.pt || "", s.open ? 1 : 0, s.peek ? 1 : 0, s.dream ? 1 : 0].join("|"), layer, camEl, c = CAM[s.cam], dur = (s.dur || 18) + "s";
+    if (key !== curKey) {
+      var old = $$(".layer", scn), tr = s.tr === "slide" ? "slide" : s.tr === "cut" ? "cut" : "fade";
+      old.forEach(function (o) { o.classList.add("out", "out-" + tr); setTimeout(function () { o.remove(); }, 1100); });
+      layer = document.createElement("div"); layer.className = "layer in-" + tr + (s.prop ? " has-prop" : "") + (s.dream ? " dream" : "");
+      layer.innerHTML = sceneHTML(s); scn.appendChild(layer); curKey = key;
+      camEl = $(".cam", layer); camEl.style.transform = c[0]; void camEl.offsetWidth;
+    } else { layer = $$(".layer:not(.out)", scn).pop(); camEl = layer && $(".cam", layer); }
+    if (camEl) { camEl.style.transition = "transform " + dur + " cubic-bezier(.35,.1,.4,1)"; camEl.style.transform = c[1]; }
+    fanL.setAttribute("data-pos", s.fan); fanL.setAttribute("data-side", s.side); stage.setAttribute("data-fan", s.fan);
+    stage.setAttribute("data-tone", s.bg === "night" ? "night" : s.tone || "day");
+    ["light", "mist", "candle"].forEach(function (k) { stage.classList.toggle("fx-" + k, s.fx.indexOf(k) >= 0); });
+    if (fx) fx.set(s.fx.filter(function (k) { return /^(rain|leaves|dust|birds)$/.test(k); }));
+    capEl.hidden = !s.cap; capEl.textContent = s.cap || "";
+    cur = s; st.shot = s;
   }
+  /* 睁眼：黑屏 → 眨两三下（从模糊到清楚）→ 画面展开；then 在最后一次睁开时开始（同时播第一句） */
+  function wake(then) {
+    eyes.className = "eyes blink"; scn.classList.remove("wake"); void scn.offsetWidth; scn.classList.add("wake");
+    later(then, 1500); later(function () { eyes.className = "eyes"; scn.classList.remove("wake"); }, 2700);
+  }
+  function setTalk(who) { fanL.classList.toggle("talk", who === "fan" && cur && cur.fan !== "off"); }
   function nameOf(l) { return l.who === "fan" ? "范公" : l.who === "me" ? ME.name : l.who === "narr" ? "" : (l.name || ""); }
-  function show(l, done) {
-    var text = fillName(l.say), nm = nameOf(l); dlg.classList.remove("wait");
-    speaker(l.who, l.face); nmEl.hidden = !nm; nmEl.textContent = nm; nmEl.className = "nm " + (l.who === "fan" ? "fan" : l.who === "me" ? "me" : "x");
+  function show(l, done, auto) {
+    if (l.shot) shot(l.shot);
+    var text = fillName(l.say), nm = nameOf(l); dlg.classList.remove("wait", "off");
+    setTalk(l.who); stage.setAttribute("data-who", l.who);
+    xtag.hidden = l.who !== "x" || !nm; xtag.textContent = nm;
+    nmEl.hidden = !nm; nmEl.textContent = nm; nmEl.className = "nm " + (l.who === "fan" ? "fan" : l.who === "me" ? "me" : "x");
     dlg.classList.toggle("narr", l.who === "narr"); log.push({ n: nm ? nm + "：" : "", s: text });
-    playVoice(l.who, l.say);
-    var i = 0; sayEl.textContent = ""; dlg.classList.add("typing");
-    function fin() { clearInterval(typing.t); typing = null; sayEl.textContent = text; dlg.classList.remove("typing"); clearInterval(flap); setFace(l.who === "me" && l.face && faceSrc(l.face) ? l.face : restFace()); onNext = done; }
-    typing = { fin: fin, t: setInterval(function () { i++; sayEl.textContent = text.slice(0, i); if (i >= text.length) fin(); }, 38) };
+    var secs = playVoice(vkey(l.who, l.name), l.say), n = Array.from(text).length, chars = Array.from(text);
+    var step = secs ? clamp(secs * 1000 * .9 / Math.max(1, n), 40, 320) : 55, i = 0, t0 = Date.now();
+    sayEl.textContent = ""; dlg.classList.add("typing");
+    function fin() { if (!typing) return; clearInterval(typing.t); typing = null; sayEl.textContent = text; dlg.classList.remove("typing"); if (!secs) setTalk(""); else later(function () { if (onNext === done) setTalk(""); }, Math.max(0, secs * 1000 - (Date.now() - t0))); onNext = done; if (auto) later(function () { if (onNext === done) advance(); }, Math.max(600, (secs || 1.5) * 1000 - (Date.now() - t0) + 500)); }
+    typing = { fin: fin, t: setInterval(function () { i = Math.min(n, Math.floor((Date.now() - t0) / step) + 1); sayEl.textContent = chars.slice(0, i).join(""); if (i >= n) fin(); }, 30) };
     onNext = null;
   }
-  function advance() { if (!ov.hidden) return; if (typing) { typing.fin(); return; } if (onNext) { var f = onNext; onNext = null; f(); } }
+  function advance() { if (!ov.hidden || $(".vpick")) return; if (typing) { typing.fin(); return; } if (onNext) { var f = onNext; onNext = null; f(); } }
   dlg.addEventListener("click", advance);
-  stage.addEventListener("click", function (e) { if (e.target === stage || e.target.closest(".figs") || e.target.id === "bg") advance(); });
+  stage.addEventListener("click", function (e) { if (e.target === stage || e.target.closest(".scn") || e.target.closest(".fanL")) advance(); });
   function key(e) { if ((e.key === " " || e.key === "Enter") && !/INPUT|TEXTAREA|BUTTON|A/.test(document.activeElement.tagName)) { e.preventDefault(); advance(); } }
   addEventListener("keydown", key); var c0 = cleanup; cleanup = function () { removeEventListener("keydown", key); c0(); };
   function lines(arr, then) { var k = 0; (function nx() { if (!alive) return; if (k >= arr.length) return then(); show(arr[k++], nx); })(); }
-  function prompt(text) { speaker("narr"); nmEl.hidden = true; dlg.classList.add("narr", "wait"); sayEl.textContent = fillName(text || ""); onNext = null; typing = null; }
+  function prompt(text, voice) { setTalk(""); xtag.hidden = true; nmEl.hidden = true; dlg.classList.remove("off", "typing"); dlg.classList.add("narr", "wait"); sayEl.textContent = fillName(text || ""); onNext = null; typing = null; if (voice) playVoice("narr", text); }
   function enter(nid) {
     var n = ch.nodes[nid]; if (!alive) return;
     if (!n) { prompt("（找不到这一段：" + nid + "）"); return; }
     st.node = nid; save();
     panel.hidden = true; chEl.hidden = true;
-    if (n.bg) { var u = bgUrl(n.bg); $("#bg").style.backgroundImage = u ? "url(" + u + ")" : ""; stage.setAttribute("data-bg", n.bg); }
+    var ns = nodeShot(n); if (n.shot || n.bg) shot(ns);
     lines(n.lines || [], function () { after(nid, n); });
   }
   function after(nid, n) {
     if (n.end) return finish();
     if (n.choices) {
-      prompt(n.ask || "你怎么说？"); chEl.hidden = false;
-      chEl.innerHTML = n.choices.map(function (c, i) { return '<button type="button" class="opt" data-i="' + i + '">' + esc(fillName(c.t)) + "</button>"; }).join("");
-      $$(".opt", chEl).forEach(function (b) { b.addEventListener("click", function () { var c = n.choices[+b.getAttribute("data-i")]; st.choices[nid] = c.t; log.push({ n: "（你选了）", s: c.t }); save(); chEl.hidden = true; enter(c.go); }); });
+      prompt(n.ask || "你怎么说？", true); chEl.hidden = false;
+      chEl.innerHTML = n.choices.map(function (c, i) { return '<button type="button" class="opt" data-i="' + i + '" style="animation-delay:' + (.15 + i * .12).toFixed(2) + 's">' + esc(fillName(c.t)) + "</button>"; }).join("");
+      $$(".opt", chEl).forEach(function (b) { b.addEventListener("click", function () {
+        var c = n.choices[+b.getAttribute("data-i")], sp = spoken(c); st.choices[nid] = c.t; save(); chEl.hidden = true;
+        if (sp) show({ who: "me", say: sp }, function () { enter(c.go); }, true); else { log.push({ n: "（你选了）", s: c.t }); enter(c.go); }
+      }); });
       return;
     }
     if (n.quiz) {
@@ -330,16 +414,20 @@ function playChapter(id) {
     var nx = STORY[ci + 1];
     ov.hidden = false; ov.innerHTML = '<div class="sheet endc"><p class="seal big">完成</p><h3>第' + NUM[ci + 1] + "章　" + esc(ch.title) + "</h3><p>本章完成。" + (st.lastWrite ? "你写的那段话已经存好，老师能看到。" : "") + '</p><div class="row">' +
       (nx ? '<a class="btn" href="#story/' + nx.id + '">下一章：' + esc(nx.title) + "</a>" : "") + '<a class="btn ghost" href="#home">回到首页</a><button type="button" class="btn ghost" id="bAgain">再读一遍</button></div></div>';
-    $("#bAgain").addEventListener("click", function () { ov.hidden = true; log = []; figL.classList.add("gone"); figR.classList.add("gone"); enter(ch.start); });
+    $("#bAgain").addEventListener("click", function () { ov.hidden = true; log = []; fresh(); });
   }
-  if (st.node && ch.nodes[st.node] && !st.done) {
-    figL.classList.remove("gone"); figR.classList.remove("gone");
-    ov.hidden = false; ov.innerHTML = '<div class="sheet"><h3>' + esc(ch.title) + '</h3><p>上次读到一半。</p><div class="row"><button type="button" class="btn" id="bRes">接着上次</button><button type="button" class="btn ghost" id="bNew">从头开始</button></div></div>';
-    var bgNode = null; for (var k in ch.nodes) { if (ch.nodes[k].bg) bgNode = bgNode || ch.nodes[k].bg; if (k === st.node) break; }
-    if (bgNode) { $("#bg").style.backgroundImage = bgUrl(bgNode) ? "url(" + bgUrl(bgNode) + ")" : ""; stage.setAttribute("data-bg", bgNode); }
-    $("#bRes").addEventListener("click", function () { ov.hidden = true; enter(st.node); });
-    $("#bNew").addEventListener("click", function () { ov.hidden = true; figL.classList.add("gone"); figR.classList.add("gone"); enter(ch.start); });
-  } else enter(ch.start);
+  /* 从头：先把第一个画面铺在合着的眼睛后面，再睁眼，睁开时开始播第一句 */
+  function fresh() { dlg.classList.add("off"); shot(nodeShot(ch.nodes[ch.start])); wake(function () { enter(ch.start); }); }
+  function begin() {
+    if (st.node && ch.nodes[st.node] && !st.done) {
+      shot(st.shot || nodeShot(ch.nodes[st.node]) || nodeShot(ch.nodes[ch.start]));
+      ov.hidden = false; ov.innerHTML = '<div class="sheet"><h3>' + esc(ch.title) + '</h3><p>上次读到一半。</p><div class="row"><button type="button" class="btn" id="bRes">接着上次</button><button type="button" class="btn ghost" id="bNew">从头开始</button></div></div>';
+      $("#bRes").addEventListener("click", function () { ov.hidden = true; wake(function () { enter(st.node); }); });
+      $("#bNew").addEventListener("click", function () { ov.hidden = true; fresh(); });
+    } else fresh();
+  }
+  if (!pickedVoice()) { shot(nodeShot(ch.nodes[ch.start])); voicePicker(begin, "睁开眼之前，先选一个“我”的声音"); }
+  else begin();
 }
 
 /* ================= 计时题（练一练、测验共用） =================
@@ -628,7 +716,7 @@ function boot() {
   Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("voice/index.js")]).then(function () {
     TEXT = window.YK_TEXT || null; STORY = Array.isArray(window.YK_STORY) ? window.YK_STORY : []; WORDS = Array.isArray(window.YK_WORDS) ? window.YK_WORDS : []; TESTS = Array.isArray(window.YK_TESTS) ? window.YK_TESTS : [];
     VOICE = window.YK_VOICE || window.PROJ_VOICE || {}; VOICE_V = window.YK_VOICE_V || window.PROJ_VOICE_V || "";
-    addEventListener("hashchange", route); route();
+    probeScenes(); addEventListener("hashchange", route); route();
     if (!SITE.sheetUrl) { setSaveSt("只存在这台设备上"); return; }
     setSaveSt("正在连接…");
     api("login", ME).then(function (j) { if (j.name) ME.name = j.name; if (mergeRemote(j.state)) route(); setSaveSt("已连上"); if (!j.state) save(); })
