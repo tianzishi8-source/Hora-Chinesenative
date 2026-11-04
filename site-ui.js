@@ -38,6 +38,12 @@
       if (want() && !fsEl()) goFs();
     }, true);
     (D.body ? Promise.resolve() : new Promise(function (r) { D.addEventListener("DOMContentLoaded", r); })).then(function () { D.body.appendChild(b); });
+    /* iPad / 平板：全屏时打字，拼音的候选字框可能出不来。点进输入框时先退出全屏（不改“想要全屏”的设置，换页后照常回到全屏） */
+    var touch = (navigator.maxTouchPoints || 0) > 1;
+    D.addEventListener("focusin", function (e) {
+      var t = e.target; if (!touch || !fsEl() || !t || !t.matches) return;
+      if (t.matches("textarea,input:not([type]),input[type=text],input[type=search],[contenteditable],[contenteditable=true]")) { try { (D.exitFullscreen || D.webkitExitFullscreen).call(D); } catch (er) {} }
+    }, true);
   }
 
   /* ---------- 课文页：防止误划“返回” ----------
