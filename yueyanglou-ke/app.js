@@ -3,13 +3,15 @@
  * 内容在 data/：text.js（原文）、story.js（剧情）、words.js（字词）、tests.js（测验）。地址后加 ?sample=1 读 data/_sample/ 里的样例。
  * 签到：读首页的 sessionStorage hora-session（没签到就回首页签到）。进度存本机（按“班级|名字”分开），防抖同步到老师的表格（课文 id：g9-yueyanglou-ke）。
  * 录音：沉浸体验里范公、旁白、其他人物和“我”（学生选的声音，8 种）的台词，在 voice/index.js（tools/yk_record.py 生成的 window.PROJ_VOICE）里有录音就播放；没有就静音。
+ *   语速：录音默认 1.2 倍速播放（playbackRate，保留音调），字幕逐字速度跟着变；章节页可选 正常／快／很快（1.0／1.2／1.4），存本机 yk-rate。
+ * 沉浸体验每章：开头目标卡（goal）→ 剧情里 2–4 张原文卡（card，原文从 data/text.js 取）→ 章末“本章收获”（sum）→ 回顾小测（review，倒计时、机器打分，记进存档和作答摘要）→ 写一段话。
  * 画面：scene.js 画替代场景、道具和效果；有 img/scene-{名字}.webp 就用真图。 */
 (function () {
 "use strict";
 var SITE = window.HORA_SITE || {}, HOME = SITE.home || "../";
 var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11050010";
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11051200";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -99,6 +101,7 @@ function summary(d) {
   chs.forEach(function (c, i) {
     var st = (d.story || {})[c.id];
     var line = "  " + (NUM[i + 1] || c.id) + "　" + c.title + "：" + (!st ? "没开始" : st.done ? "完成（" + stamp(st.doneAt) + "）" : "读到一半");
+    if (st && st.review && st.review.last != null) line += "　回顾小测 最近" + st.review.last + "分（最高" + st.review.best + "，共" + st.review.tries + "次）";
     out.push(line);
     if (st && st.lastWrite) out.push("    最后写的话：" + st.lastWrite.text);
   });
@@ -107,7 +110,7 @@ function summary(d) {
   out.push("【字词卡】掌握 " + mastered + (WORDS.length ? " / " + WORDS.length : "") + " 张，练过 " + Object.keys(cards).length + " 张");
   var dr = d.drills || [];
   out.push("【练一练记录】" + (dr.length ? "" : "还没有"));
-  dr.slice(-40).forEach(function (r) { out.push("  " + stamp(r.at) + "　" + (r.kind === "words" ? "字词" : "背诵") + "·" + (PNAME[r.scope] || r.scope) + "　" + r.score + "分　用时" + dur(r.secs) + (r.wrong && r.wrong.length ? "　错" + r.wrong.length + "题" : "")); });
+  dr.slice(-40).forEach(function (r) { out.push("  " + stamp(r.at) + "　" + (r.kind === "words" ? "字词" : r.kind === "story" ? "沉浸回顾" : "背诵") + "·" + (r.kind === "story" ? chName(r.scope) : PNAME[r.scope] || r.scope) + "　" + r.score + "分　用时" + dur(r.secs) + (r.wrong && r.wrong.length ? "　错" + r.wrong.length + "题" : "")); });
   out.push("【模拟测验】" + (Object.keys(d.tests || {}).length ? "" : "还没做"));
   Object.keys(d.tests || {}).forEach(function (id) {
     var t = d.tests[id], tt = TESTS.filter(function (x) { return x.id === id; })[0];
@@ -117,6 +120,7 @@ function summary(d) {
   return out.join("\n");
 }
 
+function chName(id) { var i = -1; STORY.forEach(function (c, k) { if (c.id === id) i = k; }); return i < 0 ? id : "第" + NUM[i + 1] + "章"; }
 /* ================= 数据 ================= */
 var TEXT = null, STORY = [], WORDS = [], TESTS = [], VOICE = {}, VOICE_V = "";
 var PARAS = ["p1", "p2", "p3", "p4", "p5"];
@@ -211,7 +215,9 @@ function storyList() {
       '<span class="st">' + (st.done ? "✓ 完成" : st.node ? "读到一半" : "") + "</span></a>";
   });
   h += '</div><div class="vrow"><span>“我”的声音：<b id="vNm">' + esc(myVoiceName()) + (pickedVoice() ? "" : "（还没选）") + '</b></span><button type="button" class="btn ghost" id="bVoice">换声音</button></div>';
+  h += '<div class="vrow"><span>语速：</span><div class="rates" role="group" aria-label="语速">' + RATES.map(function (r) { return '<button type="button" class="rt' + (r[0] === RATE ? " on" : "") + '" data-r="' + r[0] + '" aria-pressed="' + (r[0] === RATE) + '">' + r[1] + (r[0] === 1.2 ? "（默认）" : "") + "</button>"; }).join("") + "</div></div>";
   page(h, ["#home", "首页"]);
+  $$(".rt").forEach(function (b) { b.addEventListener("click", function () { setRate(+b.getAttribute("data-r")); $$(".rt").forEach(function (x) { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b); }); playVoice("narr", "你慢慢睁开眼。这里是邓州，庆历六年的秋天。", true); }); });
   $("#bVoice").addEventListener("click", function () { voicePicker(function () { $("#vNm").textContent = myVoiceName(); }, "换一个“我”的声音"); });
 }
 
@@ -263,13 +269,22 @@ function spoken(c) { if (typeof c.say === "string") return c.say; if (c.say === 
 function hashStr(s) { var h = 0x811c9dc5; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return ("0000000" + h.toString(16)).slice(-8); }
 function voiceText(t) { t = String(t || "").replace(/（[^）]*）/g, ""); ((TEXT && TEXT.voiceFix) || []).forEach(function (p) { t = t.split(p[0]).join(p[1]); }); return t.replace(/[“”‘’「」]/g, "").replace(/——/g, "，").replace(/……/g, "，"); }
 var curAudio = null, soundOn = lsGet("yk-sound") !== false;
+/* 语速：1.0 正常 / 1.2 快（默认）/ 1.4 很快；存本机 */
+var RATES = [[1, "正常"], [1.2, "快"], [1.4, "很快"]];
+var RATE = (function () { var r = lsGet("yk-rate"); return RATES.some(function (x) { return x[0] === r; }) ? r : 1.2; })();
+function rateName() { return RATES.filter(function (x) { return x[0] === RATE; })[0][1]; }
+function setRate(r) { RATE = r; lsPut("yk-rate", r); if (curAudio) try { curAudio.playbackRate = r; } catch (e) {} }
 function stopVoice() { if (curAudio) { try { curAudio.pause(); } catch (e) {} curAudio = null; } }
 /* 放一句录音；返回录音长度（秒），没有录音返回 0 */
 function playVoice(key, say, force) {
   stopVoice(); if ((!soundOn && !force) || !say || /\{name\}/.test(say)) return 0;
   var h = hashStr(key + "|" + voiceText(say)); if (!VOICE[h]) return 0;
-  try { var a = new Audio("voice/" + h + ".mp3" + (VOICE_V ? "?v=" + VOICE_V : "")); curAudio = a; var p = a.play(); if (p && p.catch) p.catch(function () {}); } catch (e) { return 0; }
-  return VOICE[h];
+  try {
+    var a = new Audio("voice/" + h + ".mp3" + (VOICE_V ? "?v=" + VOICE_V : "")); curAudio = a;
+    a.preservesPitch = a.mozPreservesPitch = a.webkitPreservesPitch = true; a.defaultPlaybackRate = RATE; a.playbackRate = RATE;
+    var p = a.play(); if (p && p.catch) p.catch(function () {});
+  } catch (e) { return 0; }
+  return VOICE[h] / RATE;
 }
 function fillName(s) { return String(s || "").replace(/\{name\}/g, ME.name); }
 
@@ -294,7 +309,7 @@ function playChapter(id) {
     '<i class="fxl" aria-hidden="true"></i><i class="fxm" aria-hidden="true"></i><i class="fxk" aria-hidden="true"></i><canvas class="fxc" id="fxc" aria-hidden="true"></canvas>' +
     '<p class="cap" id="cap" hidden></p><span class="xtag" id="xtag" hidden></span>' +
     '<div class="eyes shut" id="eyes" aria-hidden="true"><i class="lid t"></i><i class="lid b"></i></div>' +
-    '<div class="sbar"><a class="tb" href="#story">← 章节</a><span class="ct">' + NUM[ci + 1] + "　" + esc(ch.title) + '</span><span class="sp"></span><button type="button" class="tb" id="bLog">回看</button><button type="button" class="tb" id="bSnd" aria-pressed="' + soundOn + '">' + (soundOn ? "声音 开" : "声音 关") + "</button></div>" +
+    '<div class="sbar"><a class="tb" href="#story">← 章节</a><span class="ct">' + NUM[ci + 1] + "　" + esc(ch.title) + '</span><span class="sp"></span><button type="button" class="tb" id="bRate" title="语速">语速 ' + rateName() + '</button><button type="button" class="tb" id="bLog">回看</button><button type="button" class="tb" id="bSnd" aria-pressed="' + soundOn + '">' + (soundOn ? "声音 开" : "声音 关") + "</button></div>" +
     '<div class="panel" id="panel" hidden></div><div class="choices" id="choices" hidden></div>' +
     '<div class="dlg off" id="dlg" role="button" tabindex="0" aria-live="polite"><span class="nm" id="nm" hidden></span><p class="say" id="say"></p><span class="more" id="more" aria-hidden="true">▼</span></div>' +
     '<div class="ov" id="ov" hidden></div></div>';
@@ -303,8 +318,9 @@ function playChapter(id) {
   var fx = window.YK_SCENE ? new YK_SCENE.FX($("#fxc")) : null;
   var log = [], typing = null, onNext = null, alive = true, cur = null, curKey = "", timers = [];
   function later(f, ms) { var t = setTimeout(function () { if (alive) f(); }, ms); timers.push(t); return t; }
-  cleanup = function () { alive = false; clearInterval(typing && typing.t); timers.forEach(clearTimeout); stopVoice(); if (fx) fx.stop(); document.body.className = ""; var vp = $(".vpick"); if (vp) vp.remove(); };
+  cleanup = function () { alive = false; clearInterval(typing && typing.t); clearInterval(rvTick); timers.forEach(clearTimeout); stopVoice(); if (fx) fx.stop(); document.body.className = ""; var vp = $(".vpick"); if (vp) vp.remove(); };
   $("#bSnd").addEventListener("click", function () { soundOn = !soundOn; lsPut("yk-sound", soundOn); this.textContent = soundOn ? "声音 开" : "声音 关"; this.setAttribute("aria-pressed", soundOn); if (!soundOn) stopVoice(); });
+  $("#bRate").addEventListener("click", function () { var i = 0; RATES.forEach(function (r, k) { if (r[0] === RATE) i = k; }); setRate(RATES[(i + 1) % RATES.length][0]); this.textContent = "语速 " + rateName(); });
   $("#bLog").addEventListener("click", function () {
     ov.hidden = false; ov.innerHTML = '<div class="sheet"><button type="button" class="x" aria-label="关上">×</button><h3>本章读过的话</h3><div class="log">' +
       (log.length ? log.map(function (l) { return "<p><b>" + esc(l.n) + "</b>" + esc(l.s) + "</p>"; }).join("") : '<p class="muted">还没有。</p>') + "</div></div>";
@@ -346,7 +362,8 @@ function playChapter(id) {
     nmEl.hidden = !nm; nmEl.textContent = nm; nmEl.className = "nm " + (l.who === "fan" ? "fan" : l.who === "me" ? "me" : "x");
     dlg.classList.toggle("narr", l.who === "narr"); log.push({ n: nm ? nm + "：" : "", s: text });
     var secs = playVoice(vkey(l.who, l.name), l.say), n = Array.from(text).length, chars = Array.from(text);
-    var step = secs ? clamp(secs * 1000 * .9 / Math.max(1, n), 40, 320) : 55, i = 0, t0 = Date.now();
+    var step = secs ? clamp(secs * 1000 * .9 / Math.max(1, n), 30, 320) : Math.round(55 / RATE), i = 0, t0 = Date.now();
+    if (l.hi) hiCard(l.hi);
     sayEl.textContent = ""; dlg.classList.add("typing");
     function fin() { if (!typing) return; clearInterval(typing.t); typing = null; sayEl.textContent = text; dlg.classList.remove("typing"); if (!secs) setTalk(""); else later(function () { if (onNext === done) setTalk(""); }, Math.max(0, secs * 1000 - (Date.now() - t0))); onNext = done; if (auto) later(function () { if (onNext === done) advance(); }, Math.max(600, (secs || 1.5) * 1000 - (Date.now() - t0) + 500)); }
     typing = { fin: fin, t: setInterval(function () { i = Math.min(n, Math.floor((Date.now() - t0) / step) + 1); sayEl.textContent = chars.slice(0, i).join(""); if (i >= n) fin(); }, 30) };
@@ -363,12 +380,130 @@ function playChapter(id) {
     var n = ch.nodes[nid]; if (!alive) return;
     if (!n) { prompt("（找不到这一段：" + nid + "）"); return; }
     st.node = nid; save();
-    panel.hidden = true; chEl.hidden = true;
+    panel.hidden = true; chEl.hidden = true; clearInterval(rvTick);
     var ns = nodeShot(n); if (n.shot || n.bg) shot(ns);
+    if (n.card) showCard(n.card);
     lines(n.lines || [], function () { after(nid, n); });
+  }
+  /* 卡片里的东西露出来：只滚 panel（scrollIntoView 会把 overflow:hidden 的舞台也滚歪） */
+  function reveal(el) {
+    var pr = panel.getBoundingClientRect(), r = el.getBoundingClientRect(), d = 0;
+    if (r.top < pr.top + 8) d = r.top - pr.top - 8; else if (r.bottom > pr.bottom - 8) d = Math.min(r.bottom - pr.bottom + 8, r.top - pr.top - 8);
+    if (d) try { panel.scrollBy({ top: d, behavior: "smooth" }); } catch (e) { panel.scrollTop += d; }
+  }
+  stage.addEventListener("scroll", function () { if (stage.scrollLeft || stage.scrollTop) { stage.scrollLeft = 0; stage.scrollTop = 0; } });
+  /* ---------- 原文卡 / 讲解卡 ----------
+   * 原文从 TEXT.paras 取（逐字一致）；red 标红，notes 可点看注释，cats 分类标色；台词上的 hi 点亮卡上的词或 rows 左栏。 */
+  function cardHTML(c) {
+    var keys = {}, catNames = Object.keys(c.cats || {});
+    function key(k) { return keys[k] || (keys[k] = { red: false, note: "", cat: -1 }); }
+    (c.red || []).forEach(function (k) { key(k).red = true; });
+    Object.keys(c.notes || {}).forEach(function (k) { key(k).note = c.notes[k]; });
+    catNames.forEach(function (cn, ci) { c.cats[cn].forEach(function (k) { key(k).cat = ci; }); });
+    var ks = Object.keys(keys).sort(function (a, b) { return b.length - a.length; });
+    function mark(str) {
+      var out = "", i = 0;
+      while (i < str.length) {
+        var k = ks.filter(function (x) { return str.substr(i, x.length) === x; })[0];
+        if (!k) { out += esc(str[i]); i++; continue; }
+        var o = keys[k], cls = "k" + (o.red ? " red" : "") + (o.note ? " note" : "") + (o.cat >= 0 ? " cat" + o.cat : "");
+        out += '<span class="' + cls + '" data-k="' + esc(k) + '"' + (o.note ? ' role="button" tabindex="0"' : "") + ">" + esc(k) + "</span>"; i += k.length;
+      }
+      return out;
+    }
+    function sents(r) { return TEXT && TEXT.paras[c.para] ? TEXT.paras[c.para].slice(r[0], r[1] + 1).join("") : ""; }
+    var txt = "";
+    if (c.para) {
+      var gs = c.groups || [{ label: "", s: c.s || [0, 99], plain: c.plain }];
+      txt = '<div class="ytext">' + gs.map(function (g) {
+        return '<div class="yg' + (g.label ? "" : " solo") + '">' + (g.label ? '<span class="ylab">' + esc(g.label) + "</span>" : "") + '<div class="ygb"><p class="ytx">' + mark(sents(g.s)) + "</p>" + (g.plain ? '<p class="yplain"><span>白话</span>' + esc(g.plain) + "</p>" : "") + "</div></div>";
+      }).join('<div class="yarr" aria-hidden="true">↓</div>') + (c.groups && c.plain ? '<p class="yplain"><span>白话</span>' + esc(c.plain) + "</p>" : "") + "</div>";
+      if (catNames.length) txt += '<p class="ylegend">' + catNames.map(function (cn, ci) { return '<span class="lg cat' + ci + '">' + esc(cn) + "</span>"; }).join("") + (c.catNote ? '<span class="lgn">' + esc(c.catNote) + "</span>" : "") + "</p>";
+      if (Object.keys(c.notes || {}).length) txt += '<p class="ynote" id="yNote">点带虚线的红字，看注释。</p>';
+    }
+    var rows = c.rows ? '<div class="yrows">' + c.rows.map(function (r) { return '<div class="yr" data-k="' + esc(r[0]) + '"><b>' + esc(r[0]) + "</b><span>" + esc(r[1]) + "</span></div>"; }).join("") + "</div>" : "";
+    return '<div class="pcard ycard"><p class="tag">' + esc(c.tag || "原文") + "</p>" + (c.title ? '<h3 class="yt">' + esc(c.title) + "</h3>" : "") +
+      (c.rowsFirst ? rows + txt : txt + rows) + (c.foot ? '<p class="yfoot" data-k="foot">' + esc(c.foot) + "</p>" : "") +
+      '<div class="yrow"><span class="muted small" id="cWait">范公讲完，点“继续”收起卡片。</span><button type="button" class="btn" id="cGo" hidden>继续</button></div></div>';
+  }
+  function showCard(c) {
+    panel.hidden = false; panel.innerHTML = cardHTML(c); panel.scrollTop = 0;
+    log.push({ n: "（" + (c.tag || "原文卡") + "）", s: c.title || "" });
+    $$(".k.note", panel).forEach(function (el) {
+      function on() { var k = el.getAttribute("data-k"), nt = $("#yNote", panel); $$(".k.sel", panel).forEach(function (x) { x.classList.remove("sel"); }); el.classList.add("sel"); if (nt) { nt.innerHTML = "<b>" + esc(k) + "</b>：" + esc(c.notes[k]); nt.classList.add("on"); } }
+      el.addEventListener("click", on); el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); on(); } });
+    });
+  }
+  function hiCard(h) {
+    if (panel.hidden) return; var ks = [].concat(h), first = null;
+    $$("[data-k]", panel).forEach(function (el) { var on = ks.indexOf(el.getAttribute("data-k")) >= 0; el.classList.toggle("on", on); if (on && !first) first = el; });
+    if (first) reveal(first);
+  }
+  /* ---------- 开头目标卡、本章收获 ---------- */
+  function listCard(tag, head, items, btn, then, cls) {
+    panel.hidden = false; panel.scrollTop = 0;
+    panel.innerHTML = '<div class="pcard lcard ' + (cls || "") + '"><p class="tag">' + esc(tag) + '</p><h3 class="yt">' + esc(head) + '</h3><ol class="ylist">' + items.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + '</ol><div class="yrow"><span></span><button type="button" class="btn" id="lGo">' + esc(btn) + "</button></div></div>";
+    var b = $("#lGo", panel); b.addEventListener("click", function () { panel.hidden = true; then(); }); setTimeout(function () { try { b.focus({ preventScroll: true }); } catch (e) {} }, 60);
+  }
+  /* ---------- 回顾小测：复用练一练的出题、判分（renderItem / grade），每题倒计时 ---------- */
+  var rvTick = null;
+  function review(nid, n) {
+    var items = n.review.map(function (it) {
+      var o = { ref: it.id, sec: it.sec || 15, pts: 1, explain: it.explain || "" };
+      if (it.type === "fill") { o.type = "fill"; o.qHtml = '<p class="qq">' + esc(it.q).replace(/（[\s　]*）/, "{{blank}}") + "</p>"; o.blanks = [{ ans: [].concat(it.ans) }]; }
+      else { var op = shuffle(it.opts); o.type = "choice"; o.opts = op; o.ans = op.indexOf(it.ans); o.qHtml = (it.sent ? '<p class="sent">' + hlSent(it.sent) + "</p>" : "") + '<p class="qq">' + esc(it.q) + "</p>"; }
+      return o;
+    }), k = 0, res = [];
+    log.push({ n: "（回顾小测）", s: items.length + " 题" });
+    function one() {
+      if (!alive) return; if (k >= items.length) return done();
+      var it = items[k], answered = false, t0 = Date.now(), end = t0 + it.sec * 1000;
+      prompt("回顾小测：第 " + (k + 1) + " / " + items.length + " 题，每题 " + it.sec + " 秒。");
+      panel.hidden = false; panel.scrollTop = 0;
+      panel.innerHTML = '<div class="pcard rvcard"><div class="rvh"><p class="tag">回顾小测</p><span class="muted small">第 ' + (k + 1) + " / " + items.length + ' 题</span></div><div class="timer" id="rvT"><div class="bar"><i></i></div><span></span></div><div class="rvb"></div><div class="rvf"></div></div>';
+      var body = $(".rvb", panel), fb = $(".rvf", panel), tm = $("#rvT", panel), bar = $(".bar i", tm), sx = $("span", tm);
+      var get = renderItem(it, body, function () { submit(false); });
+      var sb = $("[data-submit]", body); if (sb) sb.addEventListener("click", function () { submit(false); });
+      function upd() { var left = Math.max(0, (end - Date.now()) / 1000); bar.style.width = (left / it.sec * 100) + "%"; sx.textContent = Math.ceil(left) + " 秒"; tm.classList.toggle("hot", left <= 5); if (left <= 0) submit(true); }
+      clearInterval(rvTick); upd(); rvTick = setInterval(upd, 100);
+      function submit(timeout) {
+        if (answered) return; answered = true; clearInterval(rvTick); tm.classList.add("off");
+        var r = grade(it, get(), timeout); r.secs = Math.min(it.sec, (Date.now() - t0) / 1000); r.timeout = timeout; r.it = it; res.push(r);
+        $$("button,input", body).forEach(function (x) { x.disabled = true; });
+        fb.innerHTML = '<div class="fb ' + (r.got >= 1 ? "ok" : "no") + '"><b>' + (r.got >= 1 ? "对了！" : timeout ? "时间到。" : "不对。") + "</b>" + (r.got < 1 ? "<p>正确答案：" + r.rightHtml + "</p>" : "") + (it.explain ? '<p class="muted">' + esc(it.explain) + "</p>" : "") +
+          '<button type="button" class="btn" id="rvN">' + (k + 1 < items.length ? "下一题" : "看成绩") + "</button></div>";
+        var nb = $("#rvN", panel); nb.addEventListener("click", function () { k++; one(); }); try { nb.focus({ preventScroll: true }); } catch (e) {}
+        reveal(fb);
+      }
+    }
+    function done() {
+      var got = 0, secs = 0; res.forEach(function (r) { got += r.got; secs += r.secs; });
+      var score = Math.round(got / res.length * 100), at = new Date().toISOString(), wrong = res.filter(function (r) { return r.got < 1; });
+      var rec = st.review || (st.review = { tries: 0, best: 0 }); rec.tries = (rec.tries || 0) + 1; rec.last = score; rec.best = Math.max(rec.best || 0, score); rec.at = at; rec.secs = Math.round(secs); rec.wrong = wrong.map(function (r) { return r.it.ref; });
+      S.drills.push({ kind: "story", scope: ch.id, score: score, secs: Math.round(secs), wrong: rec.wrong, at: at, n: res.length }); if (S.drills.length > 80) S.drills = S.drills.slice(-80); save();
+      log.push({ n: "（回顾小测）", s: score + " 分" });
+      prompt("回顾小测做完了。看一看错题，再点“继续”。");
+      panel.innerHTML = '<div class="pcard rvcard"><p class="tag">回顾小测</p><div class="rvs"><b>' + score + "</b><span>分</span></div><p class=\"muted small center\">共 " + res.length + " 题，答对 " + (res.length - wrong.length) + " 题，用时 " + dur(secs) + "</p>" +
+        (wrong.length ? '<ol class="rvw">' + wrong.map(function (r) { return "<li><div>" + r.qHtml + '</div><p><span class="lb">正确答案</span>' + r.rightHtml + "</p>" + (r.it.explain ? '<p class="muted small">' + esc(r.it.explain) + "</p>" : "") + "</li>"; }).join("") + "</ol>" : '<p class="center">全对！</p>') +
+        '<div class="yrow"><span></span><button type="button" class="btn" id="rvGo">继续</button></div></div>';
+      $("#rvGo", panel).addEventListener("click", function () { panel.hidden = true; enter(n.next); });
+    }
+    one();
   }
   function after(nid, n) {
     if (n.end) return finish();
+    if (n.card) {
+      prompt("看好了，点卡片上的“继续”。");
+      var cb = $("#cGo", panel), cw = $("#cWait", panel); if (cw) cw.textContent = "可以把卡片上的内容抄下来。"; hiCard([]);
+      if (cb) { cb.hidden = false; cb.addEventListener("click", function () { panel.hidden = true; enter(n.next); }); try { cb.focus({ preventScroll: true }); } catch (e) {} }
+      return;
+    }
+    if (n.goal) { prompt("先看看这一章要弄懂什么。"); listCard("本章目标", "这一章，你会弄懂：", n.goal, "开始", function () { enter(n.next); }, "goal"); return; }
+    if (n.sum) {
+      var nx = ch.nodes[n.next]; prompt("本章收获：把这几条抄下来，以后复习用。"); log.push({ n: "（本章收获）", s: n.sum.join(" ") });
+      listCard("本章收获", "这一章，你学到了：", n.sum, nx && nx.review ? "记下了，做回顾小测" : "记下了", function () { enter(n.next); }, "sum"); return;
+    }
+    if (n.review) return review(nid, n);
     if (n.choices) {
       prompt(n.ask || "你怎么说？", true); chEl.hidden = false;
       chEl.innerHTML = n.choices.map(function (c, i) { return '<button type="button" class="opt" data-i="' + i + '" style="animation-delay:' + (.15 + i * .12).toFixed(2) + 's">' + esc(fillName(c.t)) + "</button>"; }).join("");
