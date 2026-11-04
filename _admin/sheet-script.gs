@@ -28,7 +28,8 @@ const HEAD = {
   作答: ['键', '编号', '课文', '课文名', '班级', '名字', '最近保存', '进度', '作答摘要', '进度数据1', '进度数据2', '进度数据3', '进度数据4', '进度数据5'],
   分享: ['编号', '课文', '班级', '题目', '分享内容', '时间', '撤下'],
   回应: ['来自', '给', '课文', '班级', '题目', '内容', '时间'],
-  名单: ['班级', '名字', '密码', '备注']
+  名单: ['班级', '名字', '密码', '备注'],
+  作业: ['键', '课文', '课文名', '班级', '名字', '第几天', '作业内容', '学生写的', '照片', '交的时间', '老师批注']
 };
 const CHUNK = 45000; // 一个格子最多 5 万字，进度数据分几格存
 
@@ -71,6 +72,8 @@ function handle(q) {
   if (a === 'share') return share(me, q);
   if (a === 'gallery') return gallery(me, q);
   if (a === 'reply') return reply(me, q);
+  if (a === 'hw_photo') return hwPhoto(me, q);
+  if (a === 'hw') return hwSubmit(me, q);
   fail('bad');
 }
 
@@ -227,3 +230,36 @@ function teacherHide(lesson, sid) {
   for (let i = 1; i < data.length; i++) if (data[i][0] === sid && data[i][1] === lesson) sh.getRange(i + 1, 7).setValue(true);
   return { ok: true };
 }
+
+/* ---------- 作业：照片存进云端硬盘“弦歌作业照片 / 课文 / 班级-名字”，整份作业记在“作业”页 ---------- */
+function hwFolder(me) {
+  function sub(parent, name) { const it = parent.getFoldersByName(name); return it.hasNext() ? it.next() : parent.createFolder(name); }
+  return sub(sub(sub(DriveApp.getRootFolder(), '弦歌作业照片'), me.title || me.lesson), me.cls + '-' + me.name);
+}
+
+function hwPhoto(me, q) {
+  const day = Math.max(0, Math.min(99, Number(q.day) || 0));
+  const data = String(q.data || '');
+  if (!data) fail('bad');
+  if (data.length > 8000000) fail('big');
+  const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'MMdd-HHmmss');
+  const blob = Utilities.newBlob(Utilities.base64Decode(data), 'image/jpeg', '第' + day + '天-' + stamp + '-' + (Number(q.n) || 1) + '.jpg');
+  const f = hwFolder(me).createFile(blob);
+  return { ok: true, id: f.getId(), url: f.getUrl() };
+}
+
+function hwSubmit(me, q) {
+  const day = Math.max(0, Math.min(99, Number(q.day) || 0));
+  const sh = sheet('作业');
+  const key = me.sid + '|' + me.lesson + '|' + day;
+  const photos = (q.photos || []).map(p => p && p.url).filter(Boolean).join('\n');
+  const row = [key, me.lesson, me.title, me.cls, me.name, day, String(q.task || '').slice(0, 3000), String(q.text || '').slice(0, CHUNK), photos, new Date()];
+  const r = findRow(sh, key);
+  if (r) sh.getRange(r, 1, 1, row.length).setValues([row]);
+  else withLock(() => { const again = findRow(sh, key); if (again) sh.getRange(again, 1, 1, row.length).setValues([row]); else sh.appendRow(row.concat([''])); });
+  return { ok: true };
+}
+
+/* 第一次用作业照片时，在编辑器里选这个函数、点“运行”，按提示允许访问云端硬盘（只需要一次） */
+function authorizeDrive() { DriveApp.getRootFolder().getName(); }
+

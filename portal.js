@@ -26,27 +26,16 @@
   function byGrade(g) { return LESSONS.filter(function (l) { return l.grade === g; }); }
   function guessGrade(cls) { var m = /(?:G|GRADE|Y)(\d{1,2})/.exec(cls || "") || /^(\d{1,2})/.exec(cls || ""); var g = m ? +m[1] : 0; return g >= 1 && g <= 12 ? g : 0; }
   function doneDays(l) { if (!me) return 0; var s = get("hora-" + l.id + "-" + me.cls + "|" + me.name); return s && s.done ? Object.keys(s.done).length : 0; }
+  /* 课文页记下的“作业还没交几份”（读完的天里没交的） */
+  function hwDue(l) { if (!me) return 0; var h = get("hora-hwdue-" + l.id + "-" + me.cls + "|" + me.name); return h && h.due ? h.due : 0; }
+  function hwNote() { var due = LESSONS.filter(function (l) { return hwDue(l); }); if (!due.length) return ""; return '<div class="hwnote">' + due.map(function (l) { return '<button type="button" data-hw="' + esc(l.id) + '">《' + esc(l.title) + '》还有 ' + hwDue(l) + ' 份作业没交 →</button>'; }).join("") + '</div>'; }
+  function wireHw(root) { [].forEach.call(root.querySelectorAll("[data-hw]"), function (b) { b.addEventListener("click", function () { var l = LESSONS.filter(function (x) { return x.id === b.getAttribute("data-hw"); })[0]; if (l) { try { sessionStorage.setItem("hora-openhw", l.id); } catch (e) {} go(l); } }); }); }
   function allDone() { return LESSONS.reduce(function (a, l) { return a + doneDays(l); }, 0); }
   function toast(t) { var o = document.createElement("div"); o.className = "toast"; o.textContent = t; sheet.append(o); setTimeout(function () { o.remove(); }, 2600); }
-  function go(l, folder) {
-    if (l.choose && !folder && !teacher) return choose(l);
+  function go(l) {
     put("hora-lastLesson", l.id);
     if (SITE.preview) return toast("这是预览：上线后，这里会打开《" + l.title + "》");
-    location.href = (folder || l.folder).replace(/\/?$/, "/") + (teacher ? "#teacher" : "");
-  }
-  /* 一篇课文有两个版本时（lessons.js 里的 choose），先让学生选 */
-  function choose(l) {
-    if (!document.getElementById("chooseCss")) { var st = document.createElement("style"); st.id = "chooseCss";
-      st.textContent = ".choose .opts2{display:grid;gap:12px;margin-top:6px}.choose .op{display:block;width:100%;text-align:left;border:1.5px solid rgba(60,45,30,.2);border-radius:10px;background:rgba(255,252,244,.85);padding:14px 16px;cursor:pointer;font-family:var(--f-serif);color:var(--ink)}" +
-        ".choose .op:hover{border-color:var(--cinnabar)}.choose .op b{display:block;font-family:var(--f-brush);font-weight:400;font-size:1.6rem;color:var(--cinnabar)}.choose .op span{font-size:.92rem;color:var(--ink-mid)}";
-      document.head.appendChild(st); }
-    var o = document.createElement("div"); o.className = "ov";
-    o.innerHTML = '<div class="tie choose" role="dialog" aria-label="选一个版本"><button class="x" type="button" aria-label="关上">×</button><h3>《' + esc(l.title) + '》</h3><p>选一个版本：</p><div class="opts2">' +
-      l.choose.map(function (c, i) { return '<button type="button" class="op" data-c="' + i + '"><b>' + esc(c.label) + '</b><span>' + esc(c.desc || "") + '</span></button>'; }).join("") + '</div></div>';
-    sheet.append(o);
-    function close() { o.remove(); }
-    o.querySelector(".x").addEventListener("click", close); o.addEventListener("click", function (e) { if (e.target === o) close(); });
-    [].forEach.call(o.querySelectorAll("[data-c]"), function (b) { b.addEventListener("click", function () { var c = l.choose[+b.getAttribute("data-c")]; close(); pluck(392, .3); go(l, c.folder); }); });
+    location.href = l.folder.replace(/\/?$/, "/") + (teacher ? "#teacher" : "");
   }
 
   /* ---------- 声音：古琴的拨弦（Karplus–Strong）加一点泛音 ---------- */
@@ -414,7 +403,7 @@
     app.className = "screen"; history.replaceState(null, "", location.pathname);
     var mine = me ? guessGrade(me.cls) : 0;
     var tiers = [["小学", "一至六年级", 1, 6, "green"], ["初中", "七至九年级", 7, 9, "indigo"], ["高中", "十至十二年级", 10, 12, "ochre"]];
-    var h = top() + '<div class="page"><h1 class="h1">十二册</h1><p class="lead">' + (teacher ? "老师：选一册，再选课文；进课文后输老师密码，就能看全班的作答。" : "一个年级一册。手指或鼠标划过书脊，听听琴弦。") + '</p><div class="shelf">';
+    var h = top() + '<div class="page"><h1 class="h1">十二册</h1><p class="lead">' + (teacher ? "老师：选一册，再选课文；进课文后输老师密码，就能看全班的作答。" : "一个年级一册。手指或鼠标划过书脊，听听琴弦。") + '</p>' + (teacher ? "" : hwNote()) + '<div class="shelf">';
     var rows = [[tiers[0]], [tiers[1], tiers[2]]];
     rows.forEach(function (row, ri) {
       h += '<div class="tier" data-row="' + ri + '"><div class="tier-h">' + row.map(function (t) { return '<div style="grid-column:span ' + (t[3] - t[2] + 1) + '"><b>' + t[0] + '</b><span>' + t[1] + '</span></div>'; }).join("") + '</div><div class="books">';
@@ -429,7 +418,7 @@
       h += '</div>' + stringSVG(36) + '</div>';
     });
     app.innerHTML = h + '</div><p class="lead" style="margin-top:22px">还没有课文的年级，老师做好后会在这里开放。</p></div>';
-    wireTop();
+    wireTop(); wireHw(app);
     [].forEach.call(app.querySelectorAll(".tier"), function (tier) {
       var str = makeString(tier.querySelector(".string"), { amp: 9 }), last = 0;
       [].forEach.call(tier.querySelectorAll(".book"), function (b) {
@@ -454,11 +443,11 @@
         (pt ? '<div class="pp-top">' + esc(pt.top) + '</div><div class="pp-day">' + esc(pt.day) + '</div><div class="pp-lunar">' + esc(pt.lunar) + '</div><div class="pp-week">' + esc(pt.week) + '</div>' : "") + '</figure>' : '<span style="font-family:var(--f-brush);font-size:3rem">' + esc(l.title) + '</span>';
       h += '<section class="leaf" data-i="' + i + '"><div class="leaf-in"><div class="pic"><div class="wash"></div>' + pic + '</div>' +
         '<div class="colo"><h3>' + esc(l.title) + '</h3><span class="au">' + esc(l.author) + '</span><p>' + esc(l.blurb || "") + '</p>' + (dd ? '<span class="seal">' + (l.unit === "课时" ? "第" + NUM[Math.min(dd, 12)] + "课时" : "已读" + NUM[Math.min(dd, 12)] + "日") + '</span>' : "") + '</div></div>' +
-        '<div class="act"><button class="scrollbtn" type="button" data-go="' + i + '">' + (teacher ? "开　卷（老师）" : dd ? "接着读" : "开　卷") + '</button><span class="prog">' + (l.open >= l.total ? "共 " + l.total + " " + (l.unit || "天") : "已开放 " + (l.open || "?") + " / " + (l.total || "?") + " " + (l.unit || "天")) + (dd ? (l.unit === "课时" ? "　·　你学到了第 " + dd + " 课时" : "　·　你读完了 " + dd + " 天") : "") + '</span></div></section>';
+        '<div class="act"><button class="scrollbtn" type="button" data-go="' + i + '">' + (teacher ? "开　卷（老师）" : dd ? "接着读" : "开　卷") + '</button><span class="prog">' + (l.open >= l.total ? "共 " + l.total + " " + (l.unit || "天") : "已开放 " + (l.open || "?") + " / " + (l.total || "?") + " " + (l.unit || "天")) + (dd ? (l.unit === "课时" ? "　·　你学到了第 " + dd + " 课时" : "　·　你读完了 " + dd + " 天") : "") + '</span>' + (!teacher && hwDue(l) ? '<button type="button" class="hwbadge" data-hw="' + esc(l.id) + '">作业 ' + hwDue(l) + ' 份没交</button>' : "") + '</div></section>';
     });
     for (var k = 0; k < 2; k++) h += '<section class="leaf blank"><div class="leaf-in"><div class="pic"><span>待　续</span></div></div></section>';
     app.innerHTML = h + '</div><p class="swipe">← 翻　页 →</p></div>';
-    wireTop(showShelf);
+    wireTop(showShelf); wireHw(app);
     var album = document.getElementById("album");
     [].forEach.call(album.querySelectorAll("[data-go]"), function (b) { b.addEventListener("click", function () { go(list[+b.getAttribute("data-go")]); }); });
     if (!reduce && "IntersectionObserver" in window) {   /* 翻到哪一页，那页的画像墨一样晕开 */

@@ -419,3 +419,19 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 
 /* 还没做到的环节 */
 .st.lock{cursor:default;opacity:.55}
+
+/* 作业 */
+#bHw.due{background:var(--accent,#a8352a);color:#fff7ec;border-color:transparent}
+.sheet.hw{max-width:760px}
+.hwc{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;background:color-mix(in srgb,var(--page) 85%,#fff)}
+.hwc.due{border-color:var(--accent,#a8352a);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent,#a8352a) 18%,transparent)}
+.hwc.later{opacity:.6}
+.hwh{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.hws{font-size:.82rem;font-weight:700;color:var(--muted)}
+.hwc.due .hws{color:var(--accent,#a8352a)}.hwc.got .hws{color:#3d7a4a}
+.hwc ol{margin:6px 0 8px;padding-left:1.4em}.hwc li{margin:2px 0}
+.hwc textarea{width:100%;box-sizing:border-box;margin:6px 0}
+.hwt{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
+.hwt figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.hwt img{width:96px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.hwm{margin:6px 0 0}
