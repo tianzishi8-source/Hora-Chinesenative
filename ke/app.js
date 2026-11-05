@@ -5,7 +5,7 @@
  *   guide {name 台词名签（如“欧阳公”）, fig 立绘图片（可空：空就用 scene.js 画的水墨剪影）, figKind 剪影样式, alt}
  *     章节里可写 guide:{…} 换成这一章的人物（《洞庭三诗》每章一位诗人）。
  *   storyTitle 沉浸体验的名字  storyLead 章节页说明  hero {lead, fict}  rateSample 试语速的一句（旁白）  vsample 试“我的声音”的一句
- *   recite {n: [第n节后可背的段落 id…]}（不写：全部）  reciteAllNote  img {场景键: 图片路径}（现成真图）  scenes [scene.js 画的场景键]（有 img/scene-键.webp 就自动换真图）
+ *   recite {n: [第n节后可背的段落 id…]}（不写：全部）  reciteParas 背诵帮手只放这几段（现代文挑段背）  reciteAllNote  img {场景键: 图片路径}（现成真图）  scenes [scene.js 画的场景键]（有 img/scene-键.webp 就自动换真图）
  * 原文 data/text.js：order（段落 id 的顺序）、pname（段落名）、paras（每段一句一项）、ruby、voiceFix。 */
 (function () {
 "use strict";
@@ -851,7 +851,7 @@ function boot() {
   KEY = "hora-" + LID + (SAMPLE ? "-sample" : "") + "-" + ME.cls + "|" + ME.name; loadLocal();
   app.innerHTML = '<p class="loading">正在打开……</p>';
   Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("voice/index.js")]).then(function () {
-    TEXT = window.YK_TEXT || null; if (TEXT) { PARAS = TEXT.order || Object.keys(TEXT.paras); PARAS.forEach(function (p) { PNAME[p] = (TEXT.pname || {})[p] || p; }); } STORY = Array.isArray(window.YK_STORY) ? window.YK_STORY : []; WORDS = Array.isArray(window.YK_WORDS) ? window.YK_WORDS : []; TESTS = Array.isArray(window.YK_TESTS) ? window.YK_TESTS : [];
+    TEXT = window.YK_TEXT || null; if (TEXT) { PARAS = C.reciteParas || TEXT.order || Object.keys(TEXT.paras); PARAS.forEach(function (p) { PNAME[p] = (TEXT.pname || {})[p] || p; }); } STORY = Array.isArray(window.YK_STORY) ? window.YK_STORY : []; WORDS = Array.isArray(window.YK_WORDS) ? window.YK_WORDS : []; TESTS = Array.isArray(window.YK_TESTS) ? window.YK_TESTS : [];
     VOICE = window.YK_VOICE || window.PROJ_VOICE || {}; VOICE_V = window.YK_VOICE_V || window.PROJ_VOICE_V || "";
     probeScenes(); addEventListener("hashchange", route); route();
     if (!SITE.sheetUrl) { setSaveSt("只存在这台设备上"); return; }

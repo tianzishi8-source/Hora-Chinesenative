@@ -48,5 +48,13 @@ window.HORA_LESSONS = [
       { label: "课堂版", folder: "youyyl-ke", desc: "配合课堂上的 3 节课，课后每次 20 分钟：沉浸剧情、熟读、字词、模拟测验，分数存给老师。" },
       { label: "自学版", folder: "youyyl", desc: "4 个课时：读懂全文、比较《岳阳楼记》，最后写一篇有自己感悟的游记。" }
     ],
-    pic: "youyyl/img/cover.webp", picAlt: "示意画：楼上的酒席，窗外洞庭湖风浪大作" }
+    pic: "youyyl/img/cover.webp", picAlt: "示意画：楼上的酒席，窗外洞庭湖风浪大作" },
+  { id: "g9-kule", folder: "kule", grade: 9, title: "最苦与最乐 · 谈生命", author: "梁启超 · 冰心",
+    blurb: "人生什么事最苦，什么事最乐？生命又像什么？两位先生，一个讲道理，一个打比方。含语文趣谈“知足常乐”。",
+    open: 3, total: 3, unit: "课时",
+    choose: [
+      { label: "课堂版", folder: "kule-ke", desc: "配合课堂上的 3 节课，课后每次 20 分钟：沉浸剧情、背诵喜欢的句段、词语、模拟测验，分数存给老师。" },
+      { label: "自学版", folder: "kule", desc: "3 个课时：梁启超、冰心各一课时，最后两篇比较，用它们读本单元的人物。" }
+    ],
+    pic: "kule/img/cover.webp", picAlt: "示意画：春天的江流，两岸桃花" }
 ];
