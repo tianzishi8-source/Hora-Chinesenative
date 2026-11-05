@@ -1,7 +1,7 @@
 /* 弦歌网站：所有页面共用的两样小东西（首页、每篇课文都引用）
    1. 全屏：左边的“全屏”小签。点一下进入全屏；换页后，第一次点页面会自动回到全屏。
       iPad 上更稳的办法：Safari“分享 → 添加到主屏幕”，从主屏幕图标打开就一直是全屏。
-   2. 往下滑提示：内容超出屏幕、下面还有东西时，在那一块的右边出现竖排的“往下滑查看完整界面”，滑到底就消失。 */
+   （原来的“往下滑”提示 11-05 删去：会挡字。） */
 (function () {
   var D = document, R = D.documentElement;
   var css = D.createElement("style");
@@ -63,43 +63,5 @@
     });
   }
 
-  /* ---------- 往下滑提示 ---------- */
-  var SEL = ".work,.rbody,.th-work,.screen,#app,.sheet,.dock-b,.chat-b";
-  var pool = [];
-  function hint(i) {
-    if (!pool[i]) {
-      var h = D.createElement("div"); h.className = "xg-hint"; h.hidden = true; h.setAttribute("role", "button");
-      h.innerHTML = "<span>往下滑查看完整界面</span><b>↓</b>";
-      h.addEventListener("click", function () { var s = h._s; if (!s) return; var by = (s === D.scrollingElement ? innerHeight : s.clientHeight) * .7; (s === D.scrollingElement ? window : s).scrollBy({ top: by, behavior: "smooth" }); });
-      D.body.appendChild(h); pool[i] = h;
-    }
-    return pool[i];
-  }
-  function scrollers() {
-    var out = [], se = D.scrollingElement || R;
-    /* 有弹窗（老师密码、签到等）开着时，只提示弹窗里面的，不去提示被挡住的原文 */
-    var ov = [].filter.call(D.querySelectorAll(".ov"), function (o) { return !o.hidden && o.offsetParent !== null; })[0];
-    if (ov) { [].forEach.call(ov.querySelectorAll(SEL), function (e) { var oy = getComputedStyle(e).overflowY; if ((oy === "auto" || oy === "scroll") && e.scrollHeight - e.clientHeight - e.scrollTop > 40) { var r = e.getBoundingClientRect(); out.push([e, { top: Math.max(0, r.top), bottom: Math.min(innerHeight, r.bottom), right: Math.min(innerWidth, r.right) }]); } }); return out.slice(0, 1); }
-    if (se.scrollHeight - innerHeight - se.scrollTop > 40) out.push([se, { top: 0, bottom: innerHeight, right: innerWidth }]);
-    [].forEach.call(D.querySelectorAll(SEL), function (e) {
-      if (e.clientHeight < 160 || e.offsetParent === null) return;
-      var oy = getComputedStyle(e).overflowY; if (oy !== "auto" && oy !== "scroll") return;
-      if (e.scrollHeight - e.clientHeight - e.scrollTop <= 40) return;
-      var r = e.getBoundingClientRect(); if (r.bottom < 80 || r.top > innerHeight - 80) return;
-      out.push([e, { top: Math.max(0, r.top), bottom: Math.min(innerHeight, r.bottom), right: Math.min(innerWidth, r.right) }]);
-    });
-    return out.slice(0, 3);
-  }
-  function tick() {
-    if (!D.body) return;
-    var list = scrollers();
-    for (var i = 0; i < Math.max(pool.length, list.length); i++) {
-      var h = hint(i), it = list[i];
-      if (!it) { h.hidden = true; h._s = null; continue; }
-      var box = it[1], top = Math.max(box.top + 10, (box.top + box.bottom) / 2 - 100);
-      h._s = it[0]; h.hidden = false;
-      h.style.left = Math.max(4, box.right - 42) + "px"; h.style.top = top + "px";
-    }
-  }
-  setInterval(tick, 700); addEventListener("scroll", tick, true); addEventListener("resize", tick);
+  /* 11-05：“往下滑查看完整界面”提示会挡住页面上的字，老师要求删去。 */
 })();
