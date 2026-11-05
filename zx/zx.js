@@ -1,7 +1,7 @@
 /* 自学版通用引擎（课文自学，按课时走）
  * 表现形式沿用《岳阳楼记》自学版：顶栏课时按钮＋环节计时；每个环节一页，画面在上，人物对话、原文、练习依次往下排。
  * 每课一个文件夹（如 zuiweng/）：index.html 引用 ../zx/zx.css、../zx/zx.js、../ke/scene.js（画面），data/text.js（window.ZX_TEXT）、data/lesson.js（window.ZX），voice/index.js（录音）。
- * ZX：{ id, title, author, dynasty, guide:{name, kind 剪影样式, fig 立绘（可空）, vkey 录音键}, voices（录音工具读）, lessons:[{ title, sub, stages:[{ t, min, h, lead, blocks:[…] }] }] }
+ * ZX：{ id, title, author, dynasty, guide:{name, kind 剪影样式, fig 立绘（可空）, vkey 录音键}, voices（录音工具读）, lessons:[{ title, guide（可选：这一课时换一位作者）, stages:[{ t, min, h, lead, blocks:[…] }] }] }
  * 块（block，type）：
  *   pic   画面：scene（../ke/scene.js 的场景键）＋tone，或 img；vt 竖排大字，sub 小字，cap 角注
  *   talk  人物对话：lines:[{who:"bd" 伴学（学生在首页选的清弦或长歌）/ "g" 作者 / "hy" 徽音老师 / "me" 我 / "narr" 旁白, say}]，逐句打字＋录音；读完才算完成
@@ -40,13 +40,14 @@ function stamp(iso) { if (!iso) return ""; var d = new Date(iso); return (d.getM
 var BUD = { qingxian: { name: "清弦", c: [488, 346], v: "qx" }, changge: { name: "长歌", c: [493, 214], v: "cg" } };
 function buddy() { var b = lsGet("hora-buddy") || {}; var w = BUD[b.who] ? b.who : "qingxian"; return { who: w, outfit: ["daily", "sport", "formal", "ancient"].indexOf(b.outfit) >= 0 ? b.outfit : "ancient" }; }
 function myHair() { var a = lsGet("hora-avatar") || {}; return /^[gb][1-4]$/.test(a.hair) ? a.hair : "g1"; }
-function guideSrc() { var g = Z.guide || {}; return g.fig ? (/^(\.|\/|http|data:)/.test(g.fig) ? g.fig : CHARS + g.fig) : (window.YK_SCENE && YK_SCENE.figure ? YK_SCENE.figure(g.kind || "scholar") : ""); }
+function GD() { return (Z.lessons && Z.lessons[L - 1] && Z.lessons[L - 1].guide) || Z.guide || {}; }
+function guideSrc() { var g = GD(); return g.fig ? (/^(\.|\/|http|data:)/.test(g.fig) ? g.fig : CHARS + g.fig) : (window.YK_SCENE && YK_SCENE.figure ? YK_SCENE.figure(g.kind || "scholar") : ""); }
 /* 头像：把 1024×1536 的立绘按头部中心放大裁进圆框 */
 function avatar(src, c, box, scale) { var sc = (scale || 1) * box / 316; return '<img src="' + src + '" alt="" style="width:' + Math.round(1024 * sc) + "px;left:" + Math.round(box / 2 - c[0] * sc) + "px;top:" + Math.round(box / 2 - c[1] * sc) + 'px" draggable="false">'; }
 function who(w) {
   var b = buddy();
   if (w === "bd") return { nm: BUD[b.who].name, cls: "bd", src: CHARS + b.who + "_outfit_" + b.outfit + ".webp", c: BUD[b.who].c, v: BUD[b.who].v };
-  if (w === "g") return { nm: (Z.guide || {}).name || Z.author, cls: "g", src: guideSrc(), c: [512, 250], v: (Z.guide || {}).vkey || "g", sc: .95 };
+  if (w === "g") return { nm: GD().name || Z.author, cls: "g", src: guideSrc(), c: [512, 250], v: GD().vkey || "g", sc: .95 };
   if (w === "hy") return { nm: "徽音老师", cls: "hy", src: CHARS + "teacher_outfit_daily.webp", c: [505, 110], v: "hy" };
   if (w === "me") return { nm: ME ? ME.name : "我", cls: "me", src: CHARS + myHair() + "_outfit_ancient.webp", c: /^b/.test(myHair()) ? [470, 214] : [480, 318], v: "" };
   return { nm: "", cls: "narr", v: "narr" };

@@ -32,5 +32,13 @@ window.HORA_LESSONS = [
       { label: "课堂版", folder: "zuiweng-ke", desc: "配合课堂上的 4 节课，课后每次 20 分钟：沉浸剧情、背诵、字词、模拟测验，分数存给老师。" },
       { label: "自学版", folder: "zuiweng", desc: "4 个课时，自己从头读：听朗读、正音、逐段读懂、练笔、背诵。" }
     ],
-    pic: "zuiweng/img/cover.webp", picAlt: "示意画：秋天，琅琊山中泉水上的一座亭子，檐角高高翘起" }
+    pic: "zuiweng/img/cover.webp", picAlt: "示意画：秋天，琅琊山中泉水上的一座亭子，檐角高高翘起" },
+  { id: "g9-dongting", folder: "dongting", grade: 9, title: "洞庭三诗", author: "杜甫 · 孟浩然 · 李白",
+    blurb: "《登岳阳楼》与《诗两首》。同一片洞庭湖：一个哭了，一个想过湖没有船，一个要把君山铲平。",
+    open: 3, total: 3, unit: "课时",
+    choose: [
+      { label: "课堂版", folder: "dongting-ke", desc: "配合课堂上的 3 节课，课后每次 20 分钟：沉浸剧情、背诵、字词、模拟测验，分数存给老师。" },
+      { label: "自学版", folder: "dongting", desc: "3 个课时：杜甫、孟浩然、李白各一课时，最后三诗比较。" }
+    ],
+    pic: "dongting/img/cover.webp", picAlt: "示意画：夕阳下的洞庭湖，湖心有君山，远处有帆" }
 ];

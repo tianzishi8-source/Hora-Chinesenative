@@ -24,7 +24,7 @@ window.YK_TESTS = [
         opts: ["名字", "起名，命名", "有名的", "名声"], ans: 1, pts: 3, sec: 20,
         explain: "名：名词用作动词，给……起名。名之：给它（亭子）起名。" },
       { id: "t1-6", type: "choice", q: "“朝而往，暮而归”中“朝”的读音和意思是：",
-        opts: ["cháo，朝廷", "zhāo，早晨", "cháo，朝向", "zhāo，朝气"], ans: 1, pts: 3, sec: 20,
+        opts: ["cháo，朝廷", "zhāo，早晨", "cháo，朝向", "cháo，朝拜"], ans: 1, pts: 3, sec: 20,
         explain: "朝（zhāo）：早晨，与“暮”相对。" },
 
       /* 二、翻译（4题×4分＝16分） */

@@ -11,8 +11,8 @@ const out = [], seen = new Set(); let skipped = 0;
 function add(key, say) { if (!say) return; if (/\{name\}/.test(say)) { skipped++; return; } const text = voiceText(say), h = hash(key + "|" + text); if (!text.replace(/[，。！？、；：\s]/g, "") || seen.has(h)) return; seen.add(h); out.push({ who: key, text, hash: h }); }
 const GK = (Z.guide && Z.guide.vkey) || "g";
 Object.keys(T.paras).forEach(p => T.paras[p].forEach(x => add("read", typeof x === "string" ? x : x.t)));
-Z.lessons.forEach(l => l.stages.forEach(s => s.blocks.forEach(b => {
-  if (b.type === "talk") b.lines.forEach(x => { if (x.who === "bd") { add("qx", x.say); add("cg", x.say); } else if (x.who === "g") add(GK, x.say); else if (x.who === "hy" || x.who === "narr") add(x.who, x.say); });
+Z.lessons.forEach(l => l.stages.forEach(s => s.blocks.forEach(b => { const gk = (l.guide && l.guide.vkey) || GK;
+  if (b.type === "talk") b.lines.forEach(x => { if (x.who === "bd") { add("qx", x.say); add("cg", x.say); } else if (x.who === "g") add(gk, x.say); else if (x.who === "hy" || x.who === "narr") add(x.who, x.say); });
   if (b.type === "py") b.items.forEach(it => add("read", it.say || it.w));
 })));
 const by = {}; out.forEach(o => { by[o.who] = (by[o.who] || 0) + 1; });
