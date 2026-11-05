@@ -435,3 +435,31 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 .hwt figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
 .hwt img{width:96px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
 .hwm{margin:6px 0 0}
+
+/* 老师看板 */
+#teacherSheet.teach{max-width:min(1180px,96vw);width:100%}
+.tgridw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px}
+.tgrid{border-collapse:collapse;width:100%;font-size:.86rem}
+.tgrid th,.tgrid td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:center;vertical-align:middle;white-space:nowrap}
+.tgrid th{position:sticky;top:0;background:var(--page2);font-weight:700}
+.tgrid th small{display:block;font-weight:400;color:var(--muted);font-size:.72rem;max-width:7em;overflow:hidden;text-overflow:ellipsis;margin:0 auto}
+.tgrid td:first-child,.tgrid th:first-child{text-align:left;position:sticky;left:0;background:var(--page2);z-index:1}
+.tname{font:inherit;font-weight:700;border:0;background:none;color:var(--ink);cursor:pointer;padding:0;text-decoration:underline dotted}
+.tc b{display:block;font-size:.95rem}.tc small{display:block;color:var(--muted);font-size:.72rem}
+.tc.part b{color:var(--muted)}
+.lv-good{background:#e4f1e2}.lv-mid{background:#f7edcf}.lv-low{background:#f6dcd6}
+.tfoot td{font-weight:700;background:var(--page2)}
+.tq{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--page2)}
+.tq summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.tq summary small{color:var(--muted)}
+.pill{font-size:.78rem;font-weight:700;border-radius:999px;padding:2px 9px;margin-left:auto}
+.tmiss,.tans{margin:6px 0 2px;padding-left:1.2em;font-size:.92rem}.tmiss li,.tans li{margin:3px 0;white-space:pre-wrap}
+.tmiss .who{color:var(--accent,#a8352a)}
+.tday{margin:10px 0 0;font-size:.98rem;color:var(--muted)}
+.tst dt.tdh,.tst dd.tdh{margin-top:10px;font-weight:700;color:var(--ink);border-top:1px solid var(--line);padding-top:6px}
+.tst dd.ok .mk{color:#3d7a4a}.tst dd.bad .mk{color:#a8352a}
+.tst dd .mk{display:block;font-weight:700;font-size:.8rem}
+.tst dd{white-space:pre-wrap}
+.tsum{margin:2px 0 6px;padding:4px 10px;border-radius:8px;font-weight:700;font-size:.9rem;display:inline-block}
+.thard{border:1px solid var(--line);border-radius:10px;padding:8px 14px;background:var(--page2)}.thard h4{margin:0 0 4px}.thard ol{margin:0;padding-left:1.4em}
+.tst dd .mk{display:inline;font-weight:700;font-size:.8rem}
