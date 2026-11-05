@@ -40,5 +40,13 @@ window.HORA_LESSONS = [
       { label: "课堂版", folder: "dongting-ke", desc: "配合课堂上的 3 节课，课后每次 20 分钟：沉浸剧情、背诵、字词、模拟测验，分数存给老师。" },
       { label: "自学版", folder: "dongting", desc: "3 个课时：杜甫、孟浩然、李白各一课时，最后三诗比较。" }
     ],
-    pic: "dongting/img/cover.webp", picAlt: "示意画：夕阳下的洞庭湖，湖心有君山，远处有帆" }
+    pic: "dongting/img/cover.webp", picAlt: "示意画：夕阳下的洞庭湖，湖心有君山，远处有帆" },
+  { id: "g9-youyyl", folder: "youyyl", grade: 9, title: "游岳阳楼记", author: "袁中道",
+    blurb: "明朝人登岳阳楼：上午风平浪静，傍晚风浪大作，他扔下筷子哭了。哭滕子京，还是哭自己？含单元写作“感悟性游记”。",
+    open: 4, total: 4, unit: "课时",
+    choose: [
+      { label: "课堂版", folder: "youyyl-ke", desc: "配合课堂上的 3 节课，课后每次 20 分钟：沉浸剧情、熟读、字词、模拟测验，分数存给老师。" },
+      { label: "自学版", folder: "youyyl", desc: "4 个课时：读懂全文、比较《岳阳楼记》，最后写一篇有自己感悟的游记。" }
+    ],
+    pic: "youyyl/img/cover.webp", picAlt: "示意画：楼上的酒席，窗外洞庭湖风浪大作" }
 ];
