@@ -333,6 +333,32 @@
       if (v.q) h += block(v.q, "cq");
       if (v.ans) h += '<div class="ca"><span class="tag">' + esc(v.tag || "答案") + "</span>" + block(v.ans, "cb") + "</div>";
       p.innerHTML = h + '<div class="big-clock" hidden><span class="num">0:00</span><span class="lab"></span><span class="bar"><i></i></span></div>';
+    } else if (v.type === "pair") {
+      // 逐句对译卡：句子来自 ../yueyanglou-ke/data/sents.js（window.YK_SENTS）。
+      // v.ids：句子 id；v.mode："learn"（原文＋译文同色对应，默认）／"test"（只出原文，学生写译文）／"check"（原文＋译文＋翻译方法）
+      p.className += " cardpane pairpane";
+      var SS = {}; (window.YK_SENTS || []).forEach(function (x) { SS[x.id] = x; });
+      var mode = v.mode || "learn";
+      var hh = '<div class="ch">' + (v.n ? '<span class="qn">' + esc(v.n) + "</span>" : "") + '<span class="qt">' + esc(v.title || (mode === "test" ? "翻译过关" : "逐句对译")) + "</span>" + (v.score ? '<span class="sc">' + esc(v.score) + "</span>" : "") + "</div>";
+      (v.ids || []).forEach(function (id, k) {
+        var x = SS[id]; if (!x) { hh += '<p class="pr-miss">（缺句子 ' + esc(id) + "）</p>"; return; }
+        var ci = 0, srcH = "", trH = "";
+        (x.pairs || [[x.src, x.tr]]).forEach(function (pr) {
+          var same = pr[0].replace(/[，。；！？、“”]/g, "") === pr[1].replace(/[，。；！？、“”]/g, "");
+          var cls = same ? "pk" : "pc" + (ci++ % 5);
+          srcH += '<span class="' + cls + '">' + esc(pr[0]) + "</span>";
+          trH += '<span class="' + cls + '">' + esc(pr[1]) + "</span>";
+        });
+        if (!x.pairs) { srcH = esc(x.src); trH = esc(x.tr); }
+        var num = (v.ids.length > 1 ? '<span class="pn">' + (k + 1) + "</span>" : "");
+        hh += '<div class="pr">' + '<p class="psrc">' + num + srcH + "</p>";
+        if (mode === "test") hh += '<p class="ptr blank">写在作答纸上</p>';
+        else hh += '<p class="ptr">' + trH + "</p>";
+        if (mode === "check" && x.how && x.how.length) hh += '<p class="phow">' + x.how.map(function (t) { return '<span class="hw">' + esc(t) + "</span>"; }).join("") + "</p>";
+        hh += "</div>";
+      });
+      if (v.foot) hh += '<p class="pfoot">' + esc(v.foot) + "</p>";
+      p.innerHTML = hh + '<div class="big-clock" hidden><span class="num">0:00</span><span class="lab"></span><span class="bar"><i></i></span></div>';
     } else if (v.type === "text") {
       p.className += " textpane";
       v.paras.forEach(function (pk) {

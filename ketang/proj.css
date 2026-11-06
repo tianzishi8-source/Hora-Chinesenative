@@ -312,3 +312,17 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 /* 抄写提示 */
 .copyb{position:absolute;right:30px;top:40px;z-index:2;background:var(--zhu);color:#f6f1e3;font-family:var(--f-brush);font-size:30px;padding:4px 18px;transform:rotate(3deg);box-shadow:0 4px 12px -4px rgba(0,0,0,.5);animation:sealb 1.6s ease-in-out infinite}
 .picover .cap{z-index:3}
+
+/* 逐句对译卡（vis.type:"pair"） */
+.pairpane .pr{margin:.18em 0 .3em;padding-bottom:.25em;border-bottom:1px dashed rgba(60,111,122,.25)}
+.pairpane .psrc{font-family:var(--f-text);font-size:1.05em;line-height:1.55;margin:0}
+.pairpane .ptr{font-size:.82em;line-height:1.5;color:var(--ink2);margin:.1em 0 0 0}
+.pairpane .ptr.blank{color:#b9ad93;letter-spacing:.2em;border-bottom:2px solid #d8ccb0;width:60%}
+.pairpane .pn{display:inline-block;min-width:1.4em;color:var(--zhu);font-family:var(--f-ui);font-weight:700;font-size:.8em}
+.pairpane .pk{color:inherit}
+.pairpane .pc0,.pairpane .pc1,.pairpane .pc2,.pairpane .pc3,.pairpane .pc4{border-bottom:.12em solid;padding-bottom:.02em}
+.pairpane .pc0{color:#a3382a;border-color:#a3382a}.pairpane .pc1{color:#2f6f7e;border-color:#2f6f7e}.pairpane .pc2{color:#8a5a12;border-color:#c08a2a}
+.pairpane .pc3{color:#5b4a8a;border-color:#5b4a8a}.pairpane .pc4{color:#2f7a45;border-color:#2f7a45}
+.pairpane .phow{margin:.15em 0 0;font-size:.62em;line-height:1.5}
+.pairpane .hw{display:inline-block;margin:0 .5em .2em 0;padding:0 .45em;border-radius:.3em;background:rgba(60,111,122,.12);color:#2f5a66}
+.pairpane .pfoot{font-size:.62em;color:var(--ink2);margin-top:auto}
