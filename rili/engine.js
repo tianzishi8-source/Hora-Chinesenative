@@ -712,12 +712,13 @@ var NVIS=DAYS.filter(function(d){return !d.hidden;}).length;
 var STEPOF={};
 function practiceIdx(){for(var i=0;i<DAYS.length;i++)if(DAYS[i].practice)return i+1;return 0;}
 function cloneStep(st,obs){var c=JSON.parse(JSON.stringify(st));delete c.day;delete c.wait;delete c.feedbackWho;delete c.wrongFlag;delete c.ask;delete c.who;delete c.key;(c.options||[]).forEach(function(o){delete o.who;});c.obs=obs;return c;}
-function buildPractice(){var P=L.practice||{},idx=practiceIdx(),reached=function(n){return !!(S.done[n]||(S.beat&&S.beat[n]!=null));};
+function buildPractice(){var P=L.practice||{},idx=practiceIdx(),reached=function(n){var d=DAYS[n-1];return !!(S.done[n]||(d&&((S.reach||{})[n]||0)>=d.beats.length-1));};
   var cur="main",tx=function(arr,day){var w=day>=6&&TEXTS.mt?"mt":"main";if(w!==cur){arr.push({t:"text",id:w});cur=w;}};var core=[{t:"text",id:"main"}];(P.core||[]).filter(function(c){return reached(c.day);}).forEach(function(c){tx(core,c.day);core.push(cloneStep(c,c.obs));});
-  var mine=[],n=0;cur="?";OBSORDER.forEach(function(id){if(n>=10)return;var o=OBS[id],r=S.log[id];if(!o||!tGrad(o)||(DAYS[o.day-1]||{}).hidden||!reached(o.day)||!r||!tMiss(r))return;var V=(P.variants||{})[id];if(!V)return;if(tFirst(S.log["pv-"+id]))return;n++;
+  var mine=[],n=0;cur="?";OBSORDER.forEach(function(id){if(n>=10)return;var o=OBS[id],r=S.log[id];if(!o||!tGrad(o)||(DAYS[o.day-1]||{}).hidden||!r||!tMiss(r))return;var V=(P.variants||{})[id];if(!V)return;if(tFirst(S.log["pv-"+id]))return;n++;
     tx(mine,o.day);var st=STEPOF[id];if(st&&st.t==="mc"&&!/db/.test(id)){var cs=cloneStep(st,{id:"px-"+id,label:"重做："+o.label,skill:o.skill});cs.q="（第"+o.day+"天原题 · "+o.label+"）"+fill(cs.q||"");mine.push(cs);}
     mine.push(cloneStep(V,{id:"pv-"+id,label:"新题："+o.label,skill:o.skill}));});
-  var beats=[{title:"基础题",mood:"focus",steps:[{t:"say",who:"ri",text:"这是你的练习。先做基础题，人人都要做；再做你自己错过的题，每道后面跟一道相似的新题。"}].concat(core)}];
+  var upto=0;for(var k=1;k<=NVIS;k++)if(reached(k))upto=k;var intro=core.length>1?"这是你的练习，只考你已经读完的部分（到第"+upto+"天）。先做基础题，人人都要做；再做你自己错过的题，每道后面跟一道相似的新题。":"你还没有读完一天的课，所以没有基础题。先把第1天读完，再回来做。";
+  var beats=[{title:"基础题",mood:"focus",steps:[{t:"say",who:"ri",text:intro}].concat(core)}];
   beats.push({title:"我的错题和新题",mood:"focus",steps:mine.length?[{t:"say",who:"ri",text:"下面是你自己错过的题。先把原题再做一次，再做一道相似的新题。"}].concat(mine):[{t:"say",who:"ri",text:"你没有错过的题。基础题做完，今天的练习就完成了。"}]});
   beats.forEach(function(b){b.steps.forEach(function(st){regObs(st,idx);});});return beats;}
 function openPractice(){var n=practiceIdx();if(!n)return;closeOv();if(!DAYS[n-1].hidden||S.day<=NVIS)S.retDay=S.day;DAYS[n-1].beats=buildPractice();DAYS[n-1]._built=1;S.done[n]=0;startDay(n,false);}
