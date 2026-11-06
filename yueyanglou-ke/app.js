@@ -4,14 +4,15 @@
  * 签到：读首页的 sessionStorage hora-session（没签到就回首页签到）。进度存本机（按“班级|名字”分开），防抖同步到老师的表格（课文 id：g9-yueyanglou-ke）。
  * 录音：沉浸体验里范公、旁白、其他人物和“我”（学生选的声音，8 种）的台词，在 voice/index.js（tools/yk_record.py 生成的 window.PROJ_VOICE）里有录音就播放；没有就静音。
  *   语速：录音默认 1.2 倍速播放（playbackRate，保留音调），字幕逐字速度跟着变；章节页可选 正常／快／很快（1.0／1.2／1.4），存本机 yk-rate。
- * 沉浸体验每章：开头目标卡（goal）→ 剧情里 2–4 张原文卡（card，原文从 data/text.js 取）→ 章末“本章收获”（sum）→ 回顾小测（review，倒计时、机器打分，记进存档和作答摘要）→ 写一段话。
+ * 沉浸体验每章（11-06 第三次改版，体会作者情感）：开场 → 剧情与分支 → 章末“这一章，你体会到的”卡（card，rows）→ 选写哪一种（A 我想对范公说 / B 联系自己的经历）→ 写一段话（write.kind 记进存档和作答摘要）。
+ *   引擎仍支持 goal / sum / review / quiz / 原文卡，这一版剧情不用。
  * 画面：scene.js 画替代场景、道具和效果；有 img/scene-{名字}.webp 就用真图。 */
 (function () {
 "use strict";
 var SITE = window.HORA_SITE || {}, HOME = SITE.home || "../";
 var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11051200";
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11061300";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -103,7 +104,7 @@ function summary(d) {
     var line = "  " + (NUM[i + 1] || c.id) + "　" + c.title + "：" + (!st ? "没开始" : st.done ? "完成（" + stamp(st.doneAt) + "）" : "读到一半");
     if (st && st.review && st.review.last != null) line += "　回顾小测 最近" + st.review.last + "分（最高" + st.review.best + "，共" + st.review.tries + "次）";
     out.push(line);
-    if (st && st.lastWrite) out.push("    最后写的话：" + st.lastWrite.text);
+    if (st && st.lastWrite) out.push("    最后写的话" + (st.lastWrite.kind ? "（" + st.lastWrite.kind + "）" : "") + "：" + st.lastWrite.text);
   });
   out.push("【背诵】" + ["p1", "p2", "p3", "p4", "p5", "all"].map(function (p) { var r = (d.recite || {})[p]; return PNAME[p] + (r && r.best != null ? " 最高" + r.best : " —"); }).join("｜"));
   var cards = d.cards || {}, mastered = Object.keys(cards).filter(function (k) { return cards[k].box >= 2; }).length;
@@ -208,7 +209,7 @@ function home() {
 /* ================= 一、沉浸体验 ================= */
 function storyList() {
   if (!STORY.length) return notReady("沉浸体验《邓州的秋天》");
-  var h = '<h1 class="h1">沉浸体验 · 邓州的秋天</h1><p class="lead">庆历六年秋天，范公在邓州做知州。你是他家隔壁的少年。每章 8–10 分钟，最后写一小段话（老师能看到）。</p><p class="fict">“邻家少年”是虚构人物。</p><div class="chs">';
+  var h = '<h1 class="h1">沉浸体验 · 邓州的秋天</h1><p class="lead">庆历六年秋天，范公在邓州做知州。你是他家隔壁的少年。跟范公说说话，体会他写《岳阳楼记》时的心情。每章约 10 分钟，最后写一小段话（老师能看到）。</p><p class="fict">“邻家少年”是虚构人物。</p><div class="chs">';
   STORY.forEach(function (c, i) {
     var st = S.story[c.id] || {};
     h += '<a class="ch' + (st.done ? " done" : "") + '" href="#story/' + c.id + '"><span class="cn">' + NUM[i + 1] + '</span><span class="tx"><b>' + esc(c.title) + "</b><small>" + esc(c.blurb || "") + '</small><em>第 ' + (c.after || "?") + " 节后 · 约 " + (c.minutes || 9) + " 分钟</em></span>" +
@@ -494,7 +495,7 @@ function playChapter(id) {
     if (n.end) return finish();
     if (n.card) {
       prompt("看好了，点卡片上的“继续”。");
-      var cb = $("#cGo", panel), cw = $("#cWait", panel); if (cw) cw.textContent = "可以把卡片上的内容抄下来。"; hiCard([]);
+      var cb = $("#cGo", panel), cw = $("#cWait", panel); if (cw) cw.textContent = "读一读，想一想，再点继续。"; hiCard([]);
       if (cb) { cb.hidden = false; cb.addEventListener("click", function () { panel.hidden = true; enter(n.next); }); try { cb.focus({ preventScroll: true }); } catch (e) {} }
       return;
     }
@@ -538,7 +539,7 @@ function playChapter(id) {
       var ta = $("#wTa"), cnt = $("#wCnt"), go = $("#wGo");
       function upd() { var L = norm(ta.value).length; cnt.textContent = L + " 字" + (min ? "（至少 " + min + " 字，最多 " + max + " 字）" : "（最多 " + max + " 字）"); go.disabled = L < min; cnt.classList.toggle("short", L < min); }
       ta.addEventListener("input", upd); upd(); setTimeout(function () { try { ta.focus({ preventScroll: true }); } catch (e) {} }, 50);
-      go.addEventListener("click", function () { var t = ta.value.trim(); st.writes[nid] = { text: t, at: new Date().toISOString(), prompt: w.prompt }; st.lastWrite = { text: t, at: st.writes[nid].at, node: nid }; log.push({ n: "（你写的）", s: t }); save(); panel.hidden = true; enter(n.next || "end"); });
+      go.addEventListener("click", function () { var t = ta.value.trim(); st.writes[nid] = { text: t, at: new Date().toISOString(), prompt: w.prompt, kind: w.kind || "" }; st.lastWrite = { text: t, at: st.writes[nid].at, node: nid, kind: w.kind || "" }; log.push({ n: "（你写的）", s: t }); save(); panel.hidden = true; enter(n.next || "end"); });
       return;
     }
     if (n.next) return enter(n.next);
