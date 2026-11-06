@@ -29,7 +29,7 @@ const HEAD = {
   分享: ['编号', '课文', '班级', '题目', '分享内容', '时间', '撤下'],
   回应: ['来自', '给', '课文', '班级', '题目', '内容', '时间'],
   名单: ['班级', '名字', '密码', '备注'],
-  作业: ['键', '课文', '课文名', '班级', '名字', '第几天', '作业内容', '学生写的', '照片', '交的时间', '老师批注']
+  作业: ['键', '课文', '课文名', '班级', '名字', '第几天', '作业内容', '学生写的', '照片', '交的时间', '老师批注', '状态', '学生申诉', '以前交的']
 };
 const CHUNK = 45000; // 一个格子最多 5 万字，进度数据分几格存
 
@@ -53,8 +53,9 @@ function handle(q) {
   const a = q.action;
   const lesson = String(q.lesson || '').slice(0, 60);
   if (!lesson) fail('bad');
-  if (a === 't_all' || a === 't_hide') {
+  if (a === 't_all' || a === 't_hide' || a === 't_hwflag') {
     if (String(q.pw || '') !== TEACHER_PASSWORD) fail('pw');
+    if (a === 't_hwflag') return teacherHwFlag(lesson, q);
     return a === 't_all' ? teacherAll(lesson) : teacherHide(lesson, q.sid);
   }
   const cls = String(q.cls || '').replace(/\s+/g, '').toUpperCase();
@@ -74,6 +75,8 @@ function handle(q) {
   if (a === 'reply') return reply(me, q);
   if (a === 'hw_photo') return hwPhoto(me, q);
   if (a === 'hw') return hwSubmit(me, q);
+  if (a === 'hw_status') return hwStatus(me);
+  if (a === 'hw_appeal') return hwAppeal(me, q);
   fail('bad');
 }
 
@@ -221,7 +224,7 @@ function teacherAll(lesson) {
     try { payload = JSON.parse(an[i].slice(9, 14).join('')); } catch (e) {}
     rows.push({ sid: sid, cls: cls, name: name, payload: payload || { name: name }, shared: !!shared[sid] });
   }
-  return { ok: true, rows: rows };
+  return { ok: true, rows: rows, hw: hwRows(lesson) };
 }
 
 function teacherHide(lesson, sid) {
@@ -255,11 +258,54 @@ function hwSubmit(me, q) {
   const photos = (q.photos || []).map(p => p && p.url).filter(Boolean).join('\n');
   const row = [key, me.lesson, me.title, me.cls, me.name, day, String(q.task || '').slice(0, 3000), String(q.text || '').slice(0, CHUNK), photos, new Date()];
   const r = findRow(sh, key);
-  if (r) sh.getRange(r, 1, 1, row.length).setValues([row]);
+  if (r) {
+    const old = sh.getRange(r, 8, 1, 7).getValues()[0];   // 学生写的、照片、交的时间、老师批注、状态、申诉、以前交的
+    const stamp = old[2] instanceof Date ? Utilities.formatDate(old[2], Session.getScriptTimeZone(), 'M/d HH:mm') : String(old[2] || '');
+    const hist = ('【' + stamp + (old[4] ? ' · 被标为' + old[4] : '') + '】' + String(old[0] || '') + (old[1] ? '\n照片：' + old[1] : '') + (old[6] ? '\n\n' + old[6] : '')).slice(0, CHUNK);
+    sh.getRange(r, 1, 1, row.length).setValues([row]);
+    sh.getRange(r, 12, 1, 3).setValues([['', old[5] || '', hist]]);
+  }
   else withLock(() => { const again = findRow(sh, key); if (again) sh.getRange(again, 1, 1, row.length).setValues([row]); else sh.appendRow(row.concat([''])); });
   return { ok: true };
 }
 
 /* 第一次用作业照片时，在编辑器里选这个函数、点“运行”，按提示允许访问云端硬盘（只需要一次） */
 function authorizeDrive() { DriveApp.getRootFolder().getName(); }
+
+/* 作业状态：老师标记（如“AI辅助”）、学生申诉、以前交的版本 */
+function hwRows(lesson) {
+  const sh = sheet('作业');
+  if (sh.getLastRow() < 2) return [];
+  const v = sh.getRange(2, 1, sh.getLastRow() - 1, 14).getValues();
+  return v.filter(r => r[1] === lesson).map(r => ({ sid: String(r[0]).split('|')[0], day: Number(r[5]) || 0, note: String(r[10] || ''), status: String(r[11] || ''), appeal: String(r[12] || ''), history: String(r[13] || '') }));
+}
+
+function hwStatus(me) {
+  return { ok: true, rows: hwRows(me.lesson).filter(r => r.sid === me.sid).map(r => ({ day: r.day, status: r.status, note: r.note, appeal: r.appeal })) };
+}
+
+function hwAppeal(me, q) {
+  const day = Math.max(0, Math.min(99, Number(q.day) || 0));
+  const sh = sheet('作业');
+  const r = findRow(sh, me.sid + '|' + me.lesson + '|' + day);
+  if (!r) fail('bad');
+  sh.getRange(r, 13).setValue('【' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'M/d HH:mm') + '】' + String(q.text || '').slice(0, 2000));
+  return { ok: true };
+}
+
+function teacherHwFlag(lesson, q) {
+  const day = Math.max(0, Math.min(99, Number(q.day) || 0));
+  const sh = sheet('作业');
+  const key = String(q.sid || '') + '|' + lesson + '|' + day;
+  let r = findRow(sh, key);
+  if (!r) {   // 早先的作业没进“作业”页：老师标记时补一行
+    if (!q.sid || !q.name) fail('bad');
+    withLock(() => { if (!findRow(sh, key)) sh.appendRow([key, lesson, String(q.title || ''), String(q.cls || ''), String(q.name || ''), day, '', String(q.text || '').slice(0, CHUNK), String(q.photos || ''), String(q.at || ''), '', '', '', '']); });
+    r = findRow(sh, key);
+  }
+  sh.getRange(r, 12).setValue(String(q.status || '').slice(0, 20));
+  if (q.note != null) sh.getRange(r, 11).setValue(String(q.note).slice(0, 500));
+  if (!q.status) sh.getRange(r, 13).setValue('');
+  return { ok: true };
+}
 
