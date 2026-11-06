@@ -12,7 +12,7 @@
 var SITE = window.HORA_SITE || {}, HOME = SITE.home || "../";
 var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11061300";
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11062130";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -229,7 +229,8 @@ function storyList() {
 var IMG = { lake: "lake", "rain-lake": "rain", "spring-lake": "spring", "moon-lake": "moon", tower: "tower", map: "map", bi: "bi" };
 var LEGACY = { rain: "rain-yard", sunny: "yard", spring: "spring-lake", moon: "moon-lake" };
 var SCENE_KEYS = ["study", "yard", "rain-yard", "harvest", "night", "hill", "gate"], SCENE_IMG = {};
-function probeScenes() { SCENE_KEYS.forEach(function (k) { var u = "img/scene-" + k + ".webp?v=" + VER, im = new Image(); im.onload = function () { if (im.naturalWidth) SCENE_IMG[k] = u; }; im.src = u; }); }
+// 11-06：七张真图都已放进 img/，直接用（同时预载）；万一某张缺了，加载失败就退回画的场景
+function probeScenes() { SCENE_KEYS.forEach(function (k) { var u = "img/scene-" + k + ".webp?v=" + VER, im = new Image(); SCENE_IMG[k] = u; im.onerror = function () { delete SCENE_IMG[k]; }; im.src = u; }); }
 var CAM = { still: ["scale(1.05)", "scale(1.06)"], push: ["scale(1.02)", "scale(1.16)"], pull: ["scale(1.17)", "scale(1.03)"],
   panL: ["translateX(-4%) scale(1.12)", "translateX(4%) scale(1.12)"], panR: ["translateX(4%) scale(1.12)", "translateX(-4%) scale(1.12)"],
   up: ["translateY(-4.5%) scale(1.12)", "translateY(4.5%) scale(1.12)"], down: ["translateY(4.5%) scale(1.12)", "translateY(-4.5%) scale(1.12)"] };
