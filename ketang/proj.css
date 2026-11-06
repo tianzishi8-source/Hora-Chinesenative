@@ -19,7 +19,9 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 #stage{position:relative;width:1920px;height:1080px;flex:0 0 auto;transform-origin:center center;overflow:hidden;background:var(--silk)}
 
 /* ---------- 场景 ---------- */
-.scene{position:absolute;inset:-30px;background-size:cover;background-position:center 40%;transition:filter .8s,opacity .8s}
+.scene{position:absolute;inset:-30px;transition:filter .8s,opacity .8s}
+.scene .sl{position:absolute;inset:0;background-size:cover;background-position:center 40%;opacity:0;transition:opacity .7s ease}
+.scene .sl.on{opacity:1}
 .scene.soft{filter:blur(7px) brightness(1.06) saturate(.75)}
 .scene-wash{position:absolute;inset:0;background:linear-gradient(180deg,rgba(233,221,194,.0) 40%,rgba(233,221,194,.55) 100%);pointer-events:none}
 .scene.soft+.scene-wash{background:rgba(240,232,212,.42)}
@@ -326,3 +328,10 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .pairpane .phow{margin:.15em 0 0;font-size:.62em;line-height:1.5}
 .pairpane .hw{display:inline-block;margin:0 .5em .2em 0;padding:0 .45em;border-radius:.3em;background:rgba(60,111,122,.12);color:#2f5a66}
 .pairpane .pfoot{font-size:.62em;color:var(--ink2);margin-top:auto}
+
+/* 11-06 课堂反馈：Safari 在有动画的图层上会留下旧画面（背景不换、上一步的人物压住文字）。
+   给画面以上的各层单独成层；Safari 里关掉背景的缓慢推移和人物说话时的轻晃。 */
+.vis,.dlg,.cue,.resp,.top,.picover{transform:translateZ(0)}
+.cast{transform:translateZ(0);isolation:isolate}
+.is-safari .scene{animation:none;transform:scale(1.04)}
+.is-safari .actor.talk .body{animation:none}

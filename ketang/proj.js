@@ -7,6 +7,8 @@
   "use strict";
   var L = window.PROJ_LESSON, A = L.assets, CAST = L.cast;
   if (L.layout) document.documentElement.classList.add("lay-" + L.layout);
+  var UA = navigator.userAgent;
+  if (/Safari/.test(UA) && !/Chrome|Chromium|CriOS|FxiOS|Edg|Android/.test(UA)) document.documentElement.classList.add("is-safari");
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var store = {
     get: function (k, d) { try { var v = localStorage.getItem("hora-proj-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -18,7 +20,7 @@
   function splitLong(st) {   // 太长的台词拆成几步（每步不超过约 56 字），对话框放得下；录音也按拆开后的句子录
     var MAX = 56;
     if (!st.say || st.v || st.say.length <= MAX) return [st];
-    var parts = st.say.split(/(?<=[。！？；])/), chunks = [], cur = "";
+    var parts = st.say.match(/[^。！？；]+[。！？；]*|[。！？；]+/g) || [st.say], chunks = [], cur = "";
     parts.forEach(function (p) { if (cur && (cur + p).length > MAX) { chunks.push(cur); cur = p; } else cur += p; });
     if (cur) chunks.push(cur);
     if (chunks.length < 2) return [st];
@@ -76,27 +78,27 @@
     var c = CAST[k], el = document.createElement("div");
     el.className = "actor " + k + (k === LEAD && LEAD_ENTERS ? " away" : "");
     var body = document.createElement("div"); body.className = "body"; el.appendChild(body);
-    var base = new Image(), face = new Image(), mouth = new Image();
-    base.src = A.chars + c.sprite + "_outfit_" + c.outfit + ".webp";
-    mouth.className = "mouth";
-    [base, face, mouth].forEach(function (im) {
-      im.style.width = Math.round(1024 * SC) + "px"; im.style.left = c.x + "px"; im.style.top = Math.round(TOP) + "px";
-      im.alt = ""; body.appendChild(im);
-    });
-    castBox.appendChild(el);
-    var fs = {};
+    var place = function (im) { im.style.width = Math.round(1024 * SC) + "px"; im.style.left = c.x + "px"; im.style.top = Math.round(TOP) + "px"; im.alt = ""; im.decoding = "sync"; body.appendChild(im); return im; };
+    var base = place(new Image()); base.src = A.chars + c.sprite + "_outfit_" + c.outfit + ".webp";
+    var fs = {}, layers = {};
     Object.keys(c.face || {}).forEach(function (f) {
-      if (c.face[f]) { fs[f] = A.chars + c.sprite + "_" + c.outfit + "_face_" + c.face[f] + ".webp"; var p = new Image(); p.src = fs[f]; }
+      if (!c.face[f] || f === "talk") return;
+      fs[f] = A.chars + c.sprite + "_" + c.outfit + "_face_" + c.face[f] + ".webp";
+      var im = place(new Image()); im.className = "fc"; im.style.visibility = "hidden"; im.src = fs[f]; layers[f] = im;
     });
-    if (fs.talk) mouth.src = fs.talk; else mouth.style.display = "none";
-    actors[k] = { el: el, face: face, mouth: mouth, fs: fs, mood: "idle", talking: false, blinkAt: 0, open: 0, holdTo: 0 };
+    var mouth = place(new Image()); mouth.className = "mouth";
+    if (c.face && c.face.talk) { fs.talk = A.chars + c.sprite + "_" + c.outfit + "_face_" + c.face.talk + ".webp"; mouth.src = fs.talk; } else mouth.style.display = "none";
+    castBox.appendChild(el);
+    actors[k] = { el: el, layers: layers, shown: null, mouth: mouth, fs: fs, mood: "idle", talking: false, blinkAt: 0, open: 0, holdTo: 0 };
     setFace(k, "idle");
   });
   function setFace(k, f) {
     var a = actors[k]; if (!a) return;
-    var src = a.fs[f] || null;
-    if (src) { if (a.face.dataset.src !== src) { a.face.src = src; a.face.dataset.src = src; } a.face.style.visibility = "visible"; }
-    else a.face.style.visibility = "hidden";
+    var want = a.layers[f] ? f : null;
+    if (want === a.shown) return;
+    if (want) a.layers[want].style.visibility = "visible";    // 先显新的，再藏旧的：中间不会有一帧没有脸
+    if (a.shown && a.layers[a.shown]) a.layers[a.shown].style.visibility = "hidden";
+    a.shown = want;
   }
   // 不说话时才用心情表情（思考、开心）；说话时用平常的脸，嘴巴另外一层慢慢开合
   function restFace(k) { var a = actors[k]; return a.talking ? "idle" : a.mood === "think" ? "think" : a.mood === "happy" ? "happy" : "idle"; }
@@ -166,12 +168,50 @@
     return t.replace(/[“”‘’「」]/g, "").replace(/——/g, "，").replace(/……/g, "，");
   }
   function hash(s) { var h = 0x811c9dc5; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return ("0000000" + h.toString(16)).slice(-8); }
-  var curAudio = null;
+  var curAudio = null, curSrc = null;
   function stopVoice() {
     if (curAudio) { try { curAudio.pause(); } catch (e) {} curAudio = null; }
+    if (curSrc) { try { curSrc.onended = null; curSrc.stop(); } catch (e) {} curSrc = null; }
+    sayOwner = null;
     if ("speechSynthesis" in window) speechSynthesis.cancel();
   }
+  function getCtx() { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); return actx; }
+  function outNode() {   // 增益＋压缩＋口型分析，所有录音都走这一条
+    var c = getCtx();
+    if (!analyser) {
+      analyser = c.createAnalyser(); analyser.fftSize = 512; abuf = new Uint8Array(analyser.fftSize);
+      boostNode = c.createGain(); boostNode.gain.value = boost;
+      var comp = c.createDynamicsCompressor(); comp.threshold.value = -20; comp.knee.value = 8; comp.ratio.value = 4; comp.attack.value = 0.004; comp.release.value = 0.2;
+      boostNode.connect(comp); comp.connect(analyser); analyser.connect(c.destination);
+    }
+    return boostNode;
+  }
+  function clipURL(h) { return "voice/" + h + ".mp3?v=" + (window.PROJ_VOICE_V || ""); }
+  // 下载（原始 mp3 全留在内存里，一节课几 MB）＋解码（解码后的只留最近 40 句）
+  var RAW = {}, DEC = {}, DEC_ORDER = [];
+  function fetchRaw(h, tries) {
+    if (RAW[h]) return RAW[h];
+    var p = fetch(clipURL(h)).then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .catch(function () { delete RAW[h]; if ((tries || 0) < 2) return new Promise(function (ok) { setTimeout(ok, 600); }).then(function () { return fetchRaw(h, (tries || 0) + 1); }); return null; });
+    RAW[h] = p; return p;
+  }
+  function loadClip(h) {
+    if (DEC[h]) return DEC[h];
+    var p = fetchRaw(h).then(function (ab) {
+      if (!ab) return null;
+      return new Promise(function (ok) {
+        try { var r = getCtx().decodeAudioData(ab.slice(0), ok, function () { ok(null); }); if (r && r.then) r.then(ok, function () { ok(null); }); } catch (e) { ok(null); }
+      });
+    });
+    DEC[h] = p; DEC_ORDER.push(h);
+    while (DEC_ORDER.length > 40) delete DEC[DEC_ORDER.shift()];
+    p.then(function (b) { if (!b) { delete DEC[h]; } });
+    return p;
+  }
+  function wake() { try { var c = getCtx(); if (c.state !== "running") c.resume(); } catch (e) {} }
+  ["pointerdown", "keydown", "touchend"].forEach(function (ev) { document.addEventListener(ev, wake, true); });
   // 说一句：返回 Promise，说完 resolve；token 变了（换了步骤）就停
+  var sayOwner = null;
   function say(who, text, token) {
     return new Promise(function (res) {
       var est = Math.max(1.2, text.length * 0.26) / speed;
@@ -179,20 +219,31 @@
       if (!soundOn || !text) { setTimeout(fin, est * 1000 * (soundOn ? 1 : 0.6)); return; }
       var h = hash(who + "|" + text);
       if (VOICE_IDX[h]) {
-        var au = new Audio("voice/" + h + ".mp3?v=" + (window.PROJ_VOICE_V || "")); curAudio = au; au.playbackRate = speed;
-        try {
-          actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-          if (!analyser) {
-            analyser = actx.createAnalyser(); analyser.fftSize = 512; abuf = new Uint8Array(analyser.fftSize);
-            boostNode = actx.createGain(); boostNode.gain.value = boost;
-            var comp = actx.createDynamicsCompressor(); comp.threshold.value = -20; comp.knee.value = 8; comp.ratio.value = 4; comp.attack.value = 0.004; comp.release.value = 0.2;
-            boostNode.connect(comp); comp.connect(analyser); analyser.connect(actx.destination);
+        var mine = {}; sayOwner = mine;
+        var dur = VOICE_IDX[h] / speed;
+        // 下载太慢（超过 8 秒还没开始）就不出声往下走，不换成电脑语音
+        var slow = setTimeout(function () { if (sayOwner === mine && !mine.started) { mine.dead = true; fin(); } }, 8000);
+        loadClip(h).then(function (buf) {
+          if (sayOwner !== mine || mine.dead || done) return;
+          clearTimeout(slow); mine.started = true;
+          if (buf) {
+            try {
+              wake();
+              var c = getCtx(), src = c.createBufferSource(); src.buffer = buf; src.playbackRate.value = speed;
+              src.connect(outNode()); lipUsesAudio = true; curSrc = src;
+              src.onended = function () { if (curSrc === src) curSrc = null; fin(); };
+              src.start(c.currentTime + 0.04);
+              setTimeout(fin, (buf.duration / speed + 1.5) * 1000);   // 保险：从真正开始放算起
+              return;
+            } catch (e) {}
           }
-          actx.createMediaElementSource(au).connect(boostNode); lipUsesAudio = true;
-        } catch (e) { lipUsesAudio = false; }
-        au.onended = fin; au.onerror = function () { speakTTS(); };
-        au.play().catch(function () { speakTTS(); });
-        setTimeout(fin, (VOICE_IDX[h] / speed + 3) * 1000);
+          // 解码不了：用普通播放器放同一个录音；也放不了就静音按时长走
+          var au = new Audio(clipURL(h)); curAudio = au; lipUsesAudio = false;
+          au.preservesPitch = au.webkitPreservesPitch = true; au.playbackRate = speed;
+          au.onended = fin; au.onerror = function () { setTimeout(fin, dur * 1000); };
+          var pp = au.play(); if (pp && pp.catch) pp.catch(function () { setTimeout(fin, dur * 1000); });
+          setTimeout(fin, (dur + 8) * 1000);
+        });
         return;
       }
       speakTTS();
@@ -200,7 +251,7 @@
         lipUsesAudio = false;
         if (!("speechSynthesis" in window) || !zhVoices.length) { setTimeout(fin, est * 1000); return; }
         var v = pickVoice(who), cv = (CAST[who] && CAST[who].voice) || {};
-        var parts = text.split(/(?<=[。！？；])/).filter(function (x) { return x.trim(); });
+        var parts = (text.match(/[^。！？；]+[。！？；]*|[。！？；]+/g) || [text]).filter(function (x) { return x.trim(); });
         var left = parts.length;
         parts.forEach(function (p) {
           var u = new SpeechSynthesisUtterance(p);
@@ -289,8 +340,18 @@
   function setScene(img, soft) {
     var key = img + (soft ? "|soft" : "");
     if (key === curScene) return; curScene = key;
-    sceneEl.style.backgroundImage = "url(" + (/\//.test(img) ? img : A.img + img) + ")";
+    var url = /\//.test(img) ? img : A.img + img, my = key;
     sceneEl.classList.toggle("soft", !!soft);
+    var put = function () {
+      if (curScene !== my) return;
+      var lay = document.createElement("div"); lay.className = "sl"; lay.style.backgroundImage = "url(" + url + ")";
+      sceneEl.appendChild(lay);
+      requestAnimationFrame(function () { requestAnimationFrame(function () { lay.classList.add("on"); }); });
+      var olds = [].slice.call(sceneEl.querySelectorAll(".sl")).filter(function (x) { return x !== lay; });
+      setTimeout(function () { olds.forEach(function (x) { if (x.parentNode) x.parentNode.removeChild(x); }); }, 900);
+    };
+    var pre = new Image(), went = false, once = function () { if (!went) { went = true; put(); } };
+    pre.onload = pre.onerror = once; setTimeout(once, 1500); pre.src = url;
   }
   function renderVis(v, board, corner, force) {
     var key = JSON.stringify(v) + "|" + (corner || "");
@@ -680,11 +741,25 @@
   }
 
   /* ---------- 提醒专心（计时中自动，也可以随时点“提醒”） ---------- */
-  var NUDGES = L.nudges || [];
-  var nudgeNo = 0;
+  var NUDGE_SETS = {
+    write: L.nudges || [{ who: "qx", say: "嘿，你在认真写吗？" }, { who: "cg", say: "别走神，时间有限！" }, { who: "qx", say: "安静一点，大家都在写呢。" }, { who: "cg", say: "笔动起来！光看着，可写不出来。" }],
+    talk: L.nudgesTalk || [{ who: "qx", say: "说正事哦，只聊这道题。" }, { who: "cg", say: "声音小一点，同桌听见就够了。" }, { who: "qx", say: "两个人轮流说，别让一个人包场。" }, { who: "cg", say: "抓紧时间！说到好的，记得写下来。" }],
+    look: L.nudgesLook || [{ who: "cg", say: "眼睛看屏幕，跟上！" }, { who: "qx", say: "别走神，这里是重点。" }, { who: "cg", say: "嘿，回到课堂上来。" }]
+  };
+  var NUDGES = NUDGE_SETS.write, nudgeNo = { write: 0, talk: 0, look: 0 };
+  function allNudges() { return NUDGE_SETS.write.concat(NUDGE_SETS.talk, NUDGE_SETS.look); }
+  // 计时里是写还是说：timer.nudge 可以直接指定 "write"/"talk"；不写就看计时的标签
+  function nudgeKind(st) {
+    if (!st || !st.timer) return "look";
+    if (NUDGE_SETS[st.timer.nudge]) return st.timer.nudge;
+    var lb = st.timer.label || "";
+    if (/比划|看图|听/.test(lb) && !/写|订正/.test(lb)) return "look";
+    return /同桌补充|同桌猜|复述|说给|讨论|小组|交流|商量|口头|说一说|互相说/.test(lb) ? "talk" : "write";
+  }
   function nudge(token) {
-    if (!NUDGES.length) return;
-    var n = NUDGES[nudgeNo++ % NUDGES.length], st = STEPS[cur];
+    var st = STEPS[cur], kind = nudgeKind(st), set = NUDGE_SETS[kind];
+    if (!set || !set.length) return;
+    var n = set[nudgeNo[kind]++ % set.length];
     stopVoice(); spotlight(n.who); showLine(n.who, n.say); talking(n.who, true);
     say(n.who, voiceText(n), token).then(function () {
       if (token !== TOKEN) return; talking(n.who, false);
@@ -747,8 +822,38 @@
     if (!v) for (var j = n; j >= 0; j--) if (STEPS[j].vis) { v = STEPS[j].vis; break; }
     return { v: v, board: board, corner: corner, fanIn: fanIn };
   }
+  function linesOf(st) {   // 这一步会说的所有话（和 tools/proj_lines.js 一致）
+    var o = [], pr = promptOf(st), RD;
+    if (pr) o.push([pr.who, voiceText({ say: pr.text })]);
+    if (st.say) o.push([st.who, voiceText(st)]);
+    if (st.read) { RD = st.read.who || L.reader || LEAD; st.read.paras.forEach(function (pk) { L.paras[pk].forEach(function (s) { o.push([RD, voiceText({ say: s })]); }); }); }
+    if (st.respond) st.respond.opts.forEach(function (x) { o.push([x.who, voiceText(x)]); });
+    return o;
+  }
+  function prefetch(n) {
+    if (!soundOn) return;
+    for (var i = n; i < Math.min(STEPS.length, n + 4); i++) linesOf(STEPS[i]).forEach(function (x, j) {
+      var h = hash(x[0] + "|" + x[1]); if (!VOICE_IDX[h]) return;
+      if (i === n || j < 3) loadClip(h); else fetchRaw(h);
+    });
+  }
+  var warmed = false;
+  function warmAll() {   // 开课后在后台把整节课的录音按顺序下载好（每次 3 个），网慢时不卡
+    if (warmed) return; warmed = true;
+    var list = [];
+    STEPS.forEach(function (st) { linesOf(st).forEach(function (x) { list.push(hash(x[0] + "|" + x[1])); }); });
+    allNudges().forEach(function (x) { list.push(hash(x.who + "|" + voiceText(x))); });
+    list = list.filter(function (h, i) { return VOICE_IDX[h] && list.indexOf(h) === i; });
+    var k = Math.max(0, cur);
+    var start = 0; for (var i = 0; i < k; i++) start += linesOf(STEPS[i]).length;
+    list = list.slice(Math.min(start, list.length)).concat(list.slice(0, Math.min(start, list.length)));
+    var at = 0;
+    function one() { if (at >= list.length) return; var h = list[at++]; fetchRaw(h).then(one, one); }
+    one(); one(); one();
+  }
   function go(n) {
     if (n < 0 || n >= STEPS.length) return;
+    prefetch(n);
     TOKEN++; var token = TOKEN;
     stopVoice(); stopTimer(); clearTimeout(autoTimer);
     Object.keys(actors).forEach(function (k) { talking(k, false); });
@@ -900,6 +1005,7 @@
     try { if (actx && actx.state === "suspended") actx.resume(); } catch (e) {}
     loadVoices();
     go(Math.max(0, startAt));
+    setTimeout(warmAll, 1500);
   }
   setScene(L.scene || "tower.webp", false);
   var startAt = 0;

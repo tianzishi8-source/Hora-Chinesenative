@@ -31,7 +31,7 @@ function add(who, text) {
 function splitLong(st) {   // 太长的台词拆成几步（每步不超过约 56 字），对话框放得下；录音也按拆开后的句子录
   var MAX = 56;
   if (!st.say || st.v || st.say.length <= MAX) return [st];
-  var parts = st.say.split(/(?<=[。！？；])/), chunks = [], cur = "";
+  var parts = st.say.match(/[^。！？；]+[。！？；]*|[。！？；]+/g) || [st.say], chunks = [], cur = "";
   parts.forEach(function (p) { if (cur && (cur + p).length > MAX) { chunks.push(cur); cur = p; } else cur += p; });
   if (cur) chunks.push(cur);
   if (chunks.length < 2) return [st];
@@ -55,7 +55,11 @@ L.segments.forEach(sg => sg.steps.forEach(st0 => splitLong(resolveSent(st0)).for
   }
 })));
 // 计时中的提醒
-(L.nudges || []).forEach(n => add(n.who, voiceText(n)));
+// （和 proj.js 的 NUDGE_SETS 一致：写的时候 / 讨论的时候 / 没有计时的时候）
+const NUDGE_WRITE = L.nudges || [{ who: "qx", say: "嘿，你在认真写吗？" }, { who: "cg", say: "别走神，时间有限！" }, { who: "qx", say: "安静一点，大家都在写呢。" }, { who: "cg", say: "笔动起来！光看着，可写不出来。" }];
+const NUDGE_TALK = L.nudgesTalk || [{ who: "qx", say: "说正事哦，只聊这道题。" }, { who: "cg", say: "声音小一点，同桌听见就够了。" }, { who: "qx", say: "两个人轮流说，别让一个人包场。" }, { who: "cg", say: "抓紧时间！说到好的，记得写下来。" }];
+const NUDGE_LOOK = L.nudgesLook || [{ who: "cg", say: "眼睛看屏幕，跟上！" }, { who: "qx", say: "别走神，这里是重点。" }, { who: "cg", say: "嘿，回到课堂上来。" }];
+NUDGE_WRITE.concat(NUDGE_TALK, NUDGE_LOOK).forEach(n => add(n.who, voiceText(n)));
 // 点名：roster.js 里这个班的名字 × 点名句式（由主讲读）
 try {
   const rc = { window: {} };
