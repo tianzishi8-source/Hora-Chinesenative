@@ -463,3 +463,9 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 .tsum{margin:2px 0 6px;padding:4px 10px;border-radius:8px;font-weight:700;font-size:.9rem;display:inline-block}
 .thard{border:1px solid var(--line);border-radius:10px;padding:8px 14px;background:var(--page2)}.thard h4{margin:0 0 4px}.thard ol{margin:0;padding-left:1.4em}
 .tst dd .mk{display:inline;font-weight:700;font-size:.8rem}
+.tchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px}
+.tchip{font:inherit;font-size:.88rem;border:1px solid var(--line);border-radius:999px;padding:4px 12px;cursor:pointer;background:var(--page2)}
+.tchip.on{outline:2.5px solid var(--ink);font-weight:700}
+.tcount{align-self:center;color:var(--muted)}
+.tq .tans li{border:1px solid var(--line);border-radius:8px;padding:6px 10px;list-style:none;margin:6px 0 6px -1.2em;background:var(--page)}
+.tq .tans li>b{display:block;margin-bottom:2px}

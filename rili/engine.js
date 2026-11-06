@@ -73,7 +73,7 @@ function fill(str,extra){var out=String(str==null?"":str).replace(/\{([\w.]+)(?:
 
 /* ---- 学情 ---- */
 var OBS={},OBSORDER=[];
-function regObs(step,day){var o=step.obs;if(!o||OBS[o.id])return;var ml={};(step.misses||[]).forEach(function(m){if(m.id)ml[m.id]=m.label||m.text;});if(step.requireEnd)ml.noEnd=step.requireEnd.label||"没有按要求收尾";if(step.fallback)ml.other="点了其他不相关的句子";if(step.t==="layering"){ml.few="层分得太少";ml.many="层分得太密";ml.keyOut="关键句不在这一层";}if(step.options&&step.t==="mc")step.options.forEach(function(op,i){if(op.ok!==true&&!ml["o"+i])ml["o"+i]="选了“"+String(op.text||"").replace(/\{[a-z]+\}/g,"…").slice(0,40)+"”";});OBS[o.id]={id:o.id,label:o.label,skill:o.skill||"",day:day,misses:ml,kind:step.t,stance:!!step.stance,q:String(step.q||"").replace(/\{[a-z]+\}/g,"…").slice(0,80)};OBSORDER.push(o.id);}
+function regObs(step,day){var o=step.obs;if(!o||OBS[o.id])return;var ml={};(step.misses||[]).forEach(function(m){if(m.id)ml[m.id]=m.label||m.text;});if(step.requireEnd)ml.noEnd=step.requireEnd.label||"没有按要求收尾";if(step.fallback)ml.other="点了其他不相关的句子";if(step.t==="layering"){ml.few="层分得太少";ml.many="层分得太密";ml.keyOut="关键句不在这一层";}if(step.options&&step.t==="mc")step.options.forEach(function(op,i){if(op.ok!==true&&!ml["o"+i])ml["o"+i]="选了“"+String(op.text||"").replace(/\{[a-z]+\}/g,"…").slice(0,40)+"”";});OBS[o.id]={id:o.id,label:o.label,skill:o.skill||"",day:day,misses:ml,kind:step.t,stance:!!step.stance,q:String(step.q||"").replace(/\{[^}|]*\|([^}]*)\}/g,"$1").replace(/\{[^}]*\}/g,"…").slice(0,80)};OBSORDER.push(o.id);}
 function logStep(obs,patch){if(!obs)return;if(patch&&patch.answer!=null&&S.data._dr&&typeof task!=="undefined"){try{delete S.data._dr[draftSig()];}catch(e){}}var r=S.log[obs.id]||{tries:0,misses:{}};if(patch.try)r.tries++;if(patch.miss){r.misses[patch.miss]=(r.misses[patch.miss]||0)+1;}if(patch.answer!=null){r.answer=patch.answer;r.at=new Date().toISOString();}if(patch.ai!=null)r.ai=patch.ai;S.log[obs.id]=r;}
 
 /* ---- 作答存哪里：BK（后台）有三种
@@ -828,6 +828,19 @@ function tDayStat(d,n){var g=0,ok=0,w=0,wl=0;OBSORDER.forEach(function(id){var o
 function tLevel(ok,g){if(!g)return "";var p=ok/g;return p>=.8?"lv-good":p>=.5?"lv-mid":"lv-low";}
 function tDayCell(d,n){var dy=DAYS[n-1],done=d.done&&d.done[n],b=d.beat&&d.beat[n]!=null?Math.max(d.beat[n],(d.reach||{})[n]||0):null;return done?"✓":b!=null?(Math.min(b+1,dy.beats.length)+"/"+dy.beats.length):"";}
 function tMissText(o,r){return Object.keys((r&&r.misses)||{}).map(function(k){return (o.misses&&o.misses[k])||k;}).join("；");}
+function tTot(d){var t={g:0,ok:0,w:0,wl:0};DAYS.forEach(function(dy,i){var st=tDayStat(d,i+1);t.g+=st.g;t.ok+=st.ok;t.w+=st.w;t.wl+=st.wl;});return t;}
+function tCopy(b,txt,out){var old=b.textContent;function done(m){b.textContent=m;setTimeout(function(){b.textContent=old;},2500);if(out)out.textContent=m==="已复制"?"已复制。打开你自己的 Claude，粘贴进去，发送。":txt;}try{navigator.clipboard.writeText(txt).then(function(){done("已复制");},function(){done("复制不了，请手动选中下面的文字");});}catch(e){done("复制不了，请手动选中下面的文字");}}
+/* 给 Claude 看的一个学生的全部作答：按天，标明哪些是选择题（网页给的选项）、哪些是自己写的，最后是课后作业 */
+function tText(d){var out=["【学生："+(d.name||"未写名字")+(d._cls?"（"+d._cls+"）":"")+"】进度："+progressText(d)],tot=tTot(d);out.push("选择题一次答对 "+tot.ok+"/"+tot.g+"；自己写了 "+tot.w+" 段");var lastDay=0;
+  OBSORDER.forEach(function(id){var o=OBS[id],r=(d.log||{})[id];if(!r||(r.answer==null&&!tMiss(r)))return;if(o.day!==lastDay){lastDay=o.day;out.push("— 第"+o.day+"天 课上（"+((DAYS[o.day-1]||{}).title||"")+"）");}
+    if(tGrad(o))out.push("［选择题］"+o.label+"："+(tFirst(r)?"一次答对":"答错过（"+tMissText(o,r)+"）"+(r.answer==null?"，还没做对":"")));
+    else if(o.kind==="mc")out.push("［表态，选项是网页给的］"+o.label+"：选了“"+r.answer+"”");
+    else out.push("［自己写］"+o.label+(o.q?"（题目："+o.q+"）":"")+"："+r.answer);});
+  var hw=(d.data||{}).hw||{};Object.keys(hw).forEach(function(k){var o=hw[k];out.push("— 第"+k+"天 课后作业（在家写，交上来的）："+(o.text||"（只交了照片）")+((o.photos||[]).length?"［另有照片 "+o.photos.length+" 张］":""));});
+  var dr=(d.data||{})._dr||{};Object.keys(dr).forEach(function(k){var o=dr[k],v=(o.v||[]).filter(function(x){return x&&String(x).trim();});if(v.length)out.push("［写了一半没交的草稿］"+(o.q||"")+"："+v.join(" / "));});
+  return out.join("\n");}
+function STUDENT_PROMPT(nm){return "你是一位初中语文老师的助手。下面是学生 "+nm+" 在网页上学"+L.author+"《"+L.textTitle+"》这个单元的全部记录：课上作答（标了［选择题］［表态］［自己写］）和课后作业。［选择题］［表态］里的文字是网页给的选项，不是学生自己写的；只有［自己写］和课后作业是学生的文字。\n请写一份只给老师看的个性化诊断，用简洁的中文，不用 Markdown 符号，600 字以内：\n一、总体水平：阅读理解、把握结构、理解修辞（比喻）、写作表达四方面，各用一两句判断，并引学生原话做依据；\n二、强项；\n三、主要问题和误解（具体到哪一天哪一题）；\n四、课上自己写的和课后作业，文风和水平是否一致；如果落差很大或有明显借助工具、抄参考答案的迹象，只列出迹象和依据，不下结论，并给一个可以当面问他、一问就能核实的问题；\n五、给这个学生的下一步建议两三条，要具体可做。";}
+function CLASS_PROMPT(){return "你是一位初中语文老师的助手。下面是一个班的学生在网页上学"+L.author+"《"+L.textTitle+"》这个单元的记录，每个学生之间用 ========== 隔开，名字写在每段开头。［选择题］［表态］里的文字是网页给的选项，不是学生写的；只有［自己写］和课后作业是学生的文字。\n请按学生逐个写诊断，每人一段，开头写名字，再写：水平（好 / 中 / 需要帮助）和一句理由；最突出的优点；最需要补的一点（具体到哪一天哪一题）；课上自己写的和课后作业文风水平是否一致，有落差就列出依据（不下结论）。每人 120 字以内。\n全部写完后，再写全班部分：大多数人已经掌握的；普遍的卡点和误解（举一两句原话，说是谁的）；下节课最值得讲的两三点。不用 Markdown 符号。";}
 function paintT(){var sh=$("#teacherSheet");sh.innerHTML="";sh.classList.add("teach");var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);
   sh.append(x,el("h3",{text:"学生作答"}),el("p",{class:"note",style:"margin:0",text:(BK.mode==="sheet"?"只有知道老师密码的人看得到这里":"只有老师（编辑者）看得到这里")+"，学生之间互相看不到。现在 "+tDocs.length+" 人。"}));
   var tabs=el("div",{class:"tabs"});[["class","全班一览"],["q","按题看"],["each","每个学生"],["hw","作业"],["sum","课后小结"]].forEach(function(t){var b=el("button",{type:"button","aria-pressed":String(tTab===t[0]),text:t[1]});b.addEventListener("click",function(){tTab=t[0];paintT();});tabs.append(b);});sh.append(tabs);
@@ -876,23 +889,28 @@ function paintT(){var sh=$("#teacherSheet");sh.innerHTML="";sh.classList.add("te
       if(mk.length){var m=el("div",{class:"miss"});mk.forEach(function(k){m.append(el("div",{},[el("b",{text:mc[k]+"人"}),el("span",{text:o.misses[k]||k})]));});c.append(m);}
       list.append(c);});
     var asked=tDocs.filter(function(d){return (d.chats||[]).length;});list.append(el("p",{class:"note",text:"用过“聊一聊”的学生："+asked.length+" 人，共 "+tDocs.reduce(function(a,d){return a+(d.chats||[]).length;},0)+" 次。问了什么见“每人作答”。"}));}
-  else if(tTab==="each"){var cp=el("button",{class:"ghost",type:"button",text:"复制全部"});list.append(cp);var all=[];
-    var tsel=el("select",{"aria-label":"看哪个学生"});tsel.append(el("option",{value:"",text:"全部学生"}));sorted.forEach(function(d){var o3=el("option",{value:d._id||d.name,text:NAME(d)});if((d._id||d.name)===tFocus)o3.selected=true;tsel.append(o3);});tsel.addEventListener("change",function(){tFocus=tsel.value;paintT();});list.append(el("div",{class:"row"},[tsel,cp]));
-    var focusDocs=sorted.filter(function(d){return !tFocus||(d._id||d.name)===tFocus;});if(!focusDocs.length)focusDocs=sorted;
-    focusDocs.forEach(function(d){var c=el("div",{class:"tst"});c.append(el("h4",{text:NAME(d)+"　· 进度："+progressText(d)}));var tot={g:0,ok:0,w:0,wl:0};DAYS.forEach(function(dy,i){var st=tDayStat(d,i+1);tot.g+=st.g;tot.ok+=st.ok;tot.w+=st.w;tot.wl+=st.wl;});
+  else if(tTab==="each"){
+    /* 一次只看一个学生：上面一排名字，点谁看谁；上一个 / 下一个 */
+    var idx=0;sorted.forEach(function(d,i){if((d._id||d.name)===tFocus)idx=i;});var d=sorted[idx];tFocus=d._id||d.name;
+    var chips=el("div",{class:"tchips"});sorted.forEach(function(x,i){var tot=tTot(x);var c2=el("button",{type:"button",class:"tchip "+tLevel(tot.ok,tot.g)+(i===idx?" on":""),text:x.name||"未写名字"});c2.addEventListener("click",function(){tFocus=x._id||x.name;paintT();});chips.append(c2);});list.append(chips);
+    var prev=el("button",{class:"ghost",type:"button",text:"← 上一个"}),next=el("button",{class:"ghost",type:"button",text:"下一个 →"});prev.disabled=idx===0;next.disabled=idx===sorted.length-1;prev.addEventListener("click",function(){tFocus=sorted[idx-1]._id||sorted[idx-1].name;paintT();});next.addEventListener("click",function(){tFocus=sorted[idx+1]._id||sorted[idx+1].name;paintT();});
+    var cp1=el("button",{class:"ghost",type:"button",text:"复制这个学生，拿去 Claude 诊断"});cp1.addEventListener("click",function(){tCopy(cp1,STUDENT_PROMPT(d.name)+"\n\n"+tText(d));});
+    list.append(el("div",{class:"row"},[prev,el("b",{class:"tcount",text:(idx+1)+" / "+sorted.length}),next,cp1]));
+    var c=el("div",{class:"tst"});c.append(el("h4",{text:NAME(d)+"　· 进度："+progressText(d)}));var tot=tTot(d);
       c.append(el("p",{class:"tsum "+tLevel(tot.ok,tot.g),text:"选择题一次答对 "+tot.ok+"/"+tot.g+(tot.g?"（"+Math.round(tot.ok/tot.g*100)+"%）":"")+"　· 写了 "+tot.w+" 段，平均每段 "+(tot.w?Math.round(tot.wl/tot.w):0)+" 字"}));var dl=el("dl"),lastDay=0;
       OBSORDER.forEach(function(id){var o=OBS[id],r=(d.log||{})[id];if(!r||(r.answer==null&&!tMiss(r)))return;if(o.day!==lastDay){lastDay=o.day;var st=tDayStat(d,o.day);dl.append(el("dt",{class:"tdh",text:"第 "+o.day+" 天"}),el("dd",{class:"tdh",text:(DAYS[o.day-1]||{}).title+(st.g?"　· 选择题一次对 "+st.ok+"/"+st.g:"")+(st.w?"　· 写了 "+st.w+" 段":"")}));}
         var mark=tGrad(o)?(tFirst(r)?"✓ 一次对":"✗ 错过（"+tMissText(o,r)+"）"+(r.answer==null?"，还没做对":"")):"";
         dl.append(el("dt",{text:o.label}),el("dd",{class:tGrad(o)?(tFirst(r)?"ok":"bad"):""},[el("span",{text:r.answer!=null?String(r.answer):""}),mark?el("small",{class:"mk",text:"　"+mark}):""]));});
-      var hw=(d.data||{}).hw||{};Object.keys(hw).forEach(function(k){var o=hw[k],dd=el("dd",{text:(o.text||"")+" "});(o.photos||[]).forEach(function(ph,i){if(ph.url)dd.append(el("a",{href:ph.url,target:"_blank",rel:"noopener",text:"照片"+(i+1)})," ");});dl.append(el("dt",{text:"第"+k+"天作业"}),dd);});
+      var hw=(d.data||{}).hw||{};if(Object.keys(hw).length)dl.append(el("dt",{class:"tdh",text:"课后作业"}),el("dd",{class:"tdh",text:"交了 "+Object.keys(hw).length+" 份"}));Object.keys(hw).forEach(function(k){var o=hw[k],dd=el("dd",{text:(o.text||"")+" "});(o.photos||[]).forEach(function(ph,i){if(ph.url)dd.append(el("a",{href:ph.url,target:"_blank",rel:"noopener",text:"照片"+(i+1)})," ");});dl.append(el("dt",{text:"第"+k+"天作业"}),dd);});
       if((d.chats||[]).length)dl.append(el("dt",{text:"聊一聊"}),el("dd",{text:d.chats.map(function(m){return "问"+(PEOPLE[m.who]?PEOPLE[m.who].name:"")+"："+m.q;}).join("\n")}));
-      c.append(dl);if(d._id&&tShares[d._id]){var down=el("button",{class:"ghost",type:"button",text:"从同学互看中撤下TA的作答"});down.addEventListener("click",function(){BK.teacherHide(d._id).then(function(){down.textContent="已撤下";down.disabled=true;}).catch(function(){down.textContent="没撤下，请再试";});});c.append(el("div",{class:"row",style:"margin-top:6px"},[down]));}list.append(c);all.push(studentText(d));});
-    cp.addEventListener("click",function(){var txt=all.join("\n\n");try{navigator.clipboard.writeText(txt).then(function(){cp.textContent="已复制";},function(){cp.textContent="复制不了，请手动选中";});}catch(e){cp.textContent="复制不了，请手动选中";}});}
-  else{var go=btn(tSum?"重新生成":(BK.mode==="sheet"?"复制作答，拿去 Claude 生成小结":"生成全班小结"));var out=el("div",{class:"sumout",text:tSum||"根据全班作答，写一份只给老师看的小结：大家普遍读懂了什么、卡在哪里、有哪些值得在下节课拿出来讨论的说法。不点名评价，不排名。"});list.append(el("div",{class:"row"},[go]),out);
-    go.addEventListener("click",function(){getSample().then(function(sm){if(!sm){var body0=tDocs.map(function(d,i){return studentText(d).replace(/^[^\n]*/,"学生"+(i+1));}).join("\n\n");var txt0=SUMMARY_PROMPT()+"\n\n"+body0;try{navigator.clipboard.writeText(txt0).then(function(){out.textContent="这里没有 AI。已经把全班作答（去掉姓名）和写小结的要求复制好了：打开你自己的 Claude，粘贴进去就能生成小结。";},function(){out.textContent=txt0;});}catch(e){out.textContent=txt0;}return;}go.disabled=true;out.textContent="正在读全班的作答……";
-      var body=tDocs.map(function(d,i){return studentText(d).replace(/^[^\n]*/,"学生"+(i+1));}).join("\n\n");
-      var p=SUMMARY_PROMPT()+"\n\n"+body;if(0)p="你是一位初中语文老师的助手。下面是一个班的学生在网页上读"+L.author+"《"+L.textTitle+"》时的作答（已去掉姓名）。请用简洁的现代汉语，给老师写一份课后小结，分三部分：一、大多数学生已经做到的；二、普遍的卡点和误解，各举一两句学生原话；三、下节课值得拿出来讨论的两三个说法。不评价个人、不排名、不打分，不超过400字，不用Markdown符号。\n\n"+body;
-      sm(p,{modelTier:"default",cache:false,onText:function(o){out.textContent=o.text;}}).then(function(r){tSum=r.text;out.textContent=tSum;}).catch(function(e){out.textContent=e&&e.code==="rate_limited"?"现在用的人太多，等一会儿再试。":"这次没生成成功，可以再试一次。";}).then(function(){go.disabled=false;go.textContent="重新生成";});});});}}finally{tDocs=allDocs;}}
+      c.append(dl);if(d._id&&tShares[d._id]){var down=el("button",{class:"ghost",type:"button",text:"从同学互看中撤下TA的作答"});down.addEventListener("click",function(){BK.teacherHide(d._id).then(function(){down.textContent="已撤下";down.disabled=true;}).catch(function(){down.textContent="没撤下，请再试";});});c.append(el("div",{class:"row",style:"margin-top:6px"},[down]));}list.append(c);
+    var bot=el("div",{class:"row"},[prev.cloneNode(true),next.cloneNode(true)]);bot.children[0].disabled=prev.disabled;bot.children[1].disabled=next.disabled;bot.children[0].addEventListener("click",function(){prev.click();});bot.children[1].addEventListener("click",function(){next.click();});list.append(bot);}
+  else{
+    list.append(el("p",{class:"note",text:"这里没有 AI。按下面的按钮，会把作答（带名字，按学生分开，课上作答和课后作业都在）连同诊断要求一起复制好；打开你自己的 Claude，粘贴进去就行。名字只在你自己的对话里出现。"}));
+    var cpAll=btn("复制：全班逐人诊断"),out=el("div",{class:"sumout"});
+    cpAll.addEventListener("click",function(){var body=sorted.map(tText).join("\n\n==========\n\n");tCopy(cpAll,CLASS_PROMPT()+"\n\n"+body,out);});
+    var cpOne=el("button",{class:"ghost",type:"button",text:"只诊断一个学生：去“每个学生”页"});cpOne.addEventListener("click",function(){tTab="each";paintT();});
+    list.append(el("div",{class:"row"},[cpAll,cpOne]),out);}}finally{tDocs=allDocs;}}
 
 /* 测试与演示用：预览老师端、打开老师模式 */
 window.HORA.previewTeacher=function(docs){tDocs=docs;$("#ovTeacher").hidden=false;paintT();};
