@@ -469,3 +469,12 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 .tcount{align-self:center;color:var(--muted)}
 .tq .tans li{border:1px solid var(--line);border-radius:8px;padding:6px 10px;list-style:none;margin:6px 0 6px -1.2em;background:var(--page)}
 .tq .tans li>b{display:block;margin-bottom:2px}
+
+/* 练习目录 */
+.pxlist{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.pxrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid rgba(120,90,60,.25);background:#fffaf2;font:inherit;text-align:left;cursor:pointer}
+.pxrow b{font-size:1.05em}
+.pxrow span{font-size:.88em;color:#7a6650}
+.pxrow.cur{border-color:#b8432f;box-shadow:0 0 0 2px rgba(184,67,47,.18)}
+.pxrow.lock{opacity:.5;cursor:default}
+#bPx.due{background:#b8432f;color:#fff}
