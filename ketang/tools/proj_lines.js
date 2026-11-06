@@ -5,6 +5,14 @@ const file = process.argv[2];
 const ctx = { window: {} };
 vm.runInNewContext(fs.readFileSync(file, "utf8"), ctx);
 const L = ctx.window.PROJ_LESSON;
+// 逐句翻译库（步骤里 sent:"p1-1" 的台词取自这里，和 proj.js 一样）
+let SENTS = [];
+try { const sc = { window: {} }; vm.runInNewContext(fs.readFileSync(require("path").join(require("path").dirname(file), "../yueyanglou-ke/data/sents.js"), "utf8"), sc); SENTS = sc.window.YK_SENTS || []; } catch (e) {}
+function resolveSent(st) {
+  if (!st.sent) return st;
+  const x = SENTS.find(y => y.id === st.sent);
+  return Object.assign({}, st, { say: (st.pre || "") + (x ? (st.part === "src" ? x.src : x.tr) : "（缺句子 " + st.sent + "）") + (st.post || "") });
+}
 
 function voiceText(st) {
   let t = (st.v || st.say || "").replace(/（[^）]*）/g, "");
@@ -36,7 +44,7 @@ function splitLong(st) {   // 太长的台词拆成几步（每步不超过约 5
     o.say = c; return o;
   });
 }
-L.segments.forEach(sg => sg.steps.forEach(st0 => splitLong(st0).forEach(st => {
+L.segments.forEach(sg => sg.steps.forEach(st0 => splitLong(resolveSent(st0)).forEach(st => {
   if (st.say) add(st.who, voiceText(st));
   if (st.read) st.read.paras.forEach(pk => L.paras[pk].forEach(s => add(st.read.who || L.reader || L.lead || "fan", voiceText({ say: s }))));
   if (st.respond) st.respond.opts.forEach(o => add(o.who, voiceText(o)));

@@ -31,9 +31,17 @@
       o.say = c; return o;
     });
   }
+  // 读逐句翻译库里的句子：步骤写 sent:"p1-1", part:"src"|"tr"（默认 tr），pre/post 可在前后加话；台词就是库里的原文或译文，库改了台词跟着改
+  function resolveSent(st) {
+    if (!st.sent) return st;
+    var x = (window.YK_SENTS || []).filter(function (y) { return y.id === st.sent; })[0];
+    var o = {}; Object.keys(st).forEach(function (k) { o[k] = st[k]; });
+    o.say = (st.pre || "") + (x ? (st.part === "src" ? x.src : x.tr) : "（缺句子 " + st.sent + "）") + (st.post || "");
+    return o;
+  }
   L.segments.forEach(function (sg, si) {
     SEGSTART.push(STEPS.length);
-    sg.steps.forEach(function (st0) { splitLong(st0).forEach(function (st) { st._seg = si; if (st.id) IDS[st.id] = STEPS.length; STEPS.push(st); }); });
+    sg.steps.forEach(function (st0) { splitLong(resolveSent(st0)).forEach(function (st) { st._seg = si; if (st.id) IDS[st.id] = STEPS.length; STEPS.push(st); }); });
   });
 
   /* ---------- 画布与缩放 ---------- */
