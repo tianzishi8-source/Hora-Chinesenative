@@ -40,12 +40,16 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
 </main>
 <script>
 (function () {
-  var LIST = [["yyl-1","岳阳楼记 1"],["yyl-2","2"],["yyl-3","3"],["yyl-4","4"],["yyl-5","5"],["yyl-6","6"],["yyl-7","7"],["yyl-8","8"],["yyl-9","9"],["yyl-10","10"],["jp-g9-1","试卷讲评"],["jp-g9-2","作文讲评"]];
+  var LIST = [["yyl-1","岳阳楼记 1"],["yyl-2","2"],["yyl-3","3"],["yyl-4","4"],["yyl-5","5"],["yyl-6","6"],["yyl-7","7"],["yyl-8","8"],["yyl-9","9"],["yyl-10","10"],["yyl-11","11"],["jp-g9-1","试卷讲评"],["jp-g9-2","作文讲评"]];
   var cur = (location.search.match(/l=([\w-]+)/) || [])[1] || "yyl-1";
   document.getElementById("nav").innerHTML = LIST.map(function (x) { return '<a href="?l=' + x[0] + '"' + (x[0] === cur ? ' class="on"' : "") + ">" + x[1] + "</a>"; }).join("");
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
   var MK = function (t) { return esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/~~(.+?)~~/g, "<s>$1</s>").replace(/__(.+?)__/g, "<u>$1</u>").replace(/\[\[(.+?)\]\]/g, "<mark>$1</mark>").replace(/^原：/, "【原文】").replace(/^译：/, "【译文】").replace(/^改：/, "【示范】"); };
   var CUE = { call: "点名回答", say: "全班一起说", hand: "举手", stand: "站队", gesture: "比划", "catch": "抓错", race: "比赛读" };
+  // 逐句翻译库：步骤里 sent:"p1-1"（part:"src" 原文，默认译文）和对译卡 pair 从这里取句子，和投屏一致
+  var ss = document.createElement("script"); ss.src = "../yueyanglou-ke/data/sents.js?t=" + Date.now();
+  ss.onload = ss.onerror = function () { document.body.appendChild(s); };
+  var SENT = function (id) { return (window.YK_SENTS || []).filter(function (y) { return y.id === id; })[0]; };
   var s = document.createElement("script");
   s.src = cur + ".js?t=" + Date.now();
   s.onerror = function () { document.getElementById("out").textContent = "这一节还没有做好。"; };
@@ -55,7 +59,9 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
     L.segments.forEach(function (sg, i) {
       total += sg.min || 0;
       h += "<h2>" + (i + 1) + "　" + esc(sg.t) + "<small>" + (sg.min || "?") + " 分钟</small></h2>";
-      sg.steps.forEach(function (st) {
+      sg.steps.forEach(function (st0) {
+        var st = st0;
+        if (st0.sent) { var x0 = SENT(st0.sent); st = {}; Object.keys(st0).forEach(function (k) { st[k] = st0[k]; }); st.say = (st0.pre || "") + (x0 ? (st0.part === "src" ? x0.src : x0.tr) : "（缺句子 " + st0.sent + "）") + (st0.post || ""); }
         var v = st.vis;
         if (v) {
           if (v.type === "card") {
@@ -64,6 +70,9 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
             if (v.q) h += '<div class="q">' + v.q.map(function (x) { return x ? "<p>" + MK(x) + "</p>" : ""; }).join("") + "</div>";
             if (v.ans) h += '<div class="a">' + esc(v.tag || "答案") + "：" + v.ans.map(MK).join("　") + "</div>";
             h += "</div>";
+          } else if (v.type === "pair") {
+            var md = { learn: "对译", test: "只出原文，学生写译文", check: "原文＋译文＋翻译方法" }[v.mode || "learn"];
+            h += '<div class="box"><b class="t">屏幕对译卡（' + md + "）　" + esc(v.title || "") + "</b>" + (v.ids || []).map(function (id) { var x = SENT(id); return x ? "<p>" + esc(id) + "　" + esc(x.src) + (v.mode === "test" ? "" : "<br>　" + esc(x.tr)) + "</p>" : "<p>（缺句子 " + esc(id) + "）</p>"; }).join("") + (v.foot ? "<p>" + esc(v.foot) + "</p>" : "") + "</div>";
           } else if (v.type === "text") {
             h += '<div class="box"><b class="t">屏幕原文</b>　' + (v.paras || []).map(function (p) { return "第" + p.slice(1) + "段"; }).join("、") + (v.mark ? "　标出：" + esc(v.mark.join("、")) : "") + "</div>";
           } else {
@@ -83,7 +92,7 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
     document.title = L.title + " " + (L.short || "") + " · 课堂剧本";
     document.getElementById("out").innerHTML = "<h1>" + esc(L.title) + "</h1><p class='sub'>" + esc(L.sub || "") + "</p><p class='meta'>共 " + L.segments.length + " 个环节，" + total + " 分钟。主讲：" + esc(name(L.lead || "fan")) + "。本页由投屏配置自动生成，与投屏逐句一致；可直接打印。</p>" + h;
   };
-  document.body.appendChild(s);
+  document.body.appendChild(ss);
 })();
 </script>
 </body>
