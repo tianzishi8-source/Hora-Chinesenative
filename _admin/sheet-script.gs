@@ -277,7 +277,7 @@ function hwRows(lesson) {
   const sh = sheet('作业');
   if (sh.getLastRow() < 2) return [];
   const v = sh.getRange(2, 1, sh.getLastRow() - 1, 14).getValues();
-  return v.filter(r => r[1] === lesson).map(r => ({ sid: String(r[0]).split('|')[0], day: Number(r[5]) || 0, note: String(r[10] || ''), status: String(r[11] || ''), appeal: String(r[12] || ''), history: String(r[13] || '') }));
+  return v.filter(r => r[1] === lesson).map(r => ({ sid: String(r[0]).split('|')[0], day: Number(r[5]) || 0, cls: String(r[3] || ''), name: String(r[4] || ''), text: String(r[7] || ''), photos: String(r[8] || ''), at: r[9] instanceof Date ? r[9].toISOString() : String(r[9] || ''), note: String(r[10] || ''), status: String(r[11] || ''), appeal: String(r[12] || ''), history: String(r[13] || '') }));
 }
 
 function hwStatus(me) {
