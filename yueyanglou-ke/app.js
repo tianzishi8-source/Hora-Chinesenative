@@ -12,7 +12,7 @@
 var SITE = window.HORA_SITE || {}, HOME = SITE.home || "../";
 var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11062300";
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11062240";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -228,11 +228,9 @@ function storyList() {
  * 场景图：有 img/scene-{bg}.webp 就用（启动时探一下），没有就用 scene.js 画的替代画面。 */
 var IMG = { lake: "lake", "rain-lake": "rain", "spring-lake": "spring", "moon-lake": "moon", tower: "tower", map: "map", bi: "bi" };
 var LEGACY = { rain: "rain-yard", sunny: "yard", spring: "spring-lake", moon: "moon-lake" };
-var SCENE_KEYS = ["study", "yard", "rain-yard", "harvest", "night", "hill", "gate"], SCENE_IMG = {};
+var SCENE_KEYS = ["study", "study-rain", "yard", "rain-yard", "harvest", "night", "hill", "gate"], SCENE_IMG = {};
 // 11-06：七张真图都已放进 img/，直接用（同时预载）；万一某张缺了，加载失败就退回画的场景
-function probeScenes() { SCENE_KEYS.forEach(function (k) { var u = "img/scene-" + k + ".webp?v=" + VER, im = new Image(); SCENE_IMG[k] = u; im.onerror = function () { delete SCENE_IMG[k]; }; im.src = u; });
-  // 雨天书房：图还没放进来时，用“从窗里看雨”的 rain-yard 代替；放进来后自动换上
-  var r = new Image(); r.onload = function () { SCENE_IMG["study-rain"] = r.src; }; r.src = "img/scene-study-rain.webp?v=" + VER; }
+function probeScenes() { SCENE_KEYS.forEach(function (k) { var u = "img/scene-" + k + ".webp?v=" + VER, im = new Image(); SCENE_IMG[k] = u; im.onerror = function () { delete SCENE_IMG[k]; }; im.src = u; }); }
 var CAM = { still: ["scale(1.05)", "scale(1.06)"], push: ["scale(1.02)", "scale(1.16)"], pull: ["scale(1.17)", "scale(1.03)"],
   panL: ["translateX(-4%) scale(1.12)", "translateX(4%) scale(1.12)"], panR: ["translateX(4%) scale(1.12)", "translateX(-4%) scale(1.12)"],
   up: ["translateY(-4.5%) scale(1.12)", "translateY(4.5%) scale(1.12)"], down: ["translateY(4.5%) scale(1.12)", "translateY(-4.5%) scale(1.12)"] };
@@ -244,7 +242,7 @@ function normShot(s) {
   // 11-06：书房那张图窗外是晴天，下雨的戏不能用它
   if (o.bg === "study" && o.tone === "rain") {
     o.fx = o.fx.filter(function (f) { return f !== "dust" && f !== "light"; });
-    if (SCENE_IMG["study-rain"]) o.bg = "study-rain";
+    if (SCENE_IMG["study-rain"]) { o.bg = "study-rain"; o.tone = ""; }
     else { o.bg = "rain-yard"; o.tone = ""; if (o.fx.indexOf("rain") < 0) o.fx.push("rain"); }
   }
   o.fan = /^(near|mid|far)$/.test(o.fan) ? o.fan : "off"; o.side = /^[lcr]$/.test(o.side) ? o.side : "c";
