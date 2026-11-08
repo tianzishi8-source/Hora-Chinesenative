@@ -616,6 +616,8 @@ function playChapter(id) {
  * cfg.feedback：练一练每题后立刻显示对错；测验不显示，做完一起看。 */
 function runner(cfg) {
   var items = cfg.items, idx = 0, res = [], t0 = 0, tick = null, alive = true, autoT = null;
+  // 11-08 学生反馈：打字的题（填空、接下句）时间不够，一律至少 90 秒
+  items.forEach(function (it) { if (it.type === "fill" && (it.sec || 0) < 90) it.sec = 90; });
   var c0 = cleanup; cleanup = function () { alive = false; clearInterval(tick); clearTimeout(autoT); if (c0) c0(); };
   page('<div class="runner"><div class="rhead"><b>' + esc(cfg.title) + '</b><span id="rNo"></span></div><div class="timer" id="timer"><div class="bar"><i id="tBar"></i></div><span id="tSec"></span></div><div id="rBody"></div><div id="rFb"></div></div>', cfg.back);
   var body = $("#rBody"), fb = $("#rFb");
