@@ -21,7 +21,7 @@ window.YK_TEACHER = function (o) {
       loading = false;
       ROWS = (j.rows || []).map(function (r) { var d = r.payload || {}; d._sid = r.sid; d.name = d.name || r.name; d.cls = d.cls || r.cls; return d; })
         .sort(function (a, b) { return String(a.cls || "").localeCompare(String(b.cls || "")) || String(a.name).localeCompare(String(b.name), "zh"); });
-      paint(); loadAccts(p);
+      loadAccts(p); paint();
     }).catch(function (e) {
       loading = false;
       if (e && e.code === "pw") { try { sessionStorage.removeItem("hora-tpw"); } catch (x) {} err = "老师密码不对。"; ROWS = null; return ask(); }
@@ -41,6 +41,7 @@ window.YK_TEACHER = function (o) {
   }
   function loadAccts(p) {
     if (acctAsked) return; acctAsked = true;
+    var RN = window.HORA_ROSTER_NAMES || {}; Object.keys(RN).forEach(function (c) { (RN[c] || []).forEach(function (n) { addAcct(c, n); }); });
     o.api("t_roster", { pw: p }).then(function (j) { (j.rows || []).forEach(function (r) { addAcct(r.cls, r.name); }); }).catch(function () {});
     (o.otherLessons || []).forEach(function (lid) { o.api("t_all", { pw: p, lesson: lid }).then(function (j) { (j.rows || []).forEach(function (r) { addAcct(r.cls, r.name); }); }).catch(function () {}); });
   }

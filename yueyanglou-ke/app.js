@@ -895,7 +895,7 @@ function boot() {
   ME = { cls: String(ss.cls || "").replace(/\s+/g, "").toUpperCase(), name: String(ss.name || "").replace(/\s+/g, " ").trim(), pin: String(ss.pin) };
   KEY = "hora-" + LID + (SAMPLE ? "-sample" : "") + (TEACH ? "-teacher" : "") + "-" + ME.cls + "|" + ME.name; loadLocal();
   app.innerHTML = '<p class="loading">正在打开……</p>';
-  Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("voice/index.js"), TEACH ? loadScript("../ke/teacher.js?v=11082040") : true, TEACH ? loadScript("../lessons.js?v=" + Date.now()) : true]).then(function () {
+  Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("voice/index.js"), TEACH ? loadScript("../ke/teacher.js?v=11082110") : true, TEACH ? loadScript("../lessons.js?v=" + Date.now()) : true, TEACH ? loadScript("../roster-names.js?v=" + Date.now()) : true]).then(function () {
     TEXT = window.YK_TEXT || null; STORY = Array.isArray(window.YK_STORY) ? window.YK_STORY : []; WORDS = Array.isArray(window.YK_WORDS) ? window.YK_WORDS : []; TESTS = Array.isArray(window.YK_TESTS) ? window.YK_TESTS : [];
     VOICE = window.YK_VOICE || window.PROJ_VOICE || {}; VOICE_V = window.YK_VOICE_V || window.PROJ_VOICE_V || "";
     probeScenes(); addEventListener("hashchange", route); route();
