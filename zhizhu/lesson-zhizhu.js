@@ -560,9 +560,9 @@ days:[
 {title:"轮到你当观察者",bg:"img/bg-1.webp",short:"我的观察",beats:[
  {title:"你看见了什么",mood:"calm",steps:[
   {t:"say",who:"ba",text:"{name}，最后一天，轮到你了。上次让你去看一样活的东西。你看了什么？"},
-  {t:"choose",key:"z7.obj",q:"你观察的是什么？",echo:"我观察的是{z7.obj}。",options:["一只蚂蚁","一只蜘蛛","一株植物","家里的宠物","窗外的鸟","一只虫子"],ph:"也可以自己写",obs:{id:"z7-obj",label:"观察对象",skill:"写作选材"}},
+  {t:"choose",key:"z7d.obj",q:"你观察的是什么？",echo:"我观察的是{z7d.obj}。",options:["一只蚂蚁","一只蜘蛛","一株植物","家里的宠物","窗外的鸟","一只虫子"],ph:"也可以自己写",obs:{id:"z7-obj",label:"观察对象",skill:"写作选材"}},
   {t:"say",who:"ba",text:"课本上问过：写动物，为什么会觉得没话可说？我的答案是：因为没好好看。今天你先把看见的写下来，再写你猜的。"},
-  {t:"frame",who:"ba",key:"z7.draft",q:"先列一列：关于{z7.obj|它}，你看见了什么？你又猜了什么？",
+  {t:"frame",who:"ba",key:"z7d.draft",q:"先列一列：关于{z7d.obj|它}，你看见了什么？你又猜了什么？",
    example:"例（林一观察蚂蚁）：我看见：<b>一只蚂蚁拖着一粒饭，在桌腿下绕了三圈。</b>我猜：<b>它也许找不到回家的路。</b>我怎么查：<b>跟着它，看它最后去了哪里。</b>",
    parts:[{label:"我看见：",ph:"动作、样子、时间、数量，越具体越好",min:8,short:"看见的再写具体一点：它在做什么？多久？几次？"},{label:"我猜：",ph:"它为什么这样做？要用上“也许”“好像”",min:4,short:"你猜它为什么这样？再多写几个字。"},{label:"我怎么查：",ph:"要怎样做，才知道你猜得对不对？",min:4,short:"写一个查的办法。"}],
    nudge:{field:1,re:"也许|好像|大概|可能|似乎|或许|说不定|猜",who:"ba",text:"你猜的那一句，用上“也许”“好像”，让读的人一看就知道是猜的。要是你就想这样写，再按一次“写好了”。"},
@@ -571,7 +571,7 @@ days:[
  ]},
  {title:"写下来",mood:"focus",steps:[
   {t:"say",who:"ba",text:"现在写成一段。两种写法，你挑一种。"},
-  {t:"mc",who:"ba",q:"你想用哪一种写法？（表态，不判对错）",key:"z7.way",stance:true,
+  {t:"mc",who:"ba",q:"你想用哪一种写法？（表态，不判对错）",key:"z7d.way",stance:true,
    options:[{text:"像哥尔斯密：认真记下看见的，猜的地方标出来",value:"gold",who:"ba",reply:"好。看见的写具体，猜的地方加上“也许”“好像”。"},
             {text:"像刘亮程：猜了又猜，猜错了也写出来",value:"liu",who:"ba",reply:"好。每猜一次，就写它接下来做了什么，看你猜得对不对。"}],
    obs:{id:"z7-way",label:"选写法",skill:"写作：选择写法"}},
@@ -701,7 +701,7 @@ notebook:{
   {n:2,title:"我的核查结论",get:function(D){return D.z4&&D.z4.report&&D.z4.report.text;}},
   {n:2,title:"改掉翻译腔的一句",get:function(D){return D.z5&&D.z5.fix;}},
   {n:2,title:"两篇写法的不同",get:function(D){return D.z6&&D.z6.cmp&&D.z6.cmp.text;}},
-  {n:3,title:"我的观察提纲",get:function(D){return D.z7&&D.z7.draft&&D.z7.draft.text;}},
+  {n:3,title:"我的观察提纲",get:function(D){return D.z7d&&D.z7d.draft&&D.z7d.draft.text;}},
   {n:3,title:"我的观察记录",get:function(D){var d=D.z7||{};return d.items&&d.items[0]&&d.items[0].t;}}],
  records:[
   {n:"第1天",title:"最先想说的",get:function(D){return D.z1&&D.z1.first;}},
