@@ -377,14 +377,14 @@ var VOICE=(function(){var tts=!!(window.speechSynthesis&&window.SpeechSynthesisU
 /* ================= 对话框 ================= */
 var RUN={token:0};var CANCEL={};
 var DLOG=[];
-var SAYSEQ=0;
+var SAYSEQ=0;var FULL=false;/* 11-08：字快速打完、“继续”马上出来，配音接着读；对听（FULL）仍等读完 */
 /* 新的一句开始，上一句还没打完的字就停下（不然两句会在同一个框里来回闪） */
-function say(txt,who,tok){who=who||lead();return new Promise(function(res,rej){if(tok!==RUN.token)return rej(CANCEL);var my=++SAYSEQ;
+function say(txt,who,tok){who=who||lead();var full=FULL;FULL=false;return new Promise(function(res,rej){if(tok!==RUN.token)return rej(CANCEL);var my=++SAYSEQ;
   SPEAKER=who;guestNote(who,txt);NOD[who]=performance.now()/1000;dWho.textContent=nameOf(who);dWho.style.background=inkOf(who);DLOG.push({who:who,text:txt});VOICE.say(who,txt);
   paraMention(txt);if(reduce){dTxt.textContent=txt;return VOICE.wait().then(function(){res();});}
   var i=0,skip=false;TALK=true;var k=function(){skip=true;};dTxt.addEventListener("click",k,{once:true});
-  (function step(){if(tok!==RUN.token){TALK=false;return rej(CANCEL);}if(my!==SAYSEQ){dTxt.removeEventListener("click",k);return res();}if(skip||i>=txt.length){dTxt.textContent=txt;dTxt.removeEventListener("click",k);if(skip){TALK=false;return res();}var k2=function(){skip=true;};dTxt.addEventListener("click",k2,{once:true});var wv=VOICE.wait();var gone=setInterval(function(){if(skip||my!==SAYSEQ||tok!==RUN.token){clearInterval(gone);if(skip&&my===SAYSEQ)VOICE.stop();fin();}},100);function fin(){if(fin.d)return;fin.d=1;clearInterval(gone);dTxt.removeEventListener("click",k2);TALK=false;if(tok!==RUN.token)return rej(CANCEL);res();}wv.then(fin);return;}i++;dTxt.textContent=txt.slice(0,i);var vd=VOICE.dur();/* 字出得比声音快一些（最慢每字 24 毫秒），出完了再等声音读完 */
-    setTimeout(step,vd?Math.min(24,Math.max(12,vd*1000*.5/txt.length)):/[。！？]/.test(txt[i-1])?140:/[，；：、]/.test(txt[i-1])?80:24);})();});}
+  (function step(){if(tok!==RUN.token){TALK=false;return rej(CANCEL);}if(my!==SAYSEQ){dTxt.removeEventListener("click",k);return res();}if(skip||i>=txt.length){dTxt.textContent=txt;dTxt.removeEventListener("click",k);if(skip){TALK=false;return res();}var k2=function(){skip=true;};dTxt.addEventListener("click",k2,{once:true});var wv=full?VOICE.wait():new Promise(function(r){setTimeout(r,350);});var gone=setInterval(function(){if(skip||my!==SAYSEQ||tok!==RUN.token){clearInterval(gone);if(skip&&my===SAYSEQ)VOICE.stop();fin();}},100);function fin(){if(fin.d)return;fin.d=1;clearInterval(gone);dTxt.removeEventListener("click",k2);TALK=false;if(tok!==RUN.token)return rej(CANCEL);res();}wv.then(fin);return;}i++;dTxt.textContent=txt.slice(0,i);var vd=VOICE.dur();
+    setTimeout(step,full&&vd?Math.min(24,Math.max(12,vd*1000*.5/txt.length)):/[。！？]/.test(txt[i-1])?70:/[，；：、]/.test(txt[i-1])?35:14);})();});}
 /* 讲到“第几段”：原文里那几段加框，其余变淡；连着两句不再提段落就撤掉 */
 var PMASK=0;function paraNums(t){var out=[];String(t).replace(/第([0-9０-９、和到至\-–~]+)段/g,function(m,g){var a=g.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-65248);});var r=a.match(/^(\d+)[到至\-–~](\d+)$/);if(r){for(var x=+r[1];x<=+r[2]&&x-r[1]<20;x++)out.push(x);}else a.split(/[、和]/).forEach(function(x){if(/^\d+$/.test(x))out.push(+x);});});return out;}
 function unmaskParas(){PMASK=0;rbody.classList.remove("pmask");$$("p.pfocus",rbody).forEach(function(p){p.classList.remove("pfocus");});}
@@ -681,7 +681,7 @@ H.listen=function(s,tok){var pre=s.ask?say(fill(s.ask),s.who||lead(),tok):Promis
       pb.addEventListener("click",function(){if(tok!==RUN.token)return;cards.forEach(function(k){k.classList.remove("on");});c.classList.add("on");sayQ(fill(x.text),x.who,tok);});
       c.append(el("div",{class:"ltag",text:x.label||(i?"改过的":"原文")}),markedText(fill(x.text),x.marks),pb);cards.push(c);box.append(c);});
     keepQ();stepImg(s);task.append(el("div",{class:"task-q",text:fill(s.q||"听一听：两版读起来有什么不一样？")}),box);
-    function play(i){cards.forEach(function(k){k.classList.remove("on");});cards[i].classList.add("on");var x=i?s.b:s.a;return say(fill(x.text),x.who,tok);}
+    function play(i){cards.forEach(function(k){k.classList.remove("on");});cards[i].classList.add("on");var x=i?s.b:s.a;return (FULL=true,say)(fill(x.text),x.who,tok);}
     return play(0).then(function(){return play(1);}).then(function(){cards.forEach(function(k){k.classList.remove("on");$(".lplay",k).disabled=false;});return next(s.next||"听好了",tok,true);});});};
 
 /* 五页日历条：做完一处盖一枚心情章、写上比喻；最后变成结构图。{t:"cal5",op:"show"|"stamp"|"map",page,mood,fig}  页上的内容存在 S.data.d3.cal */
