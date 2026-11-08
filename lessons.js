@@ -22,9 +22,9 @@ window.HORA_LESSONS = [
   { id: "g9-yueyanglou", folder: "yueyanglou", grade: 9, title: "岳阳楼记", author: "范仲淹",
     blurb: "《岳阳楼记》与杜甫《登岳阳楼》。一悲一喜之外，范仲淹想要的是哪一种？",
     open: 8, total: 8, unit: "课时", static: true,   // 独立页面（原课件），不走引擎、不连表格
-    /* 点开时二选一（学生）：课堂版＝配合课堂 10 节的课后单机版；自学版＝原来 8 课时的旧课件（folder 不变）。老师点开仍直接进自学版。 */
+    /* 点开时二选一（学生）：课堂版＝配合课堂 11 节的课后单机版；自学版＝原来 8 课时的旧课件（folder 不变）。老师点开也二选一：课堂版里能预览、看全班作答。 */
     choose: [
-      { label: "课堂版", folder: "yueyanglou-ke", desc: "配合课堂上的 10 节课，课后每次 20 分钟：沉浸剧情、背诵、字词、模拟测验，分数存给老师。" },
+      { label: "课堂版", folder: "yueyanglou-ke", desc: "配合课堂上的 11 节课，课后每次 20 分钟：沉浸剧情、背诵、字词、模拟测验，分数存给老师。" },
       { label: "自学版", folder: "yueyanglou", desc: "原来的 8 课时课件，自己从头读一遍全文和讲解。" }
     ],
     pic: "yueyanglou/img/tower.webp", picAlt: "水墨岳阳楼，城墙上的三层楼阁，远处是洞庭湖与帆船" },

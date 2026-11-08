@@ -12,7 +12,9 @@
 var SITE = window.HORA_SITE || {}, HOME = SITE.home || "../";
 var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11062240";
+/* 老师：首页点“我是老师”进来（sessionStorage hora-teacher，或地址 #teacher）。可以预览各板块（不存档），顶栏“全班作答”看全班（ke/teacher.js）。 */
+var TEACH = /^#(teacher|class)/.test(location.hash); try { TEACH = TEACH || sessionStorage.getItem("hora-teacher") === "1"; } catch (e) {}
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11081940";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -78,7 +80,7 @@ function api(action, body) {
 function cred() { return { cls: ME.cls, name: ME.name, pin: ME.pin }; }
 var saveT = null, dirty = false, SV = 0, INFL = false, saveMsg = "", saveBad = false;
 function setSaveSt(t, bad) { saveMsg = t; saveBad = !!bad; var s = $("#saveSt"); if (s) { s.textContent = t; s.classList.toggle("bad", !!bad); } }
-function sync() { if (!SITE.sheetUrl || !ME || SAMPLE) return; dirty = true; SV++; clearTimeout(saveT); saveT = setTimeout(sheetSave, 2500); }
+function sync() { if (!SITE.sheetUrl || !ME || SAMPLE || TEACH) return; dirty = true; SV++; clearTimeout(saveT); saveT = setTimeout(sheetSave, 2500); }
 function sheetSave() {
   if (INFL || !ME || !SITE.sheetUrl) return; INFL = true; var v = SV, p = payload(); setSaveSt("保存中…");
   api("save", Object.assign(cred(), { payload: p, summary: summary(p) })).then(function () { INFL = false; if (SV === v) { dirty = false; setSaveSt("已保存"); } else sheetSave(); })
@@ -133,11 +135,12 @@ function topBar(back) {
     (back ? '<a class="tb back" href="' + back[0] + '">← ' + esc(back[1]) + "</a>" : '<button class="tb back" type="button" data-leave="' + HOME + '#map">← 课文地图</button>') +
     '<a class="brand" href="#home"><span class="seal">课堂</span><b>岳阳楼记</b><small>课堂版</small></a><span class="sp"></span>' +
     '<span class="savest' + (saveBad ? " bad" : "") + '" id="saveSt">' + esc(saveMsg) + "</span>" +
-    (ME ? '<span class="who">' + esc(ME.name) + '</span><button class="tb" type="button" id="bOut">换人</button>' : "") + "</div></header>";
+    (TEACH ? '<a class="tb tq-btn" href="#class">全班作答</a><span class="who">老师预览</span><button class="tb" type="button" id="bOut">退出老师</button>'
+      : ME ? '<span class="who">' + esc(ME.name) + '</span><button class="tb" type="button" id="bOut">换人</button>' : "") + "</div></header>";
 }
 function wireTop() {
   $$("[data-leave]").forEach(function (b) { b.addEventListener("click", function () { leaveTo(b.getAttribute("data-leave")); }); });
-  var o = $("#bOut"); if (o) o.addEventListener("click", function () { try { sessionStorage.removeItem("hora-session"); } catch (e) {} leaveTo(HOME); });
+  var o = $("#bOut"); if (o) o.addEventListener("click", function () { try { sessionStorage.removeItem("hora-session"); if (TEACH) { sessionStorage.removeItem("hora-teacher"); sessionStorage.removeItem("hora-tpw"); } } catch (e) {} leaveTo(HOME); });
 }
 function page(html, back) { app.innerHTML = topBar(back) + '<main class="page">' + html + "</main>"; wireTop(); scrollTo(0, 0); }
 function notReady(name, back) { page('<div class="card empty"><h2>' + esc(name) + '</h2><p>这一部分还在准备，过几天再来看看。</p><a class="btn" href="#home">回到首页</a></div>', back || ["#home", "首页"]); }
@@ -157,6 +160,7 @@ function route() {
   stopVoice();
   var h = (location.hash || "#home").slice(1).split("/");
   document.body.className = "";
+  if (h[0] === "class" || h[0] === "teacher") return TEACH ? classPage() : home();
   if (h[0] === "story" && h[1]) return playChapter(h[1]);
   if (h[0] === "story") return storyList();
   if (h[0] === "recite") return recitePage(h[1] || "p1");
@@ -166,6 +170,15 @@ function route() {
   if (h[0] === "test" && h[1]) return testRun(h[1]);
   if (h[0] === "test") return testList();
   return home();
+}
+
+/* ================= 老师：全班作答 ================= */
+function classPage() {
+  page('<div id="tqBox"></div>', ["#home", "预览学生首页"]);
+  if (!window.YK_TEACHER) { $("#tqBox").innerHTML = '<p class="muted">老师页没有载入，请刷新。</p>'; return; }
+  if (!SITE.sheetUrl) { $("#tqBox").innerHTML = '<div class="card">这个网站还没连老师的表格，看不到全班作答。</div>'; return; }
+  window.YK_TEACHER({ el: $("#tqBox"), api: api, title: LTITLE, story: STORY, words: WORDS, tests: TESTS, text: TEXT, order: typeof PARAS !== "undefined" ? PARAS : null,
+    pname: PNAME, summary: summary, esc: esc, stamp: stamp, dur: dur });
 }
 
 /* ================= 首页 ================= */
@@ -852,14 +865,16 @@ function testRun(id) {
 function getSess() { try { var a = JSON.parse(sessionStorage.getItem("hora-session") || "null"); if (a && a.pin) return a; } catch (e) {} return null; }
 function boot() {
   var ss = getSess();
+  if (TEACH) ss = { cls: "老师", name: "老师预览", pin: "0000" };
   if (!ss) { location.replace(HOME + "#login"); return; }
   ME = { cls: String(ss.cls || "").replace(/\s+/g, "").toUpperCase(), name: String(ss.name || "").replace(/\s+/g, " ").trim(), pin: String(ss.pin) };
-  KEY = "hora-" + LID + (SAMPLE ? "-sample" : "") + "-" + ME.cls + "|" + ME.name; loadLocal();
+  KEY = "hora-" + LID + (SAMPLE ? "-sample" : "") + (TEACH ? "-teacher" : "") + "-" + ME.cls + "|" + ME.name; loadLocal();
   app.innerHTML = '<p class="loading">正在打开……</p>';
-  Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("voice/index.js")]).then(function () {
+  Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("voice/index.js"), TEACH ? loadScript("../ke/teacher.js") : true]).then(function () {
     TEXT = window.YK_TEXT || null; STORY = Array.isArray(window.YK_STORY) ? window.YK_STORY : []; WORDS = Array.isArray(window.YK_WORDS) ? window.YK_WORDS : []; TESTS = Array.isArray(window.YK_TESTS) ? window.YK_TESTS : [];
     VOICE = window.YK_VOICE || window.PROJ_VOICE || {}; VOICE_V = window.YK_VOICE_V || window.PROJ_VOICE_V || "";
     probeScenes(); addEventListener("hashchange", route); route();
+    if (TEACH) { setSaveSt("老师预览，不存档"); return; }
     if (!SITE.sheetUrl) { setSaveSt("只存在这台设备上"); return; }
     setSaveSt("正在连接…");
     api("login", ME).then(function (j) { if (j.name) ME.name = j.name; if (mergeRemote(j.state)) route(); setSaveSt("已连上"); if (!j.state) save(); })

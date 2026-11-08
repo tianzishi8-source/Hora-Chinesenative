@@ -33,7 +33,7 @@
   function allDone() { return LESSONS.reduce(function (a, l) { return a + doneDays(l); }, 0); }
   function toast(t) { var o = document.createElement("div"); o.className = "toast"; o.textContent = t; sheet.append(o); setTimeout(function () { o.remove(); }, 2600); }
   function go(l, folder) {
-    if (l.choose && !folder && !teacher) return choose(l);
+    if (l.choose && !folder) return choose(l);   // 老师也选：课堂版（预览＋全班作答）或自学版
     put("hora-lastLesson", l.id);
     if (SITE.preview) return toast("这是预览：上线后，这里会打开《" + l.title + "》");
     location.href = (folder || l.folder).replace(/\/?$/, "/") + (teacher ? "#teacher" : "");
