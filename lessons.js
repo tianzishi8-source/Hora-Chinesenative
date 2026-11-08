@@ -53,6 +53,13 @@ window.HORA_LESSONS = [
       { label: "自学版", folder: "youyyl", desc: "4 个课时：读懂全文、比较《岳阳楼记》，最后写一篇有自己感悟的游记。" }
     ],
     pic: "youyyl/img/cover.webp", picAlt: "示意画：楼上的酒席，窗外洞庭湖风浪大作" },
+  { id: "g9-jiangping", folder: "ketang/jp-g9-1.html", grade: 9, title: "考试讲评", author: "试卷 · 作文",
+    blurb: "九上第三单元考试：试卷逐题讲评（先看答案，再讲为什么）；作文讲评（结尾不说破、高潮写慢、别人替你说）。课堂投屏，助教点“继续”。",
+    open: 2, total: 2, unit: "节", static: true, chooseLead: "讲哪一个：",
+    choose: [
+      { label: "试卷讲评", folder: "ketang/jp-g9-1.html", desc: "课堂投屏，40 分钟：先给答案，再逐题讲；现代文阅读讲细。剧本可以在投屏目录里打印。" },
+      { label: "作文讲评", folder: "ketang/jp-g9-2.html", desc: "课堂投屏：用同学作文里的句子讲三招，当堂改写。" }
+    ] },
   { id: "g9-kule", folder: "kule", grade: 9, title: "最苦与最乐 · 谈生命", author: "梁启超 · 冰心",
     blurb: "人生什么事最苦，什么事最乐？生命又像什么？两位先生，一个讲道理，一个打比方。含语文趣谈“知足常乐”。",
     open: 3, total: 3, unit: "课时",

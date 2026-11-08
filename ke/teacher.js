@@ -21,12 +21,28 @@ window.YK_TEACHER = function (o) {
       loading = false;
       ROWS = (j.rows || []).map(function (r) { var d = r.payload || {}; d._sid = r.sid; d.name = d.name || r.name; d.cls = d.cls || r.cls; return d; })
         .sort(function (a, b) { return String(a.cls || "").localeCompare(String(b.cls || "")) || String(a.name).localeCompare(String(b.name), "zh"); });
-      paint();
+      paint(); loadAccts(p);
     }).catch(function (e) {
       loading = false;
       if (e && e.code === "pw") { try { sessionStorage.removeItem("hora-tpw"); } catch (x) {} err = "老师密码不对。"; ROWS = null; return ask(); }
       err = "没连上表格，稍后再试。"; if (ROWS) paint(); else ask();
     });
+  }
+  /* 账号：这个年级所有学生（没打开过课堂版的也列出来）。来源：表格“名单”（t_roster，新版脚本才有），
+     再加上本年级其他课文（自学版、别的课堂版）里出现过的账号。 */
+  var ACCTS = [], acctT = null, acctAsked = false;
+  function akey(c, n) { return String(c || "").replace(/\s+/g, "").toUpperCase() + "|" + String(n || "").replace(/\s+/g, " ").trim(); }
+  function gradeOf(c) { var m = /(?:G|GRADE|Y)(\d{1,2})/i.exec(c || "") || /^(\d{1,2})/.exec(c || ""); return m ? +m[1] : 0; }
+  function addAcct(c, n) {
+    if (!n || (o.grade && gradeOf(c) !== o.grade)) return;
+    var k = akey(c, n); if (ACCTS.some(function (a) { return a.k === k; })) return;
+    ACCTS.push({ k: k, cls: String(c || "").replace(/\s+/g, "").toUpperCase(), name: String(n).trim() });
+    clearTimeout(acctT); acctT = setTimeout(function () { if (ROWS) paint(); }, 300);
+  }
+  function loadAccts(p) {
+    if (acctAsked) return; acctAsked = true;
+    o.api("t_roster", { pw: p }).then(function (j) { (j.rows || []).forEach(function (r) { addAcct(r.cls, r.name); }); }).catch(function () {});
+    (o.otherLessons || []).forEach(function (lid) { o.api("t_all", { pw: p, lesson: lid }).then(function (j) { (j.rows || []).forEach(function (r) { addAcct(r.cls, r.name); }); }).catch(function () {}); });
   }
   function ask() {
     el.innerHTML = '<div class="card tq-login"><h2>学生作答</h2><p class="note">输入老师密码（和自学版老师页的一样）。只有知道老师密码的人看得到这里，学生之间互相看不到。</p>' +
@@ -68,11 +84,17 @@ window.YK_TEACHER = function (o) {
   function lvT(d) { var t = tot(d); return t.p == null ? "" : lv(t.p, 1); }
 
   /* ---------- 骨架 ---------- */
-  function rows() { return ROWS.filter(function (r) { return !CLS || r.cls === CLS; }); }
+  function rows() {
+    var have = {}, out = ROWS.slice();
+    ROWS.forEach(function (r) { have[akey(r.cls, r.name)] = 1; });
+    ACCTS.forEach(function (a) { if (!have[a.k]) out.push({ name: a.name, cls: a.cls, _sid: "acct:" + a.k, _empty: true }); });
+    return out.filter(function (r) { return !CLS || r.cls === CLS; })
+      .sort(function (a, b) { return String(a.cls || "").localeCompare(String(b.cls || "")) || String(a.name).localeCompare(String(b.name), "zh"); });
+  }
   function NAME(d) { return (d.name || "未写名字") + (CLS || !d.cls ? "" : "（" + d.cls + "）"); }
   function paint() {
-    var all = ROWS, R = rows(), cls = all.map(function (r) { return r.cls; }).filter(function (c, i, a) { return c && a.indexOf(c) === i; }).sort();
-    var h = '<div class="teach"><h3 class="tq-h">学生作答 · ' + esc(o.title) + '</h3><p class="note" style="margin:0">只有知道老师密码的人看得到这里，学生之间互相看不到。现在 ' + R.length + " 人（没打开过课堂版的同学不在这里）。</p>" +
+    var R = rows(), all = R, cls = all.map(function (r) { return r.cls; }).filter(function (c, i, a) { return c && a.indexOf(c) === i; }).sort();
+    var h = '<div class="teach"><h3 class="tq-h">学生作答 · ' + esc(o.title) + '</h3><p class="note" style="margin:0">只有知道老师密码的人看得到这里，学生之间互相看不到。按账号列出 ' + R.length + " 人" + (R.filter(function (d) { return d._empty; }).length ? "，其中 " + R.filter(function (d) { return d._empty; }).length + " 人还没打开课堂版" : "") + "。</p>" +
       '<div class="tabs">' + [["class", "全班一览"], ["q", "按题看"], ["each", "每个学生"], ["write", "写的话"], ["sum", "课后小结"]].map(function (t) { return '<button type="button" data-tab="' + t[0] + '" aria-pressed="' + (TAB === t[0]) + '">' + t[1] + "</button>"; }).join("") + "</div>" +
       '<div class="row"><button class="ghost" type="button" id="tqRe">' + (loading ? "正在读表格…" : "刷新") + "</button>" +
       (cls.length > 1 ? '<select id="tqCls" aria-label="只看一个班"><option value="">全部班级</option>' + cls.map(function (c) { return "<option" + (c === CLS ? " selected" : "") + ">" + esc(c) + "</option>"; }).join("") + "</select>" : "") + "</div>" +
@@ -103,7 +125,7 @@ window.YK_TEACHER = function (o) {
       TESTS.map(function (t) { return '<th title="' + esc(t.title) + '"><span>' + esc(t.title.replace("模拟", "")) + "</span><small>" + esc(t.blurb ? "第" + (t.after || "") + "节后" : "") + "</small></th>"; }).join("") +
       "<th>总计</th><th>最近</th></tr>";
     R.forEach(function (d) {
-      h += '<tr><td><button type="button" class="tname" data-stu="' + esc(d._sid) + '">' + esc(NAME(d)) + "</button></td>";
+      h += '<tr' + (d._empty ? ' class="tempty"' : "") + '><td><button type="button" class="tname" data-stu="' + esc(d._sid) + '">' + esc(NAME(d)) + "</button>" + (d._empty ? "<small>还没打开课堂版</small>" : "") + "</td>";
       STORY.forEach(function (c) { var s = (d.story || {})[c.id], w = writesOf(d, c).length; h += '<td class="tc' + (s && s.done ? " done" : s ? " part" : "") + '">' + (s ? "<b>" + (s.done ? "✓" : "半") + "</b>" + (w ? "<small>写 " + w + " 段</small>" : "") : "") + "</td>"; });
       RP.map(function (p) { var r = (d.recite || {})[p]; h += r && r.best != null ? '<td class="tc ' + lvS(r.best) + '"><b>' + r.best + "</b></td>" : '<td class="tc"></td>'; });
       if (WORDS.length) { var seen = Object.keys(d.cards || {}).length, m = mastered(d); h += '<td class="tc ' + lv(m, seen) + '">' + (seen ? "<b>" + m + " / " + seen + "</b><small>共 " + WORDS.length + " 张</small>" : "") + "</td>"; }
@@ -224,6 +246,7 @@ window.YK_TEACHER = function (o) {
       (idx < R.length - 1 ? '<button class="ghost" type="button" data-stu="' + esc(R[idx + 1]._sid) + '">下一个 →</button>' : '<button class="ghost" type="button" disabled>下一个 →</button>');
     COPY.one = STUDENT_PROMPT(d.name) + "\n\n" + tText(d);
     h += nav + '<button class="ghost" type="button" data-copy="one">复制这个学生，拿去 Claude 诊断</button></div>';
+    if (d._empty) return h + '<div class="tst"><h4>' + esc(NAME(d)) + '</h4><p class="tsum lv-low">这位同学还没打开过课堂版，没有任何记录。</p></div>' + nav + "</div>";
     var T = tot(d);
     h += '<div class="tst"><h4>' + esc(NAME(d)) + "　· 自选上到第 " + esc(d.lessonAt || 1) + " 节　· 最近保存 " + esc(stamp(d.savedAt)) + "</h4>" +
       '<p class="tsum ' + lvT(d) + '">总计 ' + (T.p == null ? "—" : Math.round(T.p * 100) + "%") + (T.g ? "　· 测验客观题答对 " + T.ok + "/" + T.g : "") + (WORDS.length ? "　· 字词掌握 " + mastered(d) + "/" + WORDS.length : "") + "</p><dl>";
@@ -311,7 +334,7 @@ window.YK_TEACHER = function (o) {
   function STUDENT_PROMPT(nm) { return "你是一位初中语文老师的助手。下面是学生 " + nm + " 在课后单机版（" + o.title + "）上的全部记录：沉浸体验写的话、背诵、字词卡、模拟测验。［客观题·错］只列了答错的题，答对的没列；只有［自己写］和［简答·自己写］是学生自己的文字。\n请写一份只给老师看的个性化诊断，用简洁的中文，不用 Markdown 符号，500 字以内：一、总体水平（字词、翻译、背诵、理解作者情感各怎么样）；二、最突出的优点，引学生原话；三、最需要补的两三点，具体到哪一段、哪个字词、哪道题；四、下节课可以怎样帮他（一两条）。"; }
   function CLASS_PROMPT() { return "你是一位初中语文老师的助手。下面是一个班的学生在课后单机版（" + o.title + "）上的记录，每个学生之间用 ========== 隔开，名字写在每段开头。［客观题·错］只列了答错的题；只有［自己写］和［简答·自己写］是学生自己的文字。\n请先写全班小结（不超过 300 字：大多数已经做到的；普遍的卡点，具体到字词、句子、题目；下节课最值得讲的三件事），再按学生逐个写诊断，每人一段，开头写名字，写：水平（好 / 中 / 需要帮助）和一句理由；最突出的优点；最需要补的一点。用简洁的中文，不用 Markdown 符号。"; }
   function tabSum(R) {
-    COPY.all = CLASS_PROMPT() + "\n\n" + R.map(tText).join("\n==========\n");
+    COPY.all = CLASS_PROMPT() + "\n\n" + R.map(function (d) { return d._empty ? "【学生：" + d.name + "】还没打开过课堂版，没有记录。" : tText(d); }).join("\n==========\n");
     return '<p class="note">这里没有 AI。按下面的按钮，会把全班的记录（带名字，按学生分开）连同诊断要求一起复制好；打开你自己的 Claude，粘贴进去就行。名字只在你自己的对话里出现。只想看一个学生：到“每个学生”里点“复制这个学生”。</p>' +
       '<div class="row"><button class="btn" type="button" data-copy="all">复制：全班小结＋逐人诊断</button></div><div class="sumout note" id="tqOut"></div>';
   }
@@ -351,7 +374,7 @@ window.YK_TEACHER = function (o) {
       ".tst .tw{display:block;margin:4px 0;padding:6px 10px;border-left:3px solid #c9b48a;background:var(--page);color:#2a241b}" +
       ".tsum{margin:2px 0 6px;padding:4px 10px;border-radius:8px;font-weight:700;font-size:.9rem;display:inline-block}" +
       ".sumout{white-space:pre-wrap;max-height:360px;overflow:auto}" +
-      ".tq-login{max-width:420px;margin:30px auto}.tq-login input{font-size:18px;padding:8px 10px;width:100%;box-sizing:border-box;margin:8px 0}.tq-err{color:#a3382a}";
+      ".tgrid td:first-child small{display:block;color:#a8352a;font-size:.72rem;font-weight:400}.tempty td{color:#9a8f80}.tq-login{max-width:420px;margin:30px auto}.tq-login input{font-size:18px;padding:8px 10px;width:100%;box-sizing:border-box;margin:8px 0}.tq-err{color:#a3382a}";
     document.head.appendChild(s);
   }
 

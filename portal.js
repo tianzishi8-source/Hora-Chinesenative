@@ -36,7 +36,7 @@
     if (l.choose && !folder) return choose(l);   // 老师也选：课堂版（预览＋全班作答）或自学版
     put("hora-lastLesson", l.id);
     if (SITE.preview) return toast("这是预览：上线后，这里会打开《" + l.title + "》");
-    location.href = (folder || l.folder).replace(/\/?$/, "/") + (teacher ? "#teacher" : "");
+    var f = folder || l.folder; location.href = /\.html?$/.test(f) ? f : f.replace(/\/?$/, "/") + (teacher ? "#teacher" : "");
   }
   /* 一篇课文有两个版本时（lessons.js 里的 choose），先让学生选 */
   function choose(l) {
@@ -45,7 +45,7 @@
         ".choose .op:hover{border-color:var(--cinnabar)}.choose .op b{display:block;font-family:var(--f-brush);font-weight:400;font-size:1.6rem;color:var(--cinnabar)}.choose .op span{font-size:.92rem;color:var(--ink-mid)}";
       document.head.appendChild(st); }
     var o = document.createElement("div"); o.className = "ov";
-    o.innerHTML = '<div class="tie choose" role="dialog" aria-label="选一个版本"><button class="x" type="button" aria-label="关上">×</button><h3>《' + esc(l.title) + '》</h3><p>选一个版本：</p><div class="opts2">' +
+    o.innerHTML = '<div class="tie choose" role="dialog" aria-label="选一个版本"><button class="x" type="button" aria-label="关上">×</button><h3>《' + esc(l.title) + '》</h3><p>' + esc(l.chooseLead || "选一个版本：") + '</p><div class="opts2">' +
       l.choose.map(function (c, i) { return '<button type="button" class="op" data-c="' + i + '"><b>' + esc(c.label) + '</b><span>' + esc(c.desc || "") + '</span></button>'; }).join("") + '</div></div>';
     sheet.append(o);
     function close() { o.remove(); }

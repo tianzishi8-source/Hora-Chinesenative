@@ -53,8 +53,9 @@ function handle(q) {
   const a = q.action;
   const lesson = String(q.lesson || '').slice(0, 60);
   if (!lesson) fail('bad');
-  if (a === 't_all' || a === 't_hide' || a === 't_hwflag') {
+  if (a === 't_all' || a === 't_hide' || a === 't_hwflag' || a === 't_roster') {
     if (String(q.pw || '') !== TEACHER_PASSWORD) fail('pw');
+    if (a === 't_roster') return teacherRoster();
     if (a === 't_hwflag') return teacherHwFlag(lesson, q);
     return a === 't_all' ? teacherAll(lesson) : teacherHide(lesson, q.sid);
   }
@@ -225,6 +226,15 @@ function teacherAll(lesson) {
     rows.push({ sid: sid, cls: cls, name: name, payload: payload || { name: name }, shared: !!shared[sid] });
   }
   return { ok: true, rows: rows, hw: hwRows(lesson) };
+}
+
+/* 老师看全班：所有账号（“名单”里的，加上签到过的“学生”），没打开某篇课文的同学也能列出来 */
+function teacherRoster() {
+  const out = [], seen = {};
+  const add = (c, n) => { c = String(c || '').replace(/\s+/g, '').toUpperCase(); n = String(n || '').replace(/\s+/g, ' ').trim(); if (!c || !n || seen[c + '|' + n]) return; seen[c + '|' + n] = 1; out.push({ cls: c, name: n }); };
+  const r = sheet('名单'); if (r.getLastRow() > 1) r.getRange(2, 1, r.getLastRow() - 1, 2).getDisplayValues().forEach(x => add(x[0], x[1]));
+  const s = sheet('学生'); if (s.getLastRow() > 1) s.getRange(2, 2, s.getLastRow() - 1, 2).getDisplayValues().forEach(x => add(x[0], x[1]));
+  return { ok: true, rows: out };
 }
 
 function teacherHide(lesson, sid) {

@@ -134,7 +134,7 @@ function allSents() { var a = []; PARAS.forEach(function (p) { TEXT.paras[p].for
 function topBar(back) {
   return '<header class="top"><div class="top-in">' +
     (back ? '<a class="tb back" href="' + back[0] + '">← ' + esc(back[1]) + "</a>" : '<button class="tb back" type="button" data-leave="' + HOME + '#map">← 课文地图</button>') +
-    '<a class="brand" href="#home"><span class="seal">课堂</span><b>' + esc(C.short || C.title || "") + '</b><small>课堂版</small></a><span class="sp"></span>' +
+    '<a class="brand" href="' + (TEACH ? "#teacher" : "#home") + '"><span class="seal">课堂</span><b>' + esc(C.short || C.title || "") + '</b><small>课堂版</small></a><span class="sp"></span>' +
     '<span class="savest' + (saveBad ? " bad" : "") + '" id="saveSt">' + esc(saveMsg) + "</span>" +
     (TEACH ? '<a class="tb tq-btn" href="#class">全班作答</a><span class="who">老师预览</span><button class="tb" type="button" id="bOut">退出老师</button>'
       : ME ? '<span class="who">' + esc(ME.name) + '</span><button class="tb" type="button" id="bOut">换人</button>' : "") + "</div></header>";
@@ -161,7 +161,8 @@ function route() {
   stopVoice();
   var h = (location.hash || "#home").slice(1).split("/");
   document.body.className = "";
-  if (h[0] === "class" || h[0] === "teacher") return TEACH ? classPage() : home();
+  if (h[0] === "class") return TEACH ? classPage() : home();
+  if (h[0] === "teacher") return TEACH ? teacherHome() : home();
   if (h[0] === "story" && h[1]) return playChapter(h[1]);
   if (h[0] === "story") return storyList();
   if (h[0] === "recite") return recitePage(h[1] || PARAS[0]);
@@ -173,13 +174,31 @@ function route() {
   return home();
 }
 
+/* 老师首页（课堂版）：课堂投屏 ＋ 课后单机预览 ＋ 全班作答 */
+function teacherHome() {
+  var K = typeof KETANG !== "undefined" ? KETANG : (C.ketang || null), h = "";
+  h += '<section class="card"><h2>' + esc(LTITLE) + ' · 老师</h2><p class="muted">课堂上用“课堂投屏”（一节一个，助教点“继续”）；课后学生在“课后单机”里做沉浸体验、背诵、字词、模拟测验，分数存到表格，在“全班作答”里看。</p>' +
+    '<div class="trow"><a class="btn" href="#class">全班作答</a><a class="btn ghost" href="#home">预览课后单机（学生看到的）</a></div></section>';
+  if (K && K.list && K.list.length) {
+    h += '<section class="card"><h3>课堂投屏（' + K.list.length + ' 节）</h3><p class="muted">在教室电脑上打开，投到大屏幕；建议用 Chrome 或 Edge，按 F11 全屏。“剧本”可以打印。</p><div class="route">' +
+      K.list.map(function (x) { return '<div class="ktrow"><a class="step" href="' + K.base + x[0] + '.html"><span class="no">' + esc(x[1].replace(/[^0-9]/g, "")) + '</span><span class="tx"><em>' + esc(x[1]) + "</em><b>" + esc(x[2]) + '</b></span><span class="min">打开投屏</span></a><a class="btn ghost" href="' + K.base + "script.html?l=" + x[0] + '">剧本</a></div>'; }).join("") + "</div>" +
+      ((K.extra || []).length ? '<div class="trow">' + K.extra.map(function (x) { return '<a class="btn ghost" href="' + K.base + x[0] + '">' + esc(x[1]) + "</a>"; }).join("") + "</div>" : "") + "</section>";
+  }
+  page(h + '<style>.trow{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.ktrow{display:flex;gap:8px;align-items:stretch}.ktrow .step{flex:1}.ktrow .btn{min-height:auto}</style>');
+}
 /* ================= 老师：全班作答 ================= */
+var GRADE = +((/^g(\d+)-/.exec(LID) || [])[1] || 0);
+function otherLessons() {   // 同年级其他课文（自学版＋课堂版）的 id：用来补全“所有账号”
+  var out = [];
+  (window.HORA_LESSONS || []).forEach(function (l) { if (l.grade !== GRADE || /\.html?$/.test(l.folder)) return; [l.id].concat(l.choose ? [l.id + "-ke"] : []).forEach(function (id) { if (id !== LID && out.indexOf(id) < 0) out.push(id); }); });
+  return out;
+}
 function classPage() {
-  page('<div id="tqBox"></div>', ["#home", "预览学生首页"]);
+  page('<div id="tqBox"></div>', ["#teacher", "老师首页"]);
   if (!window.YK_TEACHER) { $("#tqBox").innerHTML = '<p class="muted">老师页没有载入，请刷新。</p>'; return; }
   if (!SITE.sheetUrl) { $("#tqBox").innerHTML = '<div class="card">这个网站还没连老师的表格，看不到全班作答。</div>'; return; }
   window.YK_TEACHER({ el: $("#tqBox"), api: api, title: LTITLE, story: STORY, words: WORDS, tests: TESTS, text: TEXT, order: typeof PARAS !== "undefined" ? PARAS : null,
-    pname: PNAME, summary: summary, esc: esc, stamp: stamp, dur: dur });
+    pname: PNAME, summary: summary, esc: esc, stamp: stamp, dur: dur, grade: GRADE, otherLessons: otherLessons() });
 }
 
 /* ================= 首页 ================= */
@@ -864,7 +883,7 @@ function boot() {
   ME = { cls: String(ss.cls || "").replace(/\s+/g, "").toUpperCase(), name: String(ss.name || "").replace(/\s+/g, " ").trim(), pin: String(ss.pin) };
   KEY = "hora-" + LID + (SAMPLE ? "-sample" : "") + (TEACH ? "-teacher" : "") + "-" + ME.cls + "|" + ME.name; loadLocal();
   app.innerHTML = '<p class="loading">正在打开……</p>';
-  Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("voice/index.js"), TEACH ? loadScript("../ke/teacher.js?v=11082010") : true]).then(function () {
+  Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("voice/index.js"), TEACH ? loadScript("../ke/teacher.js?v=11082040") : true, TEACH ? loadScript("../lessons.js?v=" + Date.now()) : true]).then(function () {
     TEXT = window.YK_TEXT || null; if (TEXT) { PARAS = C.reciteParas || TEXT.order || Object.keys(TEXT.paras); PARAS.forEach(function (p) { PNAME[p] = (TEXT.pname || {})[p] || p; }); } STORY = Array.isArray(window.YK_STORY) ? window.YK_STORY : []; WORDS = Array.isArray(window.YK_WORDS) ? window.YK_WORDS : []; TESTS = Array.isArray(window.YK_TESTS) ? window.YK_TESTS : [];
     VOICE = window.YK_VOICE || window.PROJ_VOICE || {}; VOICE_V = window.YK_VOICE_V || window.PROJ_VOICE_V || "";
     probeScenes(); addEventListener("hashchange", route); route();
