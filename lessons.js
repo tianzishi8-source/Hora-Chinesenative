@@ -15,6 +15,10 @@ window.HORA_LESSONS = [
     open: 11, total: 11,
     pic: "rili/img/page1976-sm.webp", picAlt: "1976 年 7 月 28 日那一页日历：撕下来的，发黄，有水渍和折痕",
     picText: { top: "一九七六年　七月", day: "28", lunar: "丙辰年七月初二", week: "星期三" } },
+  { id: "g8-zhizhu", folder: "zhizhu", grade: 8, title: "蜘蛛", author: "哥尔斯密",
+    blurb: "墙角的蜘蛛小八不服气：两百多年前那个英国人写的，哪句是看见的，哪句是猜的？你来当核查员。最后回头看上个单元的蚂蚁。",
+    open: 7, total: 7,
+    pic: "zhizhu/img/cover.webp", picAlt: "示意画：墙角一张平铺的蛛网，网中间的洞口趴着一只小蜘蛛" },
   { id: "g9-yueyanglou", folder: "yueyanglou", grade: 9, title: "岳阳楼记", author: "范仲淹",
     blurb: "《岳阳楼记》与杜甫《登岳阳楼》。一悲一喜之外，范仲淹想要的是哪一种？",
     open: 8, total: 8, unit: "课时", static: true,   // 独立页面（原课件），不走引擎、不连表格
