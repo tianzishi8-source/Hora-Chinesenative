@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>岳阳楼记 · 逐句对译讲义</title>
+<!-- 11-09 课堂反馈：学生对课文意思太生，被点名答不出。这份讲义放在桌上，整个单元都摊开用。
+     内容全部来自 ../yueyanglou-ke/data/sents.js（课堂版逐句翻译库，已过三轮审核）：原文、译文、重点字词（keys，释义取 pairs 里对应片段）、★重点句。
+     每段一句“这一段在写什么”写在下面 GIST 里。打印：A4 竖版，浏览器“打印”即可（已设好页边距）。 -->
+<style>
+@page{size:A4;margin:12mm 13mm 12mm 13mm}
+:root{--ink:#221d16;--muted:#6f6455;--zhu:#a3382a;--shi:#2f5f6a;--line:#cdbf9f}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:15px/1.55 "Noto Serif SC","Songti SC","STSong","SimSun",serif;background:#f6f1e3}
+main{max-width:200mm;margin:0 auto;padding:10px 12px 30px;background:#fff}
+h1{font-size:24px;margin:2px 0 0;letter-spacing:.1em}
+.sub{color:var(--muted);font-size:12.5px;margin:2px 0 6px;font-family:"Noto Sans SC","PingFang SC",sans-serif}
+.how{display:flex;flex-wrap:wrap;gap:4px 14px;border:1px solid var(--line);border-radius:6px;padding:5px 10px;font:12.5px/1.5 "Noto Sans SC","PingFang SC",sans-serif;margin-bottom:6px}
+.how b{color:var(--zhu)}
+.name{float:right;font:13px "Noto Sans SC",sans-serif;color:var(--muted)}
+section{margin:8px 0 4px;break-inside:auto}
+h2{font-size:16px;margin:10px 0 3px;padding:3px 8px;background:#f3ecdb;border-left:4px solid var(--zhu);break-after:avoid}
+h2 small{font-weight:400;font-family:"Noto Sans SC","PingFang SC",sans-serif;font-size:12.5px;color:#4b4338;margin-left:6px}
+.s{display:grid;grid-template-columns:2.2em 1fr;gap:0 4px;padding:3px 0 4px;border-bottom:1px dashed #e2d8c2;break-inside:avoid}
+.no{font:11px/1.9 "Noto Sans SC",sans-serif;color:var(--muted);text-align:right;padding-right:4px}
+.no .st{color:var(--zhu);font-size:12px}
+.src{font-size:17.5px;letter-spacing:.04em;line-height:1.55}
+.src b{color:var(--zhu);font-weight:700;border-bottom:1.5px solid var(--zhu)}
+.tr{grid-column:2;font:13.5px/1.55 "Noto Sans SC","PingFang SC",sans-serif;color:var(--shi)}
+.kw{grid-column:2;font:12px/1.5 "Noto Sans SC","PingFang SC",sans-serif;color:#5a5144}
+.kw span{margin-right:12px}.kw b{color:var(--zhu)}
+.foot{margin-top:10px;font:12px "Noto Sans SC",sans-serif;color:var(--muted)}
+.bar{position:sticky;top:0;background:#2a241b;color:#fff;padding:8px 12px;font:14px "Noto Sans SC",sans-serif;display:flex;gap:10px;align-items:center;justify-content:center}
+.bar button{font:inherit;padding:4px 14px;border-radius:999px;border:0;cursor:pointer}
+@media print{body{background:#fff}main{padding:0;max-width:none}.bar{display:none}}
+</style>
+</head>
+<body>
+<div class="bar">逐句对译讲义 · 打印成 A4 发给学生，整个单元放在桌上用　<button type="button" onclick="print()">打印</button></div>
+<main>
+  <span class="name">姓名＿＿＿＿＿＿</span>
+  <h1>岳阳楼记 · 逐句对译</h1>
+  <p class="sub">范仲淹　·　上面一行原文，下面一行译文；<b style="color:#a3382a">红字</b>是重点字词，★ 是重点句（要会翻译）。上课被点名，先在这里找到那一句，再照着说意思。</p>
+  <div class="how" id="how"></div>
+  <div id="out">正在读取……</div>
+  <p class="foot">译文与课堂投屏、课后单机版一致。读的时候：先读原文，遮住译文自己说一遍，再看译文对一对。</p>
+</main>
+<script>
+// 每段一句：这一段在写什么（只说内容，不加分析）
+var GIST = {
+  1: "写这篇记的缘由：滕子京被贬到巴陵，一年后政事顺利、百姓和乐，重修岳阳楼，嘱托我写文章记下这件事。",
+  2: "岳阳楼上看到的洞庭湖大观；又问：被贬的官员、诗人大多在这里聚会，他们看了景物，心情恐怕会不同吧？",
+  3: "阴雨天登楼：景色阴暗、可怕，登楼的人会有离开国都、怀念家乡，担心被人说坏话、批评指责的心情，感到悲伤。",
+  4: "春日晴朗时、明月之夜登楼：景色明丽、开阔，登楼的人心情舒畅，把荣辱都忘了，非常高兴。",
+  5: "古代品德高尚的人不因外物和自己的得失而喜悲，在朝廷做官就担忧百姓，退居偏远之地就担忧国君；他们大概一定会说“先天下之忧而忧，后天下之乐而乐”吧。作者感叹：如果没有这样的人，我同谁一道呢？"
+};
+(function () {
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var sc = document.createElement("script"); sc.src = "../yueyanglou-ke/data/sents.js?t=" + Date.now();
+  sc.onload = function () {
+    var S = window.YK_SENTS || [], H = window.YK_HOW || [];
+    document.getElementById("how").innerHTML = "<span><b>翻译四法</b></span>" + H.map(function (x) { return "<span><b>" + esc(x.k) + "</b>：" + esc(x.t) + "</span>"; }).join("");
+    var h = "", NUM = ["", "一", "二", "三", "四", "五"];
+    [1, 2, 3, 4, 5].forEach(function (p) {
+      h += "<section><h2>第" + NUM[p] + "段<small>" + esc(GIST[p]) + "</small></h2>";
+      S.filter(function (x) { return x.p === p; }).forEach(function (x) {
+        // 重点字词：keys 里的字，在原文里标红；释义取 pairs 里含这个字的那一对的译文
+        var ks = (x.keys || []).map(function (k) {
+          var pr = (x.pairs || []).filter(function (q) { return q[0].indexOf(k.w) >= 0; })[0];
+          return { w: k.w, g: k.g ? k.g : pr ? (pr[0] === k.w ? pr[1] : pr[0] + " → " + pr[1]) : k.ok[0] };
+        });
+        var src = esc(x.src);
+        ks.slice().sort(function (a, b) { return b.w.length - a.w.length; }).forEach(function (k) {
+          var w = esc(k.w), i = src.indexOf(w);
+          if (i >= 0 && src.slice(0, i).split("<b>").length === src.slice(0, i).split("</b>").length) src = src.slice(0, i) + "<b>" + w + "</b>" + src.slice(i + w.length);
+        });
+        h += '<div class="s"><div class="no">' + (x.star ? '<span class="st">★</span>' : "") + x.id.split("-")[1] + '</div><div class="src">' + src + "</div>" +
+          '<div class="tr">' + esc(x.tr) + "</div>" +
+          (ks.length ? '<div class="kw">' + ks.map(function (k) { return "<span><b>" + esc(k.w) + "</b>：" + esc(k.g) + "</span>"; }).join("") + "</div>" : "") + "</div>";
+      });
+      h += "</section>";
+    });
+    document.getElementById("out").innerHTML = h;
+    document.body.setAttribute("data-ready", "1");
+  };
+  document.head.appendChild(sc);
+})();
+</script>
+</body>
+</html>

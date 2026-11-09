@@ -14,7 +14,7 @@ var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
 /* 老师：首页点“我是老师”进来（sessionStorage hora-teacher，或地址 #teacher）。可以预览各板块（不存档），顶栏“全班作答”看全班（ke/teacher.js）。 */
 var TEACH = /^#(teacher|class)/.test(location.hash); try { TEACH = TEACH || sessionStorage.getItem("hora-teacher") === "1"; } catch (e) {}
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11091100";
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11091230";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -829,7 +829,7 @@ function transNext() {   // 推荐：下节课要讲的段（课前先过一遍�
   return nxt.filter(need)[0] || done.filter(need)[0] || "";
 }
 function keyGloss(x) {
-  return (x.keys || []).map(function (k) { var pr = (x.pairs || []).filter(function (q) { return q[0].indexOf(k.w) >= 0; })[0]; return { w: k.w, g: pr ? (pr[0] === k.w ? pr[1] : pr[0] + " → " + pr[1]) : k.ok[0] }; });
+  return (x.keys || []).map(function (k) { var pr = (x.pairs || []).filter(function (q) { return q[0].indexOf(k.w) >= 0; })[0]; return { w: k.w, g: k.g ? k.g : pr ? (pr[0] === k.w ? pr[1] : pr[0] + " → " + pr[1]) : k.ok[0] }; });
 }
 function srcHtml(x) {
   var s = esc(x.src);
@@ -898,7 +898,7 @@ function transDrill(p) {
   var nC = Math.min(3, st.length), items = [];
   st.slice(0, nC).forEach(function (x) { if (!x.opts) return; var o = shuffle(x.opts.map(function (t, i) { return { t: t, r: i === x.ans_i }; }));
     items.push({ type: "choice", qHtml: '<p class="qlead">选出这句的正确译文</p><p class="ctx">' + esc(x.src) + "</p>", opts: o.map(function (y) { return y.t; }), ans: o.map(function (y) { return y.r; }).indexOf(true), sec: 30, pts: 1, ref: x.id + "-ch" }); });
-  shuffle(st.slice(nC).concat(st.slice(0, nC))).filter(function (x) { return x.blank && x.ans; }).slice(0, 3).forEach(function (x) {
+  shuffle(st.slice(nC)).concat(shuffle(st.slice(0, nC))).filter(function (x) { return x.blank && x.ans; }).slice(0, 3).forEach(function (x) {
     items.push({ type: "fill", qHtml: '<p class="qlead">填出括号里的词（看原文里对应的字）</p><p class="ctx">' + esc(x.src) + '</p><p class="nx">' + esc(x.blank).replace(/（\s*　*\s*）/, "{{blank}}") + "</p>", blanks: [{ ans: [].concat(x.ans) }], sec: 90, pts: 1, ref: x.id + "-fill" });
   });
   runner({ title: "翻译练一练 · " + PNAME[p], items: items, feedback: true, back: ["#trans/" + p, "逐句翻译"],
