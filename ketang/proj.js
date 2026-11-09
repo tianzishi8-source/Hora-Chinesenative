@@ -408,7 +408,7 @@
       p.className += " cardpane pairpane";
       var SS = {}; (window.YK_SENTS || []).forEach(function (x) { SS[x.id] = x; });
       var mode = v.mode || "learn";
-      var hh = '<div class="ch">' + (v.n ? '<span class="qn">' + esc(v.n) + "</span>" : "") + '<span class="qt">' + esc(v.title || (mode === "test" ? "翻译过关" : "逐句对译")) + "</span>" + (v.score ? '<span class="sc">' + esc(v.score) + "</span>" : "") + "</div>";
+      var hh = '<div class="ch">' + (v.n ? '<span class="qn">' + esc(v.n) + "</span>" : "") + '<span class="qt">' + esc(v.title || (mode === "test" ? "翻译过关" : mode === "talk" ? "同桌互讲" : "逐句对译")) + "</span>" + (v.score ? '<span class="sc">' + esc(v.score) + "</span>" : "") + "</div>";
       (v.ids || []).forEach(function (id, k) {
         var x = SS[id]; if (!x) { hh += '<p class="pr-miss">（缺句子 ' + esc(id) + "）</p>"; return; }
         var ci = 0, srcH = "", trH = "";
@@ -422,6 +422,7 @@
         var num = (v.ids.length > 1 ? '<span class="pn">' + (k + 1) + "</span>" : "");
         hh += '<div class="pr">' + '<p class="psrc">' + num + srcH + "</p>";
         if (mode === "test") hh += '<p class="ptr blank">写在作答纸上</p>';
+        else if (mode === "talk") hh += '<p class="ptr blank">说给同桌听</p>';
         else hh += '<p class="ptr">' + trH + "</p>";
         if (mode === "check" && x.how && x.how.length) hh += '<p class="phow">' + x.how.map(function (t) { return '<span class="hw">' + esc(t) + "</span>"; }).join("") + "</p>";
         hh += "</div>";
@@ -631,6 +632,7 @@
     var total = t.s, left = t.s, halfDone = false;
     var nudgeAt = total >= 60 && t.nudge !== false ? [Math.round(total * 0.62), Math.round(total * 0.3)] : [];
     var big = vis.querySelector(".big-clock"); if (big) { big.hidden = false; big.querySelector(".lab").textContent = t.label || ""; }
+    if (big) fitCards();   // 计时钟出现后重新缩放卡片文字，钟不会被挤出卡外
     var top = $(".tclock"); top.classList.add("run");
     function paint() {
       var m = Math.floor(left / 60), s = left % 60, txt = m + ":" + (s < 10 ? "0" : "") + s;

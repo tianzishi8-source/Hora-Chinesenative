@@ -335,3 +335,7 @@ ruby rt{font-family:var(--f-ui);font-size:.4em;color:var(--shi);letter-spacing:0
 .cast{transform:translateZ(0);isolation:isolate}
 .is-safari .scene{animation:none;transform:scale(1.04)}
 .is-safari .actor.talk .body{animation:none}
+
+/* 11-09：非考试版式里，对译卡（三级台阶、同桌互讲）放大，投影看得清 */
+html:not(.lay-exam) .pairpane{font-size:30px}
+html:not(.lay-exam) .pairpane .ch .qt{font-size:34px}
