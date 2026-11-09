@@ -624,6 +624,44 @@ H.openBook=function(){openBook();return Promise.resolve();};
 /* 单选：每个选项各有回应；ok:true 对、"half" 半对、false 错；对了才往下（stance:true 时任何一项都算，用来表态）。
    {t:"mc",who,ask,q,key,options:[{text,ok,reply,who,value}],obs,feedbackWho,wait} */
 H.text=function(s){if(s.id!==CURTEXT)useText(s.id);return Promise.resolve();};
+/* 11-09 互动场景：{t:"scene",id,title,lines:{键:{who,text}},obs}。画面和玩法在 scenes.js（window.HORA_SCENES[id]）。
+   台词都写在 lines 里（录音清单从这里收）。场景里只能点、拖，做完出“继续”。 */
+H.pic=function(s){clearTask();task.classList.add("plain");stepImg(s);if(s.cap)task.append(el("p",{class:"note",text:fill(s.cap)}));return Promise.resolve();};
+H.scene=function(s,tok){var fn=window.HORA_SCENES&&window.HORA_SCENES[s.id];if(!fn)return Promise.resolve();
+  clearTask();VOICE.stop();var ov=el("div",{id:"stage",class:"stage",role:"dialog","aria-label":fill(s.title||"场景")});
+  var top=el("div",{class:"stg-top"},[el("b",{text:fill(s.title||"")}),el("span",{class:"stg-hint"})]);
+  var frame=el("div",{class:"stg-frame"});var cap=el("div",{class:"stg-cap"},[el("span",{class:"stg-who"}),el("span",{class:"stg-txt"})]);var bar=el("div",{class:"stg-bar"});
+  ov.append(top,frame,el("div",{class:"stg-bottom"},[cap,bar]));document.body.append(ov);document.body.classList.add("staged");
+  function live(){if(tok!==RUN.token)throw CANCEL;}
+  function pct(v){return v+"%";}
+  var api={frame:frame,el:el,reduce:reduce,
+    hint:function(t){$(".stg-hint",top).textContent=t?fill(t):"";},
+    img:function(src,cls){var i=el("img",{src:src,class:"stg-img "+(cls||""),alt:"",draggable:"false"});frame.append(i);return i;},
+    box:function(x,y,w,h,cls,kids){var d=el("div",{class:cls||""},kids);d.style.left=pct(x);d.style.top=pct(y);if(w!=null)d.style.width=pct(w);if(h!=null)d.style.height=pct(h);frame.append(d);return d;},
+    /* 能点的人／物：x,y,w,h 按画面百分比 */
+    hot:function(x,y,w,h,label,onTap){var b=el("button",{type:"button",class:"stg-hot","aria-label":label});b.style.left=pct(x);b.style.top=pct(y);b.style.width=pct(w);b.style.height=pct(h);b.addEventListener("click",function(e){e.stopPropagation();if(tok!==RUN.token)return;onTap(b);});frame.append(b);return b;},
+    /* 说的话（白）／想的话（灰）气泡 */
+    bubble:function(x,y,text,kind,side){var b=el("div",{class:"stg-bub "+(kind||"say")+(side?" "+side:""),text:fill(text)});b.style.left=pct(x);b.style.top=pct(y);frame.append(b);requestAnimationFrame(function(){b.classList.add("on");});return b;},
+    /* 说一句台词：底下字幕＋配音；等读完（关了配音就按字数等） */
+    line:function(key,o){var L0=s.lines[key];if(!L0)return Promise.resolve();return api.speak(L0.who,L0.text,o);},
+    speak:function(w,t,o){live();t=fill(t);o=o||{};
+      $(".stg-who",cap).textContent=w==="narr"?"":nameOf(w);$(".stg-who",cap).style.background=w==="narr"?"transparent":inkOf(w);$(".stg-txt",cap).textContent=t;cap.classList.toggle("narr",w==="narr");cap.classList.remove("in");void cap.offsetWidth;cap.classList.add("in");
+      VOICE.say(w,t);var t0=Date.now(),min=o.min!=null?o.min:Math.min(2600,400+t.length*60);
+      return new Promise(function(r){setTimeout(r,250);}).then(function(){return VOICE.wait();}).then(function(){var left=min-(Date.now()-t0);return left>0?new Promise(function(r){setTimeout(r,reduce?10:left);}):null;}).then(function(){live();});},
+    say:function(key){return api.line(key);},
+    text:function(key){var L0=s.lines[key];return L0?fill(L0.text):"";},
+    wait:function(ms){return new Promise(function(r){setTimeout(r,reduce?10:ms);}).then(live);},
+    button:function(label,o){o=o||{};return new Promise(function(res,rej){var b=el("button",{type:"button",class:"btn stg-go","data-auto":"1",text:fill(label)+(o.plain?"":" ▸")});bar.innerHTML="";bar.append(b);b.focus({preventScroll:true});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);SOUND.sfx("page");bar.innerHTML="";res();});});},
+    clearBar:function(){bar.innerHTML="";},
+    sfx:function(t){SOUND.sfx(t);},
+    get:get,set:function(k,v){set(k,v);save();},
+    log:function(answer){if(s.obs){logStep(s.obs,{try:1});logStep(s.obs,{answer:answer});commit();}},
+    /* 拖动：把一个元素在画面里拖来拖去；回调给出中心点（百分比） */
+    drag:function(node,onMove){var on=false;function at(e){var r=frame.getBoundingClientRect();var x=(e.clientX-r.left)/r.width*100,y=(e.clientY-r.top)/r.height*100;x=Math.max(0,Math.min(100,x));y=Math.max(0,Math.min(100,y));onMove(x,y);}
+      frame.addEventListener("pointerdown",function(e){if(e.target.closest(".stg-hot"))return;on=true;try{frame.setPointerCapture(e.pointerId);}catch(x){}at(e);e.preventDefault();});
+      frame.addEventListener("pointermove",function(e){if(on)at(e);});["pointerup","pointercancel","pointerleave"].forEach(function(t){frame.addEventListener(t,function(){on=false;});});}
+  };
+  return Promise.resolve().then(function(){return fn(api,s);}).then(function(){if(s.obs&&!(S.log[s.obs.id]&&S.log[s.obs.id].answer))api.log("看完了");},function(e){throw e;}).then(function(){VOICE.stop();ov.remove();document.body.classList.remove("staged");},function(e){VOICE.stop();ov.remove();document.body.classList.remove("staged");throw e;});};
 H.mc=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.ask?say(fill(variant(s,"ask")),s.who,tok):Promise.resolve();
   return pre.then(function(){return new Promise(function(res,rej){clearTask();if(s.feedbackWho==="xiaoman")closeReaderIfNarrow();keepQ();stepImg(s);if(s.q)task.append(q(s.q));var box=el("div",{class:"mc"});
     var ord=s.options.map(function(o,i){return i;});if(!s.stance&&!s.fixed)for(var z=ord.length-1;z>0;z--){var r=Math.floor(Math.random()*(z+1)),tz=ord[z];ord[z]=ord[r];ord[r]=tz;}ord.forEach(function(i){var o=s.options[i];var b=el("button",{class:"mco",type:"button",text:fill(o.text)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);

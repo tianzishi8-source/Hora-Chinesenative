@@ -52,8 +52,7 @@ paras:[
 "“可是他什么衣服也没有穿呀！”一个小孩子最后叫了出来。",
 "“上帝哟，你听这个天真的声音！”爸爸说。于是大家把这个孩子讲的话私自低声地传播开来。",
 "“他并没有穿什么衣服！有一个小孩子说他并没有穿什么衣服呀！”",
-"“他实在没有穿什么衣服呀！”最后所有的老百姓都说。皇帝有点儿发抖，因为他似乎觉得老百姓们所讲的话是真的。不过他自己心里却这样想：“我必须把这游行大典举行完毕。”因此他摆出一副更骄傲的神气。他的内臣们跟在他后面走，手中托着一条并不存在的后裙。"
-],
+"“他实在没有穿什么衣服呀！”最后所有的老百姓都说。皇帝有点儿发抖，因为他似乎觉得老百姓们所讲的话是真的。不过他自己心里却这样想：“我必须把这游行大典举行完毕。”因此他摆出一副更骄傲的神气。他的内臣们跟在他后面走，手中托着一条并不存在的后裙。"],
 gloss:{
  "不惜":"舍得，不顾惜。",
  "显耀":"显示、炫耀。",
@@ -91,8 +90,7 @@ texts:{
 "“暂时还不能告诉您。鄙人的这次侦查定会一鸣惊人！”",
 "那封信被他送进了国家印刷所。中午，京城里就到处贴满了警察局的告示：",
 "“兹悬赏一千马克捉拿私将写有‘陛下，您是世界上最傻的傻瓜，傻瓜中的傻瓜！’之黑信投入皇上马车之歹徒一名。”",
-"这样一来，还不到天黑，全瓦尔杰茨基公国的人便无人不知弗里德里赫国王是“世界上最傻的傻瓜，傻瓜中的傻瓜”了，而警察局长第二天也就下台大吉。"
-],
+"这样一来，还不到天黑，全瓦尔杰茨基公国的人便无人不知弗里德里赫国王是“世界上最傻的傻瓜，傻瓜中的傻瓜”了，而警察局长第二天也就下台大吉。"],
   gloss:{"晴天霹雳":"（pī lì）比喻突然发生的、让人震惊的意外事件。","笑容尽敛":"笑容全收起来了。","御体不适":"皇帝身体不舒服（对皇帝的客气说法）。","大逆不道":"冒犯君主、违背伦常的大罪。","倒背如流":"（dào）倒着背也像流水一样顺。形容读得极熟。","寡人":"古代君主对自己的谦称。","朕":"（zhèn）皇帝称自己。","爱卿":"君主对大臣的称呼。","枢密参赞":"国王身边参与机要事务的大臣。","嗫嚅":"（niè rú）想说话又吞吞吐吐不敢说出来。","龙颜大怒":"皇帝非常生气。","孤家":"君主自称。","社稷":"（jì）这里指国家。","诏书":"（zhào）皇帝颁发的命令。","丈二金刚摸不着头脑":"比喻弄不清是怎么回事。","岔子":"（chà zi）事故；错误。","怠慢":"冷淡，不重视。","谒见":"（yè）进见地位高的人。","踌躇满志":"（chóu chú）对自己非常得意。","一鸣惊人":"一做就做出惊人的成绩。","下台大吉":"丢了职位（带讽刺的说法）。","勾当":"（gòu dàng）坏事情。"},
   narration:{prefix:"voice/h",voice:{tts:"zh-CN-YunjianNeural",rate:"-8%",pitch:"-6Hz"}}}
 },
@@ -112,6 +110,17 @@ cast:{
   xiaoman:{name:"小满（同学）",short:"小满",extra:true,fig:{a:"img/xm-a.webp",b:"img/xm-b.webp",head:[505,228]},shape:"seal",glyph:"满",ink:"#b0662a",voice:{gender:"female",pitch:1.05,rate:1},voices:[{id:"a",name:"小满",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-6%",pitch:"-4Hz"}]},
   linyi:{name:"林一（同学）",extra:true,shape:"seal",glyph:"一",ink:"#3d5a7a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"林一",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-6%",pitch:"+0Hz"}]},
   ahe:{name:"阿禾（同学）",extra:true,shape:"seal",glyph:"禾",ink:"#5b7a3d",voice:{gender:"female",pitch:1.1,rate:1},voices:[{id:"a",name:"阿禾",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"+4%",pitch:"+6Hz"}]},
+  narr:{name:"旁白",extra:true,shape:"seal",glyph:"旁",ink:"#5a4a3a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"旁白",gender:"male",tts:"zh-CN-YunyangNeural",rate:"-10%",pitch:"-2Hz"}]},
+  emp:{name:"皇帝",extra:true,shape:"seal",glyph:"帝",ink:"#a8322a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"皇帝",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-4%",pitch:"-14Hz"}]},
+  lao:{name:"老大臣",extra:true,shape:"seal",glyph:"老",ink:"#3d4a6a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"老大臣",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-14%",pitch:"-26Hz"}]},
+  court:{name:"内臣",extra:true,shape:"seal",glyph:"臣",ink:"#4a5a7a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"内臣",gender:"male",tts:"zh-CN-YunjianNeural",rate:"+2%",pitch:"+4Hz"}]},
+  kid:{name:"孩子",extra:true,shape:"seal",glyph:"童",ink:"#c07a2a",voice:{gender:"male",pitch:1.3,rate:1},voices:[{id:"a",name:"孩子",gender:"male",tts:"zh-CN-YunxiaNeural",rate:"+0%",pitch:"+0Hz"}]},
+  dad:{name:"爸爸",extra:true,shape:"seal",glyph:"父",ink:"#6a5030",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"爸爸",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-4%",pitch:"-10Hz"}]},
+  crowd:{name:"老百姓",extra:true,shape:"seal",glyph:"众",ink:"#7a6a4a",voice:{gender:"female",pitch:1,rate:1},voices:[{id:"a",name:"老百姓",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"+6%",pitch:"+0Hz"}]},
+  king:{name:"国王",extra:true,shape:"seal",glyph:"王",ink:"#8a2a2a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"国王",gender:"male",tts:"zh-CN-YunyangNeural",rate:"-4%",pitch:"-18Hz"}]},
+  karl:{name:"男爵卡尔",extra:true,shape:"seal",glyph:"卡",ink:"#5a3a6a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"男爵卡尔",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-2%",pitch:"+16Hz"}]},
+  pm:{name:"首相",extra:true,shape:"seal",glyph:"相",ink:"#3a4a3a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"首相",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-14%",pitch:"-18Hz"}]},
+  chief:{name:"警察局长",extra:true,shape:"seal",glyph:"警",ink:"#2a3a5a",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"警察局长",gender:"male",tts:"zh-CN-YunjianNeural",rate:"+6%",pitch:"-4Hz"}]},
   me:{name:"我",sprite:"me",shape:"seal",glyph:"我",seal:"同学",ink:"--warm",
       sample:"这是我的声音。读到我的话时，就用这个声音。",
       voicesBy:{
@@ -145,13 +154,21 @@ days:[
   {t:"mc",who:"hy",q:"先告诉我：你是几年级？",key:"g",stance:true,
    options:[{text:"七年级",value:"7",who:"hy",reply:"好。"},{text:"八年级",value:"8",who:"hy",reply:"好。八年级的同学，有几处要多想一步。"}],
    obs:{id:"x1-grade",label:"年级",skill:"—"}},
+  {t:"pic",img:"img/street.webp",alt:"故事里的大城市：街上挂满彩旗，远处是皇宫"},
   {t:"say",who:"hy",text:"{name}，现在你是皇帝最信任的老大臣。皇帝派你去看看，新布织得怎样了。"}
  ]},
  {title:"织布间",mood:"focus",steps:[
   {t:"say",who:"hy",text:"全城的人都知道：这种布有个奇怪的特点，任何不称职的、或者愚蠢得不可救药的人，都看不见它。"},
   {t:"say",who:"pa",text:"大人，请走近一点！您看这花纹，是不是很美丽？"},
   {t:"say",who:"pb",text:"这颜色，是不是很漂亮？"},
-  {t:"say",who:"hy",text:"你走近了。织布机上，什么也没有。"},
+  {t:"scene",id:"loom",title:"织布间",obs:{id:"x1-scene",label:"织布间：拿放大镜找布",skill:"体验"},lines:{
+    intro:{who:"hy",text:"你走近了。拿起你的放大镜，在织布机上找一找那块布。"},
+    z1:{who:"pa",text:"这里是金线！"},
+    z2:{who:"pb",text:"这里是孔雀蓝！"},
+    z3:{who:"pa",text:"这一朵一朵的小玫瑰，多精致！"},
+    z4:{who:"pb",text:"大人，您看见了吧？您不会看不见吧？"},
+    think:{who:"lao",text:"愿上帝可怜我吧！我什么东西也没有看见！"},
+    end:{who:"hy",text:"你找遍了。织布机上，什么也没有。两个织工正等着你开口。"}}},
   {t:"mc",q:"你会说哪一句？（只是你自己的选择，不判对错）",key:"x1.loom1",stance:true,
    options:[{text:"我什么也没看见。",value:"我什么也没看见",who:"pa",reply:"哦？大人看不见？……我们织的布，只有不称职的人才看不见呀。"},
             {text:"嗯……很、很美。",value:"很、很美",who:"pb",reply:"大人好眼力！"},
@@ -292,6 +309,26 @@ days:[
   {t:"next",label:"读完了"}
  ]},
  {title:"孩子的话怎么传开",steps:[
+  {t:"scene",id:"parade",title:"游行大典",obs:{id:"x2-scene",label:"游行：说的、想的，孩子的话怎么传开",skill:"体验"},lines:{
+    intro:{who:"hy",text:"游行大典开始了，全城的人都挤在街上。去听一听：大家嘴上说的，和心里想的，一样不一样。"},
+    emp_s:{who:"emp",text:"对！我已经穿好了。这衣服合我的身吗？"},
+    emp_t:{who:"emp",text:"难道我是一个愚蠢的人吗？难道我不够资格当一个皇帝吗？"},
+    sw_s:{who:"pa",text:"这些衣服轻柔得像蜘蛛网一样，穿的人会觉得好像身上没有什么东西似的！"},
+    sw_t:{who:"pb",text:"生丝和金子，早就装进我们的腰包啦。"},
+    min_s:{who:"lao",text:"多么美的花纹！多么美的色彩！"},
+    min_t:{who:"lao",text:"我决不能让人知道我看不见布料。"},
+    bear_s:{who:"court",text:"陛下的后裙，我们托好了！"},
+    bear_t:{who:"court",text:"千万不能让人瞧出，我实在什么东西也没有看见。"},
+    wom_s:{who:"crowd",text:"乖乖！皇上的新装真是漂亮！他上衣下面的后裙是多么美丽！"},
+    wom_t:{who:"crowd",text:"要是我说看不见，大家就会说我不称职，或者太愚蠢。"},
+    find:{who:"hy",text:"大家都说了，也都想了，说的和想的没有一个一样。还有一个人，一直没开口。"},
+    kid:{who:"kid",text:"可是他什么衣服也没有穿呀！"},
+    dad:{who:"dad",text:"上帝哟，你听这个天真的声音！"},
+    whisper:{who:"crowd",text:"他并没有穿什么衣服！有一个小孩子说他并没有穿什么衣服呀！"},
+    all:{who:"crowd",text:"他实在没有穿什么衣服呀！"},
+    shake:{who:"narr",text:"皇帝有点儿发抖，因为他似乎觉得老百姓们所讲的话是真的。不过他自己心里却这样想——"},
+    emp_end:{who:"emp",text:"我必须把这游行大典举行完毕。"},
+    proud:{who:"narr",text:"因此他摆出一副更骄傲的神气。他的内臣们跟在他后面走，手中托着一条并不存在的后裙。"}}},
   {t:"pick",who:"hy",ask:"点出孩子那句话。",task:"点出孩子说的话",label:"点出那一句",
    obs:{id:"x2-child",label:"找到孩子的话",skill:"提取信息"},
    accept:{paras:[33]},fallback:["在第34段。"],okText:"“可是他什么衣服也没有穿呀！”"},
@@ -354,6 +391,24 @@ days:[
  {title:"一封信怎样传遍全国",steps:[
   {t:"mc",q:"《黑信》可以分成三部分。哪一种分法对？",obs:{id:"x3-seg",label:"《黑信》分三部分",skill:"理清结构：分段"},
    options:[{text:"收到黑信（第1—5段）；开会议处（第6—12段）；贴出告示，全国皆知（第13—17段）",ok:true,reply:"对。"},{text:"收到黑信；国王生病；国王去世",ok:false,reply:"国王没有生病，那是报上的说法。"},{text:"抓到写信人；审问；释放",ok:false,reply:"写信的人始终没有抓到。"}]},
+  {t:"scene",id:"blackletter",title:"一封黑信",obs:{id:"x3-scene",label:"黑信：从一封信到贴满全城",skill:"体验"},lines:{
+    c1:{who:"narr",text:"瓦尔杰茨基公国国王弗里德里赫乘着马车，被狂热的人群簇拥着走得正欢。忽然，有一封信飘落到他的膝上。"},
+    read:{who:"king",text:"陛下，您是世界上最傻的傻瓜，傻瓜中的傻瓜！"},
+    c2:{who:"narr",text:"弗里德里赫国王顿时笑容尽敛。"},
+    c3:{who:"narr",text:"国王一回到宫里，便躲进了书室，潜心琢磨那封大逆不道的信。"},
+    mutter:{who:"king",text:"陛下，您是世界上最傻的傻瓜……傻瓜中的傻瓜……"},
+    noname:{who:"king",text:"这个坏蛋连名字也没留！"},
+    c4:{who:"narr",text:"半小时后，国王下令召开国务会议。会一直开到深夜。"},
+    k1:{who:"king",text:"诸位爱卿，竟有歹徒将一封黑信投进了寡人所乘的马车。信上说：陛下，您是世界上最傻的傻瓜，傻瓜中的傻瓜！"},
+    pale:{who:"narr",text:"四位枢密参赞的脸色顿时变得煞白。"},
+    karl:{who:"karl",text:"陛下，那封信不是写给您的吧！"},
+    k2:{who:"king",text:"“陛下”这个称呼，在全国范围内只属于孤家一人！当然是写给寡人的啦！"},
+    pm:{who:"pm",text:"您打算怎样办这件案子？"},
+    chief:{who:"chief",text:"暂时还不能告诉您。鄙人的这次侦查定会一鸣惊人！"},
+    c5:{who:"narr",text:"那封信被他送进了国家印刷所。"},
+    notice:{who:"chief",text:"兹悬赏一千马克捉拿私将写有‘陛下，您是世界上最傻的傻瓜，傻瓜中的傻瓜！’之黑信投入皇上马车之歹徒一名。"},
+    c6:{who:"narr",text:"这样一来，还不到天黑，全瓦尔杰茨基公国的人便无人不知弗里德里赫国王是“世界上最傻的傻瓜，傻瓜中的傻瓜”了。"},
+    c7:{who:"narr",text:"而警察局长第二天也就下台大吉。"}}},
   {t:"mc",q:"最后让全国都知道“国王是傻瓜”的，是谁？",obs:{id:"x3-who",label:"谁让全国都知道",skill:"理解情节：反转"},
    options:[{text:"国王和警察局长自己",ok:true,reply:"对。写信的人只扔了一封信，是他们把它印出来、贴满了全城。"},{text:"写信的人",ok:false,reply:"写信的人只扔进了马车。谁把它贴到了大街上？"},{text:"议员们",ok:false,reply:"议员们连出了什么事都不知道。"}]},
   {t:"say",who:"hy",text:"用这三部分，把《黑信》讲给同桌听，一分钟。"},
@@ -410,12 +465,13 @@ days:[
 {title:"安徒生和他的放大镜",short:"放大镜",beats:[
  {title:"写这个故事的人",mood:"memory",steps:[
   {t:"text",id:"main"},
+  {t:"pic",img:"img/odense.webp",alt:"丹麦欧登塞的小街：彩色的木筋小屋，鞋匠铺门口挂着一只靴子"},
   {t:"say",who:"hy",text:"读了他的故事，来认识一下他。1805年，安徒生出生在丹麦的欧登塞。父亲是个鞋匠，家里很穷。他十一岁的时候，父亲去世了。"},
-  {t:"mc",who:"hy",q:"猜一猜：十四岁的安徒生，一个人去了首都哥本哈根。他想去做什么？",obs:{id:"x4-14",label:"十四岁去哥本哈根",skill:"了解作者"},
+  {t:"mc",who:"hy",img:"img/andersen.webp",alt:"示意画：一个瘦高的少年背着小包袱，回头向门口的妈妈挥手",q:"猜一猜：十四岁的安徒生，一个人去了首都哥本哈根。他想去做什么？",obs:{id:"x4-14",label:"十四岁去哥本哈根",skill:"了解作者"},
    options:[{text:"当演员、唱歌",ok:true,reply:"对。他想登上剧院的舞台，可是处处碰壁。"},{text:"当作家",ok:"half",reply:"那是后来的事。十四岁时，他想登上舞台。"},{text:"接着当鞋匠",ok:false,reply:"他偏不想接着当鞋匠。"}]},
   {t:"say",who:"hy",text:"后来，有人资助他上学。他坐在教室里，比同学大好几岁。他一直被人看不起，可他一直在写。"},
   {t:"say",who:"hy",text:"他后来写了一个故事：一只灰灰的、大家都嫌它丑的小鸟，吃了很多苦，最后才发现，自己是一只天鹅。"},
-  {t:"mc",q:"这个故事叫什么？",obs:{id:"x4-duck",label:"《丑小鸭》",skill:"了解作者"},
+  {t:"mc",img:"img/swan.webp",alt:"湖面上，一只天鹅低头看见水里自己的倒影，远处还有三只天鹅",q:"这个故事叫什么？",obs:{id:"x4-duck",label:"《丑小鸭》",skill:"了解作者"},
    options:[{text:"《丑小鸭》",ok:true,reply:"对。很多人认为，丑小鸭写的就是安徒生自己。"},{text:"《海的女儿》",ok:false,reply:"《海的女儿》讲的是一条小人鱼。顺便说一句，它和《皇帝的新装》是同一天出版的：1837年4月7日。"},{text:"《卖火柴的小女孩》",ok:false,reply:"那是一个在雪夜里卖火柴的小女孩。"}]},
   {t:"say",who:"ahe",text:"被人看不起的人，写出了最能看穿别人的故事。"}
  ]},
@@ -457,7 +513,15 @@ days:[
    options:[{text:"内臣们跟在后面，手中托着一条并不存在的后裙",ok:true,reply:"对。"},{text:"皇帝回宫换上了真衣服",ok:false,reply:"故事没写到那里。"}]}
  ]},
  {title:"童话是一面放大镜",steps:[
+  {t:"pic",img:"img/glass.webp",alt:"一本打开的故事书，放大镜下，鼓掌的人群脸上都冒着汗"},
   {t:"say",who:"hy",text:"人人都会为了面子说一点假话。平时，这件事小得看不出来。"},
+  {t:"scene",id:"lens",title:"放大镜",obs:{id:"x4-scene",label:"放大镜：笑脸后面藏着什么",skill:"体验"},lines:{
+    intro:{who:"hy",text:"这是书里的一页：大家都在笑，都在鼓掌。拿放大镜照一照，笑脸后面藏着什么。"},
+    min:{who:"lao",text:"我决不能让人知道我看不见布料。"},
+    emp:{who:"emp",text:"我什么也没有看见！这可骇人听闻了。"},
+    sw:{who:"pa",text:"他们越怕丢脸，我们的腰包就越鼓。"},
+    ct:{who:"court",text:"别人都看见了？……那我也说美吧。"},
+    end:{who:"hy",text:"看见了吗？笑是装出来的，怕是真的。"}}},
   {t:"say",who:"hy",text:"安徒生发明了一块“傻子看不见的布”，这件事一下子就大到，连一个孩子都看得出来。童话就像一面放大镜：外面的布是假的，里面的人是真的。"},
   {t:"frame",who:"hy",key:"x4.glass",q:"在《皇帝的新装》里，什么是假的？什么是真的？",
    example:"例：假的是<b>那块布</b>。真的是<b>人怕丢脸，大家跟着说假话</b>。",
@@ -520,6 +584,26 @@ days:[
   {t:"input",key:"x5.start",rows:5,q:"写你的童话开头（三四句），可以用你昨天仿写的开头。",init:"x4.open",ph:"许多年以前，有一位……",min:30,short:"再写几句，把规则也写出来。",
    obs:{id:"x5-start",label:"童话开头",skill:"写作"},
    replies:[{who:"hy",text:"开头有了。回家把它写完：七年级300字左右，八年级500字左右。明天交上来，大家一起读。"}]},
+  {t:"scene",id:"theater",title:"小剧场：听一遍示范",obs:{id:"x5-scene",label:"小剧场：听角色示范",skill:"表演"},lines:{
+    intro:{who:"hy",text:"这是三组的小剧场。点你演的角色，听一遍示范，再跟着读一读。"}},
+   groups:[
+    {name:"第一组　新装前半",bg:"img/loom.webp",roles:[
+      {name:"旁白",lines:[["narr","（像讲故事，不急）","许多年以前，有一位皇帝，他非常喜欢好看的新衣服。"],["narr","（压低一点，让观众竖起耳朵）","有一天，城里来了两个骗子。"]]},
+      {name:"骗子甲",av:"img/av-pa.webp",lines:[["pa","（鞠躬，满脸诚恳）","陛下，我们是织工。我们能织出人类所能想到的最美丽的布！"],["pa","（歪着头，盯着老大臣）","嗳，您一点意见也没有吗？"]]},
+      {name:"骗子乙",av:"img/av-pb.webp",lines:[["pb","（压低声音，神秘地）","而且，这布有一种奇怪的特性：任何不称职的，或者愚蠢得不可救药的人，都看不见它。"],["pb","（热情地）","大人，请走近一点！您看这花纹，是不是很美丽？"]]},
+      {name:"皇帝（兼官员）",av:"img/av-emp.webp",lines:[["emp","（眼睛一亮，转身对观众说心里话）","那真是理想的衣服！我穿了它，就能看出谁不称职，谁是傻子！"],["emp","（踱步，越说越慢）","我倒很想知道布织得怎样了……可是，万一我看不见呢？"]]},
+      {name:"老大臣",av:"img/av-lao.webp",lines:[["lao","（眼睛睁得特别大，对观众小声）","愿上帝可怜我吧！我什么东西也没有看见！"],["lao","（停一下，忽然大声）","哎呀，美极了！真是美妙极了！"]]}]},
+    {name:"第二组　新装后半",bg:"img/parade.webp",roles:[
+      {name:"旁白（兼爸爸）",av:"img/av-dad.webp",lines:[["narr","（说到“可是”停住，等孩子喊）","谁也不愿意让人知道自己什么也看不见。可是——"],["dad","（扮爸爸：吓一跳，又忍不住）","上帝哟，你听这个天真的声音！"]]},
+      {name:"皇帝",av:"img/av-emp.webp",lines:[["emp","（脸色发白，对观众小声）","这是怎么一回事呢？我什么也没有看见！难道我是一个愚蠢的人吗？"],["emp","（转回来，一下子大声）","哎呀，真是美极了！我十二分的满意！"],["emp","（有点儿发抖，停一下，再挺起胸）","我必须把这游行大典举行完毕。"]]},
+      {name:"骗子",av:"img/av-pa.webp",lines:[["pa","（高高举起两手，像捧着衣服）","请看！新衣服缝好了！这是裤子！这是袍子！这是外衣！"],["pa","（彬彬有礼，忍住笑）","现在请皇上脱下衣服，好叫我们在这个大镜子面前为您换上新衣。"]]},
+      {name:"老大臣（兼内臣）",av:"img/av-lao.webp",lines:[["lao","（指着空织布机，抢着说）","陛下请看：多么美的花纹！多么美的色彩！"],["lao","（夸得越响越好）","上帝，这衣服多么合身啊！裁得多么好看啊！"]]},
+      {name:"孩子（兼百姓）",av:"img/av-kid.webp",lines:[["crowd","（扮百姓，跟着大家鼓掌）","乖乖！皇上的新装真是漂亮！"],["kid","（换成孩子，拉着爸爸的衣角，大声）","可是他什么衣服也没有穿呀！"]]}]},
+    {name:"第三组　黑信",bg:"img/council.webp",roles:[
+      {name:"旁白（兼首相）",av:"img/av-pm.webp",lines:[["narr","（前半句热闹，“忽然”以后放慢）","弗里德里赫国王坐着马车，被欢呼的人群簇拥着。忽然，一封信飘落到他的膝上。"],["pm","（扮首相：皱着眉，慢慢问）","警察局长，您打算怎样办这件案子？"]]},
+      {name:"国王",av:"img/av-king.webp",lines:[["king","（笑眯眯地拆开念，念到“傻瓜”笑容一下子没了）","陛下，您是世界上最傻的傻瓜，傻瓜中的傻瓜！"],["king","（一遍遍念，越念越快，突然停住大叫）","这个坏蛋连名字也没留！"],["king","（龙颜大怒，拍桌子）","男爵爱卿！“陛下”这个称呼，在全国范围内只属于孤家一人！"]]},
+      {name:"男爵卡尔",av:"img/av-karl.webp",lines:[["karl","（脸色煞白，吞吞吐吐）","陛、陛下……那封信……不是写给您的吧？"],["karl","（缩回去，小声）","是，是……当然是写给陛下的……"]]},
+      {name:"警察局长",av:"img/av-chief.webp",lines:[["chief","（搓着手，踌躇满志）","暂时还不能告诉您。鄙人的这次侦查，定会一鸣惊人！"],["chief","（把告示一放，脱帽鞠躬）","下台大吉。"]]}]}]},
   {t:"say",who:"hy",text:"最后十分钟，三组各在教室一角走一遍台词。"},
   {t:"openBook"}
  ]}
@@ -631,9 +715,9 @@ notebook:{
   {n:1,title:"我对老大臣说",get:function(D){return D.x1&&D.x1.toMinister;}},
   {n:1,title:"仿写：想的和说的",get:function(D){return D.x1&&D.x1.pair&&D.x1.pair.text;}},
   {n:2,title:"仿写：多么……！多么……！",get:function(D){return D.x2&&D.x2.echo;}},
-  {n:2,title:"【八年级】换一个人来讲",get:function(D){return D.x2&&D.x2.view;}},
+  {n:2,title:"换一个人来讲",get:function(D){return D.x2&&D.x2.view;}},
   {n:2,title:"如果没有那个孩子",get:function(D){return D.x2&&D.x2.noChild;}},
-  {n:3,title:"【八年级】两篇写法比较",get:function(D){return D.x3&&D.x3.cmp&&D.x3.cmp.text;}},
+  {n:3,title:"两篇写法比较",get:function(D){return D.x3&&D.x3.cmp&&D.x3.cmp.text;}},
   {n:4,title:"外面假的，里面真的",get:function(D){return D.x4&&D.x4.glass&&D.x4.glass.text;}},
   {n:4,title:"仿写开头",get:function(D){return D.x4&&D.x4.open;}},
   {n:4,title:"我的魔法规则",get:function(D){var d=D.x4r||{};var o=d.items&&d.items[0];return o?("大家在假装："+o.a+"\n规则："+o.b+"\n谁先碰上："+o.c):"";}},
