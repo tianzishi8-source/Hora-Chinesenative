@@ -47,6 +47,7 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
   var MK = function (t) { return esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/~~(.+?)~~/g, "<s>$1</s>").replace(/__(.+?)__/g, "<u>$1</u>").replace(/\[\[(.+?)\]\]/g, "<mark>$1</mark>").replace(/^原：/, "【原文】").replace(/^译：/, "【译文】").replace(/^改：/, "【示范】"); };
   var CUE = { call: "点名回答", say: "全班一起说", hand: "举手", stand: "站队", gesture: "比划", "catch": "抓错", race: "比赛读" };
   // 逐句翻译库：步骤里 sent:"p1-1"（part:"src" 原文，默认译文）和对译卡 pair 从这里取句子，和投屏一致
+  var ld = document.createElement("script"); ld.src = "ladder.js?t=" + Date.now();
   var ss = document.createElement("script"); ss.src = "../yueyanglou-ke/data/sents.js?t=" + Date.now();
   ss.onload = ss.onerror = function () { document.body.appendChild(s); };
   var SENT = function (id) { return (window.YK_SENTS || []).filter(function (y) { return y.id === id; })[0]; };
@@ -59,7 +60,7 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
     L.segments.forEach(function (sg, i) {
       total += sg.min || 0;
       h += "<h2>" + (i + 1) + "　" + esc(sg.t) + "<small>" + (sg.min || "?") + " 分钟</small></h2>";
-      sg.steps.forEach(function (st0) {
+      [].concat.apply([], sg.steps.map(function (s0) { return s0.ladder && window.PROJ_LADDER ? window.PROJ_LADDER(s0, L.lead) : [s0]; })).forEach(function (st0) {
         var st = st0;
         if (st0.sent) { var x0 = SENT(st0.sent); st = {}; Object.keys(st0).forEach(function (k) { st[k] = st0[k]; }); st.say = (st0.pre || "") + (x0 ? (st0.part === "src" ? x0.src : x0.tr) : "（缺句子 " + st0.sent + "）") + (st0.post || ""); }
         var v = st.vis;
@@ -80,6 +81,7 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
           }
         }
         if (st.board && st.board.length) h += '<div class="box"><b class="t">黑板</b>　' + esc(st.board.join("；")) + "</div>";
+        if (st._lad === 0) h += '<div class="tip">【三级台阶提问】</div>';
         if (st.cue) h += '<div class="box cue"><b class="t">【' + (CUE[st.cue.k] || st.cue.k) + "】</b>" + esc(st.cue.t) + (st.note ? "<br>" + esc(st.note) : "") + "</div>";
         else if (!st.say && (st.note || st.ask)) h += '<div class="box task"><b class="t">屏幕提示</b>　' + esc(st.ask || st.note) + "</div>";
         if (st.read) h += '<div class="st read">【' + (st.read.mode === "echo" ? "跟读" : "范读") + "】" + st.read.paras.map(function (p) { return "第" + p.slice(1) + "段"; }).join("、") + "</div>";
@@ -92,7 +94,8 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
     document.title = L.title + " " + (L.short || "") + " · 课堂剧本";
     document.getElementById("out").innerHTML = "<h1>" + esc(L.title) + "</h1><p class='sub'>" + esc(L.sub || "") + "</p><p class='meta'>共 " + L.segments.length + " 个环节，" + total + " 分钟。主讲：" + esc(name(L.lead || "fan")) + "。本页由投屏配置自动生成，与投屏逐句一致；可直接打印。</p>" + h;
   };
-  document.body.appendChild(ss);
+  ld.onload = ld.onerror = function () { document.body.appendChild(ss); };
+  document.head.appendChild(ld);
 })();
 </script>
 </body>

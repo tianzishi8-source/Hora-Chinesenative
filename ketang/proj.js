@@ -43,7 +43,7 @@
   }
   L.segments.forEach(function (sg, si) {
     SEGSTART.push(STEPS.length);
-    sg.steps.forEach(function (st0) { splitLong(resolveSent(st0)).forEach(function (st) { st._seg = si; if (st.id) IDS[st.id] = STEPS.length; STEPS.push(st); }); });
+    sg.steps.forEach(function (st00) { (st00.ladder && window.PROJ_LADDER ? window.PROJ_LADDER(st00, L.lead) : [st00]).forEach(function (st0) { splitLong(resolveSent(st0)).forEach(function (st) { st._seg = si; if (st.id) IDS[st.id] = STEPS.length; STEPS.push(st); }); }); });
   });
 
   /* ---------- 画布与缩放 ---------- */
@@ -754,7 +754,7 @@
     if (NUDGE_SETS[st.timer.nudge]) return st.timer.nudge;
     var lb = st.timer.label || "";
     if (/比划|看图|听/.test(lb) && !/写|订正/.test(lb)) return "look";
-    return /同桌补充|同桌猜|复述|说给|讨论|小组|交流|商量|口头|说一说|互相说/.test(lb) ? "talk" : "write";
+    return /同桌补充|同桌猜|互讲|复述|说给|讨论|小组|交流|商量|口头|说一说|互相说/.test(lb) ? "talk" : "write";
   }
   function nudge(token) {
     var st = STEPS[cur], kind = nudgeKind(st), set = NUDGE_SETS[kind];
@@ -866,6 +866,7 @@
     // 顶栏
     segBox.querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === st._seg); b.classList.toggle("done", i < st._seg); });
     renderVis(S.v, S.board, S.corner);
+    if (!st.timer) { var bcl = vis.querySelector(".big-clock"); if (bcl) bcl.hidden = true; }   // 同一张卡留着时，上一步的计时钟藏起来
     fitCards();
     var ob = vis.querySelector(".copyb"); if (ob) ob.remove();
     if (st.copy) vis.insertAdjacentHTML("beforeend", '<div class="copyb">✎ ' + esc(typeof st.copy === "string" ? st.copy : "抄下来") + "</div>");
@@ -893,10 +894,11 @@
     };
     if (st.read) run = (pr ? sayPrompt() : Promise.resolve()).then(function () { return token === TOKEN ? doRead(st, token) : null; });
     else if (pr) run = sayPrompt();
+    if (!run && st.say) { spotlight(st.who); showLine(st.who, st.say); talking(st.who, true); run = say(st.who, voiceText(st), token).then(function () { if (token === TOKEN) talking(st.who, false); }); }
+    else if (!run && st.note) { spotlight(null); showLine(null, st.note, true); run = Promise.resolve(); }
+    else if (!run) { spotlight(null); run = Promise.resolve(); }
+    // 点名：先把这一步的话说完（提问），再开始点名（11-09：三级台阶提问的步骤既有话又有点名）
     if (st.cue && st.cue.k === "call" && roster().length) { group = []; curName = ""; run = run.then(function () { if (token === TOKEN) startCall(st.cue, token); }); }
-    else if (st.say) { spotlight(st.who); showLine(st.who, st.say); talking(st.who, true); run = say(st.who, voiceText(st), token).then(function () { if (token === TOKEN) talking(st.who, false); }); }
-    else if (st.note) { spotlight(null); showLine(null, st.note, true); run = Promise.resolve(); }
-    else { spotlight(null); run = Promise.resolve(); }
     if (st.note && st.say) { /* 不会同时出现 */ }
     if (st.timer) { if (!st.say && !st.read && !pr) showLine(null, st.note || st.timer.label, true); startTimer(st.timer, token); }
     if (st.respond) showRespond(st.respond, token);

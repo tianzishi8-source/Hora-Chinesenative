@@ -7,7 +7,10 @@
 "use strict";
 window.YK_TEACHER = function (o) {
   var esc = o.esc, stamp = o.stamp, dur = o.dur, el = o.el, ROWS = null, CLS = "", err = "", TAB = "class", FOCUS = "", QF = "", loading = false;
-  var STORY = o.story || [], WORDS = o.words || [], TESTS = o.tests || [], TEXT = o.text || null;
+  var STORY = o.story || [], WORDS = o.words || [], TESTS = o.tests || [], TEXT = o.text || null, SENTS = o.sents || [];
+  var TP = SENTS.length ? ORDER0().filter(function (p) { return SENTS.some(function (x) { return "p" + x.p === p; }); }) : [];
+  function ORDER0() { return o.order || (o.text && o.text.order) || ["p1", "p2", "p3", "p4", "p5"]; }
+  function transOf(d, p) { var t = (d.trans || {})[p] || {}, sf = t.self || {}, ks = SENTS.filter(function (x) { return "p" + x.p === p; }); return { best: t.best, n: ks.length, seen: ks.filter(function (x) { return sf[x.id] != null; }).length, ok: ks.filter(function (x) { return sf[x.id] === 1; }).length, no: ks.filter(function (x) { return sf[x.id] === 0; }).length }; }
   var ORDER = o.order || (TEXT && TEXT.order) || ["p1", "p2", "p3", "p4", "p5"], PN = o.pname || {};
   var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
   var RP = ORDER.concat(["all"]);
@@ -80,6 +83,7 @@ window.YK_TEACHER = function (o) {
     var rs = RP.map(function (p) { var r = (d.recite || {})[p]; return r && r.best != null ? r.best / 100 : null; }).filter(function (v) { return v != null; });
     if (rs.length) parts.push(rs.reduce(function (a, b) { return a + b; }, 0) / rs.length);
     var seen = Object.keys(d.cards || {}).length; if (seen) parts.push(mastered(d) / seen);
+    var tb = TP.map(function (p) { return transOf(d, p).best; }).filter(function (v) { return v != null; }); if (tb.length) parts.push(tb.reduce(function (a, b) { return a + b; }, 0) / tb.length / 100);
     return { g: g, ok: ok, p: parts.length ? parts.reduce(function (a, b) { return a + b; }, 0) / parts.length : null };
   }
   function lvT(d) { var t = tot(d); return t.p == null ? "" : lv(t.p, 1); }
@@ -118,9 +122,10 @@ window.YK_TEACHER = function (o) {
 
   /* ---------- 全班一览 ---------- */
   function tabClass(R) {
-    var h = '<p class="note">每格：沉浸体验 ✓ 读完这一章、“半”读到一半，下面是写了几段；背诵、测验是最高分（测验是最近一次，下面小字是最高）；字词是掌握几张 / 练过几张。颜色：绿 八成以上，黄 一半以上，红 不到一半。点名字看这个学生的全部作答。</p>';
+    var h = '<p class="note">每格：沉浸体验 ✓ 读完这一章、“半”读到一半，下面是写了几段；翻译是“翻译练一练”最高分，下面是逐句自评“说对了”几句；背诵、测验是最高分（测验是最近一次，下面小字是最高）；字词是掌握几张 / 练过几张。颜色：绿 八成以上，黄 一半以上，红 不到一半。点名字看这个学生的全部作答。</p>';
     h += '<div class="tgridw"><table class="tgrid"><tr><th>学生</th>' +
       STORY.map(function (c, i) { return '<th title="' + esc(c.title) + '"><span>' + chN(i) + "</span><small>" + esc(c.title) + "</small></th>"; }).join("") +
+      TP.map(function (p) { return "<th><span>翻译</span><small>" + esc(pname(p)) + "</small></th>"; }).join("") +
       RP.map(function (p) { return "<th><span>背诵</span><small>" + esc(pname(p)) + "</small></th>"; }).join("") +
       (WORDS.length ? "<th><span>字词</span><small>掌握 / 练过</small></th>" : "") +
       TESTS.map(function (t) { return '<th title="' + esc(t.title) + '"><span>' + esc(t.title.replace("模拟", "")) + "</span><small>" + esc(t.blurb ? "第" + (t.after || "") + "节后" : "") + "</small></th>"; }).join("") +
@@ -128,6 +133,7 @@ window.YK_TEACHER = function (o) {
     R.forEach(function (d) {
       h += '<tr' + (d._empty ? ' class="tempty"' : "") + '><td><button type="button" class="tname" data-stu="' + esc(d._sid) + '">' + esc(NAME(d)) + "</button>" + (d._empty ? "<small>还没打开课堂版</small>" : "") + "</td>";
       STORY.forEach(function (c) { var s = (d.story || {})[c.id], w = writesOf(d, c).length; h += '<td class="tc' + (s && s.done ? " done" : s ? " part" : "") + '">' + (s ? "<b>" + (s.done ? "✓" : "半") + "</b>" + (w ? "<small>写 " + w + " 段</small>" : "") : "") + "</td>"; });
+      TP.forEach(function (p) { var t = transOf(d, p); h += t.seen || t.best != null ? '<td class="tc ' + (t.best != null ? lvS(t.best) : lv(t.ok, t.n)) + '"><b>' + (t.best != null ? t.best : "—") + "</b><small>说对 " + t.ok + "/" + t.n + "</small></td>" : '<td class="tc"></td>'; });
       RP.map(function (p) { var r = (d.recite || {})[p]; h += r && r.best != null ? '<td class="tc ' + lvS(r.best) + '"><b>' + r.best + "</b></td>" : '<td class="tc"></td>'; });
       if (WORDS.length) { var seen = Object.keys(d.cards || {}).length, m = mastered(d); h += '<td class="tc ' + lv(m, seen) + '">' + (seen ? "<b>" + m + " / " + seen + "</b><small>共 " + WORDS.length + " 张</small>" : "") + "</td>"; }
       TESTS.forEach(function (t) { var x = testLast(d, t); h += x ? '<td class="tc ' + lvS(x.last.score) + '"><b>' + x.last.score + "</b><small>最高 " + x.best + (x.tries > 1 ? " · " + x.tries + "次" : "") + "</small></td>" : '<td class="tc"></td>'; });
@@ -137,6 +143,8 @@ window.YK_TEACHER = function (o) {
     // 全班
     h += '<tr class="tfoot"><td>全班</td>';
     STORY.forEach(function (c) { var n = R.filter(function (d) { var s = (d.story || {})[c.id]; return s && s.done; }).length; h += '<td class="tc"><b>' + n + "人读完</b></td>"; });
+    TP.forEach(function (p) { var v = R.map(function (d) { return transOf(d, p).best; }).filter(function (x) { return x != null; }), sn = R.filter(function (d) { return transOf(d, p).seen; }).length, a = v.length ? Math.round(v.reduce(function (x, y) { return x + y; }, 0) / v.length) : null;
+      h += '<td class="tc ' + lvS(a) + '">' + (sn || v.length ? "<b>" + (a != null ? "平均 " + a : "—") + "</b><small>" + sn + " 人过过</small>" : "") + "</td>"; });
     RP.forEach(function (p) { var v = R.map(function (d) { var r = (d.recite || {})[p]; return r && r.best != null ? r.best : null; }).filter(function (x) { return x != null; }); var a = v.length ? Math.round(v.reduce(function (x, y) { return x + y; }, 0) / v.length) : null;
       h += '<td class="tc ' + lvS(a) + '">' + (v.length ? "<b>平均 " + a + "</b><small>" + v.length + " 人练过</small>" : "") + "</td>"; });
     if (WORDS.length) { var sm = 0, ss = 0; R.forEach(function (d) { sm += mastered(d); ss += Object.keys(d.cards || {}).length; }); h += '<td class="tc ' + lv(sm, ss) + '">' + (ss ? "<b>掌握 " + Math.round(sm / ss * 100) + "%</b>" : "") + "</td>"; }
@@ -186,7 +194,7 @@ window.YK_TEACHER = function (o) {
 
   /* ---------- 按题看 ---------- */
   function tabQ(R) {
-    var opts = [["", "全部"]].concat(TESTS.map(function (t) { return [t.id, t.title]; }), WORDS.length ? [["words", "字词"]] : [], TEXT ? [["recite", "背诵"]] : []);
+    var opts = [["", "全部"]].concat(TESTS.map(function (t) { return [t.id, t.title]; }), WORDS.length ? [["words", "字词"]] : [], TEXT ? [["recite", "背诵"]] : [], SENTS.length ? [["trans", "逐句翻译"]] : []);
     var h = '<div class="row"><select id="tqQf" aria-label="看哪一部分">' + opts.map(function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0] === QF ? " selected" : "") + ">" + esc(x[1]) + "</option>"; }).join("") + "</select></div>" +
       '<p class="note">每道题：多少人做了、多少人答对、错答了什么（谁答的）；简答题列出每个人的原话，方便比较水平。答对不到一半的题自动展开。测验按每人最近一次统计。</p>';
     var S = qStats(R);
@@ -220,6 +228,24 @@ window.YK_TEACHER = function (o) {
           '<span class="pill ' + lv(s.seen - s.weak.length, s.seen) + '">掌握 ' + (s.seen - s.weak.length) + "/" + s.seen + "</span></summary>" +
           '<p class="note">例句：' + esc(strip(s.w.sent)) + "<br>意思：<b>" + esc(s.w.ans) + "</b>" + (s.wrong ? "　全班错过 " + s.wrong + " 次" : "") + "</p>" +
           (s.weak.length ? '<ul class="tmiss"><li><b>' + s.weak.length + ' 人 </b><span>还没掌握：</span><span class="who">' + esc(s.weak.join("、")) + "</span></li></ul>" : "") + "</details>";
+      });
+    }
+    if (SENTS.length && (!QF || QF === "trans")) {
+      h += '<h4 class="tday">逐句翻译　<small>学生自己先说意思、再看译文后的自评；“练一练错”是翻译练一练里这句做错的次数</small></h4>';
+      var dw = {}; R.forEach(function (d) { (d.drills || []).forEach(function (r) { if (r.kind === "trans") (r.wrong || []).forEach(function (ref) { var id = ref.replace(/-(ch|fill)$/, ""); (dw[id] = dw[id] || []).push(d.name); }); }); });
+      TP.forEach(function (p) {
+        h += '<p class="note" style="margin:8px 0 2px"><b>' + esc(pname(p)) + "</b></p>";
+        SENTS.filter(function (x) { return "p" + x.p === p; }).forEach(function (x) {
+          var ok = [], half = [], no = [];
+          R.forEach(function (d) { var v = (((d.trans || {})[p] || {}).self || {})[x.id]; if (v === 1) ok.push(d.name); else if (v === 0.5) half.push(d.name); else if (v === 0) no.push(d.name); });
+          var seen = ok.length + half.length + no.length, wr = dw[x.id] || [];
+          h += '<details class="tq"' + (no.length >= 2 || wr.length >= 2 ? " open" : "") + "><summary><b>" + (x.star ? "★ " : "") + esc(x.src) + "</b><small>过过 " + seen + "/" + R.length + " 人" + (wr.length ? "　练一练错 " + wr.length + " 次" : "") + "</small>" +
+            (seen ? '<span class="pill ' + lv(ok.length, seen) + '">说对 ' + ok.length + "/" + seen + "</span>" : "") + "</summary>" +
+            '<p class="note">译文：' + esc(x.tr) + "</p>" + '<ul class="tmiss">' +
+            (no.length ? "<li><b>" + no.length + " 人 </b><span>没说出来：</span><span class=\"who\">" + esc(no.join("、")) + "</span></li>" : "") +
+            (half.length ? "<li><b>" + half.length + " 人 </b><span>差一点：</span><span class=\"who\">" + esc(half.join("、")) + "</span></li>" : "") +
+            (wr.length ? "<li><b>练一练做错：</b><span class=\"who\">" + esc(wr.join("、")) + "</span></li>" : "") + "</ul></details>";
+        });
       });
     }
     if (TEXT && (!QF || QF === "recite")) {
@@ -260,6 +286,12 @@ window.YK_TEACHER = function (o) {
           ws.map(function (w) { return '<span class="tw">' + (w.kind ? "【" + esc(w.kind) + "】" : "") + esc(w.text) + "</span>"; }).join("") + "</dd>";
       });
     }
+    // 逐句翻译
+    if (TP.length) {
+      h += '<dt class="tdh">逐句翻译</dt><dd class="tdh">' + TP.map(function (p) { var t = transOf(d, p); return pname(p) + " " + (t.seen ? "说对 " + t.ok + "/" + t.n : "—") + (t.best != null ? "（练一练 " + t.best + "）" : ""); }).join("　") + "</dd>";
+      var nos = SENTS.filter(function (x) { var v = (((d.trans || {})["p" + x.p] || {}).self || {})[x.id]; return v === 0 || v === 0.5; });
+      if (nos.length) h += '<dt>没说出来 / 差一点</dt><dd class="bad">' + nos.map(function (x) { return esc(x.src); }).join("\n") + "</dd>";
+    }
     // 背诵
     if (TEXT) {
       var rm = reciteMiss(d), rk = Object.keys(rm).sort(function (a, b) { return rm[b] - rm[a]; });
@@ -278,7 +310,7 @@ window.YK_TEACHER = function (o) {
     var dr = d.drills || [];
     if (dr.length) {
       h += '<dt class="tdh">练一练</dt><dd class="tdh">' + dr.length + " 次</dd>";
-      dr.slice(-12).reverse().forEach(function (r) { h += "<dt>" + esc(stamp(r.at)) + "</dt><dd>" + (r.kind === "words" ? "字词" : r.kind === "story" ? "沉浸回顾" : "背诵 · " + esc(pname(r.scope))) + '　<b class="' + lvS(r.score) + '">' + r.score + " 分</b>　用时 " + esc(dur(r.secs)) + (r.wrong && r.wrong.length ? "　错 " + r.wrong.length + " 题" : "") + "</dd>"; });
+      dr.slice(-12).reverse().forEach(function (r) { h += "<dt>" + esc(stamp(r.at)) + "</dt><dd>" + (r.kind === "words" ? "字词" : r.kind === "story" ? "沉浸回顾" : r.kind === "trans" ? "翻译 · " + esc(pname(r.scope)) : "背诵 · " + esc(pname(r.scope))) + '　<b class="' + lvS(r.score) + '">' + r.score + " 分</b>　用时 " + esc(dur(r.secs)) + (r.wrong && r.wrong.length ? "　错 " + r.wrong.length + " 题" : "") + "</dd>"; });
     }
     // 测验
     TESTS.forEach(function (t) {
@@ -319,6 +351,8 @@ window.YK_TEACHER = function (o) {
   function tText(d) {
     var out = ["【学生：" + (d.name || "未写名字") + (d.cls ? "（" + d.cls + "）" : "") + "】自选上到第 " + (d.lessonAt || 1) + " 节"];
     if (STORY.length) STORY.forEach(function (c, i) { var s = (d.story || {})[c.id]; out.push("— 沉浸体验" + chN(i) + "《" + c.title + "》：" + (!s ? "没开始" : s.done ? "读完" : "读到一半")); writesOf(d, c).forEach(function (w) { out.push("［自己写］" + (w.prompt ? "（题目：" + w.prompt + "）" : "") + (w.kind ? "【" + w.kind + "】" : "") + w.text); }); });
+    if (TP.length) { out.push("— 逐句翻译（自己先说意思再看译文后的自评）：" + TP.map(function (p) { var t = transOf(d, p); return pname(p) + (t.seen ? " 说对" + t.ok + "/" + t.n : " 没过") + (t.best != null ? "，练一练" + t.best + "分" : ""); }).join("；"));
+      var nos2 = SENTS.filter(function (x) { var v = (((d.trans || {})["p" + x.p] || {}).self || {})[x.id]; return v === 0; }); if (nos2.length) out.push("  自评没说出来的句子：" + nos2.map(function (x) { return x.src; }).join(" | ")); }
     if (TEXT) { out.push("— 背诵最高分：" + RP.map(function (p) { var r = (d.recite || {})[p]; return pname(p) + " " + (r && r.best != null ? r.best : "没练"); }).join("，")); var rm = reciteMiss(d); var ks = Object.keys(rm); if (ks.length) out.push("  接不上 / 默不出的句子：" + ks.map(function (k) { var p = k.split("-"); return sent(p[0], +p[1]); }).join(" | ")); }
     if (WORDS.length) { var wm = wordWrong(d), byId = {}; WORDS.forEach(function (w) { byId[w.id] = w; }); out.push("— 字词卡：掌握 " + mastered(d) + "/" + WORDS.length + "，练过 " + Object.keys(d.cards || {}).length + " 张" + (Object.keys(wm).length ? "；错过的词：" + Object.keys(wm).filter(function (k) { return byId[k]; }).map(function (k) { return byId[k].w + "（" + byId[k].ans + "）×" + wm[k]; }).join("、") : "")); }
     TESTS.forEach(function (t) {

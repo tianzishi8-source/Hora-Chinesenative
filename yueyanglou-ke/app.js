@@ -14,7 +14,7 @@ var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
 /* 老师：首页点“我是老师”进来（sessionStorage hora-teacher，或地址 #teacher）。可以预览各板块（不存档），顶栏“全班作答”看全班（ke/teacher.js）。 */
 var TEACH = /^#(teacher|class)/.test(location.hash); try { TEACH = TEACH || sessionStorage.getItem("hora-teacher") === "1"; } catch (e) {}
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11081940";
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11091100";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -68,7 +68,7 @@ function cheer(score) {
 
 /* ================= 状态（本机 + 表格） ================= */
 var ME = null, KEY = "", S = null;
-function blank() { return { v: 1, lessonAt: 1, story: {}, recite: {}, cards: {}, drills: [], tests: {}, done: {}, savedAt: "" }; }
+function blank() { return { v: 1, lessonAt: 1, story: {}, recite: {}, cards: {}, drills: [], tests: {}, trans: {}, done: {}, savedAt: "" }; }
 function loadLocal() { S = blank(); var o = lsGet(KEY); if (o) for (var k in o) S[k] = o[k]; }
 function save() { S.savedAt = new Date().toISOString(); lsPut(KEY, S); sync(); }
 function payload() { var p = JSON.parse(JSON.stringify(S)); p.name = ME.name; p.cls = ME.cls; p.lesson = LID; return p; }
@@ -108,12 +108,14 @@ function summary(d) {
     out.push(line);
     if (st && st.lastWrite) out.push("    最后写的话" + (st.lastWrite.kind ? "（" + st.lastWrite.kind + "）" : "") + "：" + st.lastWrite.text);
   });
+  var tr = d.trans || {};
+  out.push("【逐句翻译】" + ["p1", "p2", "p3", "p4", "p5"].map(function (p) { var t = tr[p] || {}, sf = t.self || {}, ks = Object.keys(sf); return PNAME[p] + (ks.length ? " 自评说对" + ks.filter(function (k) { return sf[k] === 1; }).length + "/" + ks.length : "") + (t.best != null ? " 练一练最高" + t.best : (ks.length ? "" : " —")); }).join("｜"));
   out.push("【背诵】" + ["p1", "p2", "p3", "p4", "p5", "all"].map(function (p) { var r = (d.recite || {})[p]; return PNAME[p] + (r && r.best != null ? " 最高" + r.best : " —"); }).join("｜"));
   var cards = d.cards || {}, mastered = Object.keys(cards).filter(function (k) { return cards[k].box >= 2; }).length;
   out.push("【字词卡】掌握 " + mastered + (WORDS.length ? " / " + WORDS.length : "") + " 张，练过 " + Object.keys(cards).length + " 张");
   var dr = d.drills || [];
   out.push("【练一练记录】" + (dr.length ? "" : "还没有"));
-  dr.slice(-40).forEach(function (r) { out.push("  " + stamp(r.at) + "　" + (r.kind === "words" ? "字词" : r.kind === "story" ? "沉浸回顾" : "背诵") + "·" + (r.kind === "story" ? chName(r.scope) : PNAME[r.scope] || r.scope) + "　" + r.score + "分　用时" + dur(r.secs) + (r.wrong && r.wrong.length ? "　错" + r.wrong.length + "题" : "")); });
+  dr.slice(-40).forEach(function (r) { out.push("  " + stamp(r.at) + "　" + (r.kind === "words" ? "字词" : r.kind === "story" ? "沉浸回顾" : r.kind === "trans" ? "翻译" : "背诵") + "·" + (r.kind === "story" ? chName(r.scope) : PNAME[r.scope] || r.scope) + "　" + r.score + "分　用时" + dur(r.secs) + (r.wrong && r.wrong.length ? "　错" + r.wrong.length + "题" : "")); });
   out.push("【模拟测验】" + (Object.keys(d.tests || {}).length ? "" : "还没做"));
   Object.keys(d.tests || {}).forEach(function (id) {
     var t = d.tests[id], tt = TESTS.filter(function (x) { return x.id === id; })[0];
@@ -164,6 +166,9 @@ function route() {
   if (h[0] === "teacher") return TEACH ? teacherHome() : home();
   if (h[0] === "story" && h[1]) return playChapter(h[1]);
   if (h[0] === "story") return storyList();
+  if (h[0] === "trans" && h[1]) return transPage(h[1]);
+  if (h[0] === "trans") return transList();
+  if (h[0] === "drill" && h[1] === "trans") return transDrill(h[2] || "p1");
   if (h[0] === "recite") return recitePage(h[1] || "p1");
   if (h[0] === "drill" && h[1] === "recite") return reciteDrill(h[2] || "p1");
   if (h[0] === "drill" && h[1] === "words") return wordsDrill();
@@ -178,7 +183,7 @@ var KETANG = { base: "../ketang/", list: [
   ["yyl-4", "第4节", "这篇记写给谁；先忧后乐"], ["yyl-5", "第5节", "两个人，一片湖：读杜甫《登岳阳楼》"], ["yyl-6", "第6节", "方法1：借景物传达情绪"],
   ["yyl-7", "第7节", "方法2、方法5；《我的____楼》提纲和开头"], ["yyl-8", "第8节", "单元写作《我的____楼》：写两种样子"], ["yyl-9", "第9节", "写结尾、写完、自查、同桌互评"],
   ["yyl-10", "第10节", "背诵检查；修改、朗读分享"], ["yyl-11", "第11节", "单元总复习：字词与翻译总过关；单元小测"]],
-  extra: [["yyl-1-sheet.pdf", "第1节作答单（PDF，A4 双面）"]] };
+  extra: [["yyl-duiyi.pdf", "逐句对译讲义（PDF，4 页，人手一份放桌上）"], ["duiyi.html", "对译讲义（网页版，可直接打印）"], ["yyl-1-sheet.pdf", "第1节作答单（PDF，A4 双面）"]] };
 /* 老师首页（课堂版）：课堂投屏 ＋ 课后单机预览 ＋ 全班作答 */
 function teacherHome() {
   var K = typeof KETANG !== "undefined" ? KETANG : (C.ketang || null), h = "";
@@ -203,7 +208,7 @@ function classPage() {
   if (!window.YK_TEACHER) { $("#tqBox").innerHTML = '<p class="muted">老师页没有载入，请刷新。</p>'; return; }
   if (!SITE.sheetUrl) { $("#tqBox").innerHTML = '<div class="card">这个网站还没连老师的表格，看不到全班作答。</div>'; return; }
   window.YK_TEACHER({ el: $("#tqBox"), api: api, title: LTITLE, story: STORY, words: WORDS, tests: TESTS, text: TEXT, order: typeof PARAS !== "undefined" ? PARAS : null,
-    pname: PNAME, summary: summary, esc: esc, stamp: stamp, dur: dur, grade: GRADE, otherLessons: otherLessons() });
+    pname: PNAME, summary: summary, esc: esc, stamp: stamp, dur: dur, grade: GRADE, otherLessons: otherLessons(), sents: SENTS });
 }
 
 /* ================= 首页 ================= */
@@ -216,6 +221,8 @@ function plan() {
   var tst = TESTS.filter(function (t) { return (t.after || 0) <= n && !S.tests[t.id]; })[0];
   var ch = STORY.filter(function (c) { return (c.after || 0) <= n && !(S.story[c.id] && S.story[c.id].done); })[0];
   if (tst && !ch) return [{ href: "#test/" + tst.id, t: tst.title, d: "约 " + (tst.minutes || 20) + " 分钟，一次做完；客观题自动判分，简答题写完自己对照要点。", m: tst.minutes || 20, tag: "测验" }];
+  var tp = SENTS.length ? transNext() : "";
+  if (tp) out.push({ href: "#trans/" + tp, t: "逐句翻译 · " + PNAME[tp], d: ((TRANS_LESSON[n + 1] || []).indexOf(tp) >= 0 ? "下节课要讲这一段，先自己过一遍意思。" : "学过的这一段，意思还不熟，再过一遍。") + "过完做一次练一练。", m: 7, tag: "翻译" });
   if (ch) out.push({ href: "#story/" + ch.id, t: "沉浸体验 · " + ch.title, d: ch.blurb || "", m: ch.minutes || 9, tag: "沉浸" });
   var ps = parasFor(n), weak = ps.filter(function (p) { var r = S.recite[p]; return !r || r.best == null || r.best < 90; })[0];
   if (weak) out.push({ href: "#recite/" + weak, t: "背诵帮手 · " + PNAME[weak] + " → 练一练", d: "先用遮字读两三遍，再做练一练（机器打分）。" + (S.recite[weak] && S.recite[weak].best != null ? "你的最高分 " + S.recite[weak].best + "。" : ""), m: 6, tag: "背诵" });
@@ -225,7 +232,7 @@ function plan() {
 }
 function home() {
   var n = S.lessonAt || 1, r = S.recite;
-  var lessons = ""; for (var i = 1; i <= 10; i++) lessons += '<button type="button" class="ln' + (i === n ? " on" : "") + '" data-l="' + i + '" aria-pressed="' + (i === n) + '">' + i + "</button>";
+  var lessons = ""; for (var i = 1; i <= 11; i++) lessons += '<button type="button" class="ln' + (i === n ? " on" : "") + '" data-l="' + i + '" aria-pressed="' + (i === n) + '">' + i + "</button>";
   var route = plan().map(function (x, i) { return '<a class="step" href="' + x.href + '"><span class="no">' + (i + 1) + '</span><span class="tx"><em>' + x.tag + "</em><b>" + esc(x.t) + "</b><small>" + esc(x.d) + '</small></span><span class="min">约 ' + x.m + " 分</span></a>"; }).join("");
   var recRow = ["p1", "p2", "p3", "p4", "p5"].map(function (p) { var b = r[p] && r[p].best; return '<span class="chip' + (b >= 90 ? " good" : "") + '">' + p.slice(1) + "<i>" + (b != null ? b : "—") + "</i></span>"; }).join("") + '<span class="chip' + (r.all && r.all.best >= 90 ? " good" : "") + '">全<i>' + (r.all && r.all.best != null ? r.all.best : "—") + "</i></span>";
   var testRow = TESTS.length ? TESTS.map(function (t) { var s = S.tests[t.id]; return '<span class="chip' + (s && s.best >= 85 ? " good" : "") + '">' + esc(t.title.replace(/模拟测验/, "")) + "<i>" + (s ? s.best : "—") + "</i></span>"; }).join("") : '<span class="muted">还在准备</span>';
@@ -235,6 +242,7 @@ function home() {
     '<p class="fict">剧情里的“邻家少年”（由你扮演）是虚构人物；范仲淹、滕子京是真实的历史人物，对话是根据史料想象的。</p></div></section>' +
     '<section class="card"><h2>我们上到第几节了？</h2><p class="muted">选班上已经上完的那一节，下面的推荐会跟着变（只记在这台设备上）。</p><div class="lessons" role="group" aria-label="上到第几节">' + lessons + "</div>" +
     '<h3 class="rt">今天的 20 分钟</h3><div class="route">' + route + "</div>" + cheer() + "</section>" +
+    '<a class="sec wide" href="#trans"><span class="sn">〇</span><b>逐句翻译</b><small>一句一句：先自己说意思，再看译文对一对；下节课要讲的段，课前先过一遍</small><span class="pg chips">' + PARAS.map(function (p) { var t = S.trans[p]; return '<span class="chip' + (t && t.best >= 80 ? " good" : "") + '">' + p.slice(1) + "<i>" + (t && t.best != null ? t.best : "—") + "</i></span>"; }).join("") + "</span></a>" +
     '<section class="grid4">' +
     '<a class="sec" href="#story"><span class="sn">一</span><b>沉浸体验</b><small>《邓州的秋天》' + (STORY.length ? STORY.length + " 章" : "") + '</small><span class="pg">' + (STORY.length ? "完成 " + storyDone() + " / " + STORY.length + " 章" : "还在准备") + "</span></a>" +
     '<a class="sec" href="#recite"><span class="sn">二</span><b>背诵帮手</b><small>遮字、偷看、接龙，再练一练</small><span class="pg chips">' + recRow + "</span></a>" +
@@ -808,6 +816,100 @@ function reciteDrill(scope) {
     } });
 }
 
+/* ================= 〇、逐句翻译（11-09 课堂反馈：学生对课文意思太生，课上被点名答不出） =================
+ * 一段一段过：看原文（可听）→ 自己先说意思（可打几个字，不打分）→ 看译文（同色对应、重点字词、翻译方法）→ 自评 说对了 / 差一点 / 没说出来。
+ * 一段过完做“翻译练一练”（机器打分）：选对译文＋填关键词（打字题 90 秒）。存 S.trans[p] = {best,last,tries,at,self:{句id:1|0.5|0}}，练一练记进 S.drills（kind:"trans"）。
+ * 句子、译文、对译、方法全部来自 data/sents.js（和课堂投屏、对译讲义同一份，已审核）。录音：原文 fan，译文 narr。 */
+var SENTS = [];
+var TRANS_LESSON = { 1: ["p1", "p2"], 2: ["p3", "p4"], 3: ["p5"] };   // 课堂第几节逐句讲哪几段（sents.js 的 YK_SENT_LESSON）
+function sentsOf(p) { return SENTS.filter(function (x) { return "p" + x.p === p; }); }
+function transNext() {   // 推荐：下节课要讲的段（课前先过一遍）＞ 学过的段里还没过 80 分的
+  var n = S.lessonAt || 1, nxt = TRANS_LESSON[n + 1] || [], done = parasFor(n);
+  var need = function (p) { var t = S.trans[p]; return !t || t.best == null || t.best < 80; };
+  return nxt.filter(need)[0] || done.filter(need)[0] || "";
+}
+function keyGloss(x) {
+  return (x.keys || []).map(function (k) { var pr = (x.pairs || []).filter(function (q) { return q[0].indexOf(k.w) >= 0; })[0]; return { w: k.w, g: pr ? (pr[0] === k.w ? pr[1] : pr[0] + " → " + pr[1]) : k.ok[0] }; });
+}
+function srcHtml(x) {
+  var s = esc(x.src);
+  keyGloss(x).sort(function (a, b) { return b.w.length - a.w.length; }).forEach(function (k) { var w = esc(k.w), i = s.indexOf(w); if (i >= 0 && s.slice(0, i).split("<b").length === s.slice(0, i).split("</b>").length) s = s.slice(0, i) + '<b class="tk">' + w + "</b>" + s.slice(i + w.length); });
+  return s;
+}
+function pairHtml(x) {
+  var a = "", b = "", ci = 0;
+  (x.pairs || [[x.src, x.tr]]).forEach(function (pr) { var same = pr[0].replace(/[，。；！？、“”]/g, "") === pr[1].replace(/[，。；！？、“”]/g, ""); var c = same ? "pk" : "pc" + (ci++ % 5); a += '<span class="' + c + '">' + esc(pr[0]) + "</span>"; b += '<span class="' + c + '">' + esc(pr[1]) + "</span>"; });
+  return '<p class="psrc">' + a + '</p><p class="ptr">' + b + "</p>";
+}
+function transList() {
+  if (!SENTS.length) return notReady("逐句翻译");
+  var rec = transNext(), n = S.lessonAt || 1;
+  var cards = PARAS.map(function (p) {
+    var t = S.trans[p] || {}, ss = sentsOf(p), self = t.self || {}, ok = ss.filter(function (x) { return self[x.id] === 1; }).length;
+    var tag = (TRANS_LESSON[n + 1] || []).indexOf(p) >= 0 ? "下节课讲" : parasFor(n).indexOf(p) >= 0 ? "学过了" : "";
+    return '<a class="step' + (p === rec ? " rec" : "") + '" href="#trans/' + p + '"><span class="no">' + p.slice(1) + '</span><span class="tx"><em>' + esc(tag || "　") + "</em><b>" + PNAME[p] + "　" + ss.length + " 句</b><small>" +
+      (Object.keys(self).length ? "自己说对 " + ok + " / " + ss.length + " 句" : "还没过") + (t.best != null ? "　·　练一练最高 " + t.best + " 分" : "") + '</small></span><span class="min">' + (t.best != null ? t.best : "—") + "</span></a>";
+  }).join("");
+  page('<section class="card"><h2>逐句翻译</h2><p class="muted">一句一句来：先看原文、自己说一遍意思，再看译文对一对。<b>下节课要讲的那一段，课前先过一遍</b>，上课就是第二次见面，被点名也说得出来。每段过完做一次“练一练”（机器打分）。</p><p class="muted small"><a href="../ketang/duiyi.html" target="_blank" rel="noopener">全文逐句对译（可打印）</a></p>' +
+    '<div class="route">' + cards + "</div></section>", ["#home", "首页"]);
+}
+function transPage(p) {
+  if (!SENTS.length) return notReady("逐句翻译");
+  var ss = sentsOf(p); if (!ss.length) return go("#trans");
+  var t = S.trans[p] || (S.trans[p] = {}); t.self = t.self || {};
+  var only = /retry/.test(location.hash) ? ss.filter(function (x) { return t.self[x.id] !== 1; }) : ss; if (!only.length) only = ss;
+  var k = 0;
+  function draw() {
+    if (k >= only.length) return end();
+    var x = only[k], dots = only.map(function (y, i) { var v = t.self[y.id]; return '<i class="' + (i === k ? "on " : "") + (v === 1 ? "g" : v === 0.5 ? "m" : v === 0 ? "b" : "") + '"></i>'; }).join("");
+    page('<section class="card tr-card"><div class="tr-head"><b>' + PNAME[p] + "　第 " + (k + 1) + " / " + only.length + ' 句</b><span class="tr-dots">' + dots + "</span></div>" +
+      (x.star ? '<p class="tr-star">★ 重点句：要会翻译</p>' : "") +
+      '<p class="tr-src">' + srcHtml(x) + '</p><div class="row tr-ctl"><button class="btn ghost" type="button" id="tPlayS">▶ 听原文</button></div>' +
+      '<div id="tStep1"><p class="muted">先自己说一遍意思：小声说出来，或者在下面打几个字（不打分，只给自己看）。<b>红字</b>是重点字词。</p><textarea id="tMine" rows="2" placeholder="我觉得意思是……"></textarea>' +
+      '<div class="row"><button class="btn" type="button" id="tShow">看译文</button></div></div><div id="tStep2" hidden></div></section>', ["#trans", "逐句翻译"]);
+    playVoice("fan", x.src);
+    $("#tPlayS").onclick = function () { playVoice("fan", x.src, true); };
+    $("#tShow").onclick = function () {
+      var mine = $("#tMine").value.trim(), kg = keyGloss(x);
+      $("#tStep1").hidden = true;
+      var s2 = $("#tStep2"); s2.hidden = false;
+      s2.innerHTML = (mine ? '<p class="tr-mine">你说的：' + esc(mine) + "</p>" : "") + '<div class="tr-pair">' + pairHtml(x) + "</div>" +
+        '<div class="row tr-ctl"><button class="btn ghost" type="button" id="tPlayT">▶ 听译文</button></div>' +
+        (kg.length ? '<p class="tr-kw">' + kg.map(function (g) { return "<span><b>" + esc(g.w) + "</b>：" + esc(g.g) + "</span>"; }).join("") + "</p>" : "") +
+        ((x.how || []).length ? '<ul class="tr-how">' + x.how.map(function (h) { return "<li>" + esc(h) + "</li>"; }).join("") + "</ul>" : "") +
+        '<p class="tr-q">刚才你自己说的意思——</p><div class="tr-self"><button type="button" class="btn" data-v="1">说对了</button><button type="button" class="btn ghost" data-v="0.5">差一点</button><button type="button" class="btn ghost" data-v="0">没说出来</button></div>';
+      playVoice("narr", x.tr);
+      $("#tPlayT").onclick = function () { playVoice("narr", x.tr, true); };
+      $$(".tr-self button", s2).forEach(function (b) { b.onclick = function () { t.self[x.id] = +b.getAttribute("data-v"); t.at = new Date().toISOString(); save(); k++; draw(); window.scrollTo(0, 0); }; });
+      s2.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    };
+  }
+  function end() {
+    var ok = ss.filter(function (x) { return t.self[x.id] === 1; }).length, half = ss.filter(function (x) { return t.self[x.id] === 0.5; }).length, no = ss.length - ok - half;
+    page('<section class="card center"><h2>' + PNAME[p] + " 过完了</h2><p>说对了 <b>" + ok + "</b> 句　·　差一点 <b>" + half + "</b> 句　·　没说出来 <b>" + no + "</b> 句</p>" +
+      '<p class="muted">趁热做一次练一练：选对译文、填关键词，机器打分，老师看得到。</p><div class="row" style="justify-content:center;flex-wrap:wrap;gap:10px">' +
+      '<a class="btn" href="#drill/trans/' + p + '">练一练</a>' + (ok < ss.length ? '<a class="btn ghost" href="#trans/' + p + '/retry">再过一遍没说对的</a>' : "") + '<a class="btn ghost" href="#trans">换一段</a></div></section>', ["#trans", "逐句翻译"]);
+  }
+  draw();
+}
+function transDrill(p) {
+  var ss = sentsOf(p); if (!ss.length) return go("#trans");
+  var st = shuffle(ss.filter(function (x) { return x.star; })).concat(shuffle(ss.filter(function (x) { return !x.star; })));
+  var nC = Math.min(3, st.length), items = [];
+  st.slice(0, nC).forEach(function (x) { if (!x.opts) return; var o = shuffle(x.opts.map(function (t, i) { return { t: t, r: i === x.ans_i }; }));
+    items.push({ type: "choice", qHtml: '<p class="qlead">选出这句的正确译文</p><p class="ctx">' + esc(x.src) + "</p>", opts: o.map(function (y) { return y.t; }), ans: o.map(function (y) { return y.r; }).indexOf(true), sec: 30, pts: 1, ref: x.id + "-ch" }); });
+  shuffle(st.slice(nC).concat(st.slice(0, nC))).filter(function (x) { return x.blank && x.ans; }).slice(0, 3).forEach(function (x) {
+    items.push({ type: "fill", qHtml: '<p class="qlead">填出括号里的词（看原文里对应的字）</p><p class="ctx">' + esc(x.src) + '</p><p class="nx">' + esc(x.blank).replace(/（\s*　*\s*）/, "{{blank}}") + "</p>", blanks: [{ ans: [].concat(x.ans) }], sec: 90, pts: 1, ref: x.id + "-fill" });
+  });
+  runner({ title: "翻译练一练 · " + PNAME[p], items: items, feedback: true, back: ["#trans/" + p, "逐句翻译"],
+    after: [[location.hash, "再练一次"], ["#trans/" + p, "回到这一段", 1], ["#trans", "换一段", 1], ["#home", "首页", 1]],
+    onDone: function (o) {
+      var t = S.trans[p] || (S.trans[p] = {}); t.tries = (t.tries || 0) + 1; t.last = o.score; t.best = Math.max(t.best == null ? 0 : t.best, o.score); t.at = o.at;
+      S.drills.push({ kind: "trans", scope: p, score: o.score, secs: o.secs, wrong: o.res.filter(function (x) { return x.got < 1; }).map(function (x) { return x.it.ref; }), at: o.at, n: o.res.length });
+      if (S.drills.length > 80) S.drills = S.drills.slice(-80); save();
+    } });
+}
+
 /* ================= 三、字词卡（本机间隔重复） =================
  * 每张卡 {box, due, right, wrong, seen}：答对 box+1，下次出现隔 1/3/7/14 天；答错 box 归 0，明天再出现。box≥2 算“掌握”。 */
 var GAP = [1, 1, 3, 7, 14];
@@ -897,8 +999,9 @@ function boot() {
   ME = { cls: String(ss.cls || "").replace(/\s+/g, "").toUpperCase(), name: String(ss.name || "").replace(/\s+/g, " ").trim(), pin: String(ss.pin) };
   KEY = "hora-" + LID + (SAMPLE ? "-sample" : "") + (TEACH ? "-teacher" : "") + "-" + ME.cls + "|" + ME.name; loadLocal();
   app.innerHTML = '<p class="loading">正在打开……</p>';
-  Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("voice/index.js"), TEACH ? loadScript("../ke/teacher.js?v=11082110") : true, TEACH ? loadScript("../lessons.js?v=" + Date.now()) : true, TEACH ? loadScript("../roster-names.js?v=" + Date.now()) : true]).then(function () {
+  Promise.all([loadScript("data/text.js"), loadScript(DATA + "story.js"), loadScript(DATA + "words.js"), loadScript(DATA + "tests.js"), loadScript("data/sents.js?v=" + VER), loadScript("voice/index.js"), TEACH ? loadScript("../ke/teacher.js?v=11091100") : true, TEACH ? loadScript("../lessons.js?v=" + Date.now()) : true, TEACH ? loadScript("../roster-names.js?v=" + Date.now()) : true]).then(function () {
     TEXT = window.YK_TEXT || null; STORY = Array.isArray(window.YK_STORY) ? window.YK_STORY : []; WORDS = Array.isArray(window.YK_WORDS) ? window.YK_WORDS : []; TESTS = Array.isArray(window.YK_TESTS) ? window.YK_TESTS : [];
+    SENTS = window.YK_SENTS || [];
     VOICE = window.YK_VOICE || window.PROJ_VOICE || {}; VOICE_V = window.YK_VOICE_V || window.PROJ_VOICE_V || "";
     probeScenes(); addEventListener("hashchange", route); route();
     if (TEACH) { setSaveSt("老师预览，不存档"); return; }

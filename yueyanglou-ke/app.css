@@ -421,3 +421,25 @@ span.ok{color:var(--ok)} span.bad{color:var(--no);text-decoration:underline wavy
 .rvw .sent,.rvw .qq{margin:0;font-size:1.05rem}
 @media (max-width:560px){.pcard{padding:14px 14px}.ytx{font-size:1.16rem;line-height:1.85}.yr{grid-template-columns:5em minmax(0,1fr);gap:8px}.ycard .yt,.lcard .yt{font-size:1.12rem}.ylist li{font-size:1rem}}
 .ylegend .lgn{color:var(--muted);font-size:.78rem;flex-basis:100%}
+
+/* 〇、逐句翻译（11-09） */
+.sec.wide{display:block;margin:0 0 14px}
+.step.rec{border-color:var(--zhu);box-shadow:0 0 0 2px var(--zhu-soft)}
+.tr-card{max-width:860px;margin:0 auto}
+.tr-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--f-ui)}
+.tr-dots{display:flex;gap:5px}.tr-dots i{width:12px;height:12px;border-radius:50%;background:var(--line);display:inline-block}
+.tr-dots i.on{outline:2px solid var(--ink)}.tr-dots i.g{background:#5f9a62}.tr-dots i.m{background:#d8b24a}.tr-dots i.b{background:var(--zhu)}
+.tr-star{font-family:var(--f-ui);font-size:.85rem;color:var(--zhu);margin:8px 0 0}
+.tr-src{font-size:clamp(1.5rem,4.6vw,2.1rem);line-height:1.6;letter-spacing:.06em;margin:10px 0 4px}
+.tr-src .tk{color:var(--zhu);border-bottom:2px solid var(--zhu)}
+.tr-ctl{margin:4px 0 10px}
+#tMine{width:100%;box-sizing:border-box;font:inherit;font-size:1.05rem;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff}
+.tr-mine{font-family:var(--f-ui);background:#fff;border:1px dashed var(--line);border-radius:8px;padding:6px 10px;color:var(--muted)}
+.tr-pair{background:#fffdf7;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.tr-pair .psrc{font-size:1.25rem;letter-spacing:.04em;margin:0 0 4px}.tr-pair .ptr{font-family:var(--f-ui);font-size:1.08rem;margin:0}
+.tr-pair span{border-bottom:3px solid transparent;padding-bottom:1px}
+.tr-pair .pc0{border-color:#c0504d}.tr-pair .pc1{border-color:#3b7fb5}.tr-pair .pc2{border-color:#d29a2b}.tr-pair .pc3{border-color:#5f9a62}.tr-pair .pc4{border-color:#8a5aa8}
+.tr-kw{font-family:var(--f-ui);font-size:.95rem;display:flex;flex-wrap:wrap;gap:4px 14px}.tr-kw b{color:var(--zhu)}
+.tr-how{font-family:var(--f-ui);font-size:.9rem;color:var(--muted);margin:4px 0 8px;padding-left:1.2em}
+.tr-q{font-weight:700;margin:12px 0 6px}
+.tr-self{display:flex;flex-wrap:wrap;gap:10px}

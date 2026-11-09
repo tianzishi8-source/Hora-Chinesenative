@@ -44,7 +44,10 @@ function splitLong(st) {   // 太长的台词拆成几步（每步不超过约 5
     o.say = c; return o;
   });
 }
-L.segments.forEach(sg => sg.steps.forEach(st0 => splitLong(resolveSent(st0)).forEach(st => {
+// 三级台阶提问（ladder.js）：和 proj.js 一样先展开
+const lc = { window: {} }; vm.runInNewContext(fs.readFileSync(require("path").join(require("path").dirname(file), "ladder.js"), "utf8"), lc);
+const LAD = lc.window.PROJ_LADDER;
+L.segments.forEach(sg => sg.steps.flatMap(s => s.ladder ? LAD(s, L.lead) : [s]).forEach(st0 => splitLong(resolveSent(st0)).forEach(st => {
   if (st.say) add(st.who, voiceText(st));
   if (st.read) st.read.paras.forEach(pk => L.paras[pk].forEach(s => add(st.read.who || L.reader || L.lead || "fan", voiceText({ say: s }))));
   if (st.respond) st.respond.opts.forEach(o => add(o.who, voiceText(o)));
