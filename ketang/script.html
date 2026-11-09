@@ -72,8 +72,8 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
             if (v.ans) h += '<div class="a">' + esc(v.tag || "答案") + "：" + v.ans.map(MK).join("　") + "</div>";
             h += "</div>";
           } else if (v.type === "pair") {
-            var md = { learn: "对译", test: "只出原文，学生写译文", check: "原文＋译文＋翻译方法" }[v.mode || "learn"];
-            h += '<div class="box"><b class="t">屏幕对译卡（' + md + "）　" + esc(v.title || "") + "</b>" + (v.ids || []).map(function (id) { var x = SENT(id); return x ? "<p>" + esc(id) + "　" + esc(x.src) + (v.mode === "test" ? "" : "<br>　" + esc(x.tr)) + "</p>" : "<p>（缺句子 " + esc(id) + "）</p>"; }).join("") + (v.foot ? "<p>" + esc(v.foot) + "</p>" : "") + "</div>";
+            var md = { learn: "对译", test: "只出原文，学生写译文", talk: "只出原文，同桌互讲", check: "原文＋译文＋翻译方法" }[v.mode || "learn"];
+            h += '<div class="box"><b class="t">屏幕对译卡（' + md + "）　" + esc(v.title || "") + "</b>" + (v.ids || []).map(function (id) { var x = SENT(id); return x ? "<p>" + esc(id) + "　" + esc(x.src) + (v.mode === "test" || v.mode === "talk" ? "" : "<br>　" + esc(x.tr)) + "</p>" : "<p>（缺句子 " + esc(id) + "）</p>"; }).join("") + (v.foot ? "<p>" + esc(v.foot) + "</p>" : "") + "</div>";
           } else if (v.type === "text") {
             h += '<div class="box"><b class="t">屏幕原文</b>　' + (v.paras || []).map(function (p) { return "第" + p.slice(1) + "段"; }).join("、") + (v.mark ? "　标出：" + esc(v.mark.join("、")) : "") + "</div>";
           } else {
