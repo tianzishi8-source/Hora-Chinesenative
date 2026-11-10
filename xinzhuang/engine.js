@@ -428,7 +428,7 @@ function locStep(s){if(LOCNEW[s.t]&&(LOC||Object.keys(LOCK).length))clearLoc();L
   if(s.t==="pick")return;
   if(s.paras)maskParas(s.paras);if(isNarrow())openReader();}
 function showLoc(){if(LOC&&LOC.hl&&!rbody.querySelector("mark.loc"))markWords(LOC.hl,LOC.paras);}
-function q(text){var t=fill(text),qp=QP||(LOC&&LOC.paras);QP=null;setTimeout(function(){task.classList.add("ask");var ns=qp||(LOC&&LOC.hl?[]:mentionNums(t));if(ns.length)maskParas(ns);try{task.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}},0);return el("div",{class:"task-q",text:t});}
+function q(text){var t=fill(text),qp=QP||(LOC&&LOC.paras);QP=null;setTimeout(function(){task.classList.add("ask");var ns=qp||(LOC&&LOC.hl?[]:mentionNums(t));if(ns.length)maskParas(ns);(function(){var sp=task;while(sp&&sp!==document.body){var cs=getComputedStyle(sp);if(/(auto|scroll)/.test(cs.overflowY)&&sp.scrollHeight>sp.clientHeight){sp.scrollTop=0;break;}sp=sp.parentElement;}})();try{task.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}},0);return el("div",{class:"task-q",text:t});}
 
 /* ================= 步骤类型 ================= */
 var H={};
@@ -442,7 +442,7 @@ H.sleep=function(s){return sleepTick(s.ms||500);};
 H.clear=function(){clearTask();return Promise.resolve();};
 /* 引一段（同学的作文等）：下一道题清屏后还留着，放在题目上面 */
 var KEEPQ=null;function keepQ(){if(KEEPQ){task.append(KEEPQ);KEEPQ=null;}}
-H.quote=function(s){clearTask();KEEPQ=el("blockquote",{class:"quote",text:s.para!=null?PARAS[s.para]:fill(s.text)});task.append(KEEPQ);return Promise.resolve();};
+H.quote=function(s){clearTask();var qb=el("blockquote",{class:"quote",text:s.para!=null?PARAS[s.para]:fill(s.text)});KEEPQ=s.keep===false?null:qb;task.append(qb);return Promise.resolve();};
 
 H.name=function(s,tok){if(!S.data.name&&BK.mode==="sheet"&&(BK.me||BK.tpw))S.data.name=BK.me?BK.me.name:"老师";if(S.data.name){if(S.data.greeted)return say(fill(s.back),s.who,tok);S.data.greeted=1;save();return line(fill(s.greet),s.who,tok);}
   return say(s.ask,s.who,tok).then(function(){return new Promise(function(res,rej){clearTask();var inp=el("input",{type:"text",id:"in-name",placeholder:"写你的名字或昵称",autocomplete:"off"});var b=btn("说出来");task.append(q(s.ask),el("div",{class:"field"},[inp]),el("div",{class:"row"},[b]));inp.focus();function go(){if(tok!==RUN.token)return rej(CANCEL);var v=inp.value.trim();if(!v){inp.focus();return;}S.data.name=v;S.data.greeted=1;commit();refreshMe();clearTask();res();}b.addEventListener("click",go);inp.addEventListener("keydown",function(e){if(e.key==="Enter")go();});});})
@@ -526,7 +526,7 @@ H.layering=function(s,tok){var who=s.feedbackWho||coach();return new Promise(fun
   task.append(q(s.q),stairs,el("div",{class:"row"},[doneB]));var cutLabel=s.cutLabel||"在两段之间点“在这里分层”；再点一次就合上";setMode("cut",cutLabel);if(s.flat){$$(".gap button",rbody).forEach(function(b){b.textContent="在这里分开";});rbody.scrollTop=0;}
   function LS(){return layersFrom(R.cuts);}
   function render(){var ls=LS();while(info.length<ls.length)info.push({sum:"",key:""});info.length=ls.length;stairs.innerHTML="";
-    ls.forEach(function(r,i){var st=el("div",{class:"step"+(i===active?" act-on":""),style:"--i:"+i});var inp=el("input",{type:"text",id:"in-layer-"+i,placeholder:s.flat?"第 "+(i+1)+" 部分写了什么？一句话":"第 "+(i+1)+" 层说了什么？一句话",value:info[i].sum||""});
+    ls.forEach(function(r,i){var st=el("div",{class:"step"+(i===active?" act-on":""),style:"--i:"+i});var inp=el("input",{type:"text",id:"in-layer-"+i,placeholder:s.flat?"第 "+(i+1)+" 部分：谁＋做了什么？写一句完整的话":"第 "+(i+1)+" 层说了什么？一句话",value:info[i].sum||""});
       inp.addEventListener("focus",function(){if(active!==i){active=i;$$(".step",stairs).forEach(function(x,k){x.classList.toggle("act-on",k===i);});if(s.prompts)sayQ(s.prompts[pi++%s.prompts.length],who,tok);}});
       inp.addEventListener("input",function(){info[i].sum=inp.value;keep();});
       var kids=[el("b",{text:String(i+1)}),el("div",{class:"field"},[el("span",{class:"rng",text:rng(r)}),inp])];
@@ -682,9 +682,17 @@ H.mc=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.ask?say(fill(vari
     var ord=s.options.map(function(o,i){return i;});if(!s.stance&&!s.fixed)for(var z=ord.length-1;z>0;z--){var r=Math.floor(Math.random()*(z+1)),tz=ord[z];ord[z]=ord[r];ord[r]=tz;}ord.forEach(function(i){var o=s.options[i];var b=el("button",{class:"mco",type:"button",text:fill(o.text)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
         logStep(s.obs,{try:1});var ok=s.stance||o.ok===true;showLoc();if(VB)VB.pick(i,ok);
         if(ok){task.classList.remove("ask");$$(".mco",box).forEach(function(x){x.disabled=true;});b.classList.add("ok");SOUND.sfx(s.stance?"page":"ok");if(VB)VB.post();if(s.key)set(s.key,o.value!=null?o.value:i);logStep(s.obs,{answer:fill(o.text)});logMe(fill(o.text));commit();
+          if(!s.stance&&s.note!==false&&(s.note||s.paras||s.hl))task.append(noteChip(s,o));
           var r=o.reply?say(fill(o.reply),o.who||fbWho,tok):Promise.resolve();r.then(function(){res();},function(){});}
         else{b.classList.add(o.ok==="half"?"half":"no");b.disabled=true;SOUND.sfx("no");if(s.wrongFlag)addFlag(s.wrongFlag);logStep(s.obs,{miss:"o"+i});if(o.reply)sayQ(fill(o.reply),o.who||fbWho,tok);}});box.append(b);});
+    if(s.other){var ob=el("button",{class:"mco other",type:"button",text:(s.other===true?"其他":s.other)+"：________"});ob.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
+      var inp=el("input",{type:"text",placeholder:s.otherPh||"写下你自己的想法",autocomplete:"off",id:"in-other-"+(s.key||"x").replace(/\./g,"-")}),okb=btn("就是这个");var row=el("div",{class:"orow"},[inp,okb]);ob.replaceWith(row);inp.focus();
+      okb.addEventListener("click",function(){var v=inp.value.trim();if(v.length<2){inp.focus();return;}$$(".mco",box).forEach(function(x){x.disabled=true;});inp.disabled=true;okb.disabled=true;SOUND.sfx("page");
+        if(s.key)set(s.key,"其他："+v);logStep(s.obs,{try:1,answer:"其他："+v});logMe("其他："+v);commit();var r=s.otherReply?say(fill(s.otherReply),fbWho,tok):Promise.resolve();r.then(function(){res();},function(){});});});box.append(ob);}
     task.append(box);});}).then(function(){if(s.wait===false)return;return next(s.next||"继续",tok,!!s.keep);});};
+/* 11-10 答对后提醒：把答案批注在课本上。s.note 可自写；否则用段落号 + 正确选项 */
+function noteChip(s,o){var ns=s.paras||[];var where=ns.length?("第"+(ns.length>1&&ns[ns.length-1]!==ns[0]?ns[0]+"—"+ns[ns.length-1]:ns[0])+"段旁边"):"相关句子旁边";
+  return el("div",{class:"notechip"},[el("b",{text:"✎ 批注到课本"}),el("span",{text:s.note?fill(s.note):("在"+where+"写："+fill(o.text))})]);}
 
 /* 在原文里找一个字：每段算一处，找齐为止。{t:"findWord",who,ask,task,word,paras:[段号(0起)],misses:[{paras,text}],other,hint,hintAfter,found,doneText,key,obs} */
 function wrapWord(id,word){var sp=$('.s[data-id="'+id+'"]',rbody);if(!sp||sp.getAttribute("data-w"))return;sp.setAttribute("data-w","1");
