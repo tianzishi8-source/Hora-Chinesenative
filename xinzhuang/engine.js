@@ -425,9 +425,10 @@ function markWords(ws,ns){var ps=$$("p[data-p]",rbody).filter(function(p){return
     SENT.forEach(function(x){if(x.t.indexOf(w)>=0&&(!ns||!ns.length||ns.indexOf(x.p+1)>=0)&&!R.keys[x.id]){R.keys[x.id]=1;LOCK[x.id]=1;}});});
   paintMarks();var f=rbody.querySelector("mark.loc");if(f)try{f.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}
 function locStep(s){if(LOCNEW[s.t]&&(LOC||Object.keys(LOCK).length))clearLoc();LOC=null;if(!s.paras&&!s.hl)return;LOC={paras:s.paras||null,hl:s.hl||null};
-  if(s.t==="pick"){if(s.hl)setTimeout(function(){markWords(s.hl,null);},400);return;}
-  if(s.paras)maskParas(s.paras);if(s.hl)markWords(s.hl,s.paras);if(isNarrow())openReader();}
-function q(text){var t=fill(text),qp=QP||(LOC&&LOC.paras);QP=null;setTimeout(function(){task.classList.add("ask");var ns=qp||(LOC&&LOC.hl?[]:mentionNums(t));if(ns.length)maskParas(ns);if(LOC&&LOC.hl&&!rbody.querySelector("mark.loc"))markWords(LOC.hl,LOC.paras);try{task.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}},0);return el("div",{class:"task-q",text:t});}
+  if(s.t==="pick")return;
+  if(s.paras)maskParas(s.paras);if(isNarrow())openReader();}
+function showLoc(){if(LOC&&LOC.hl&&!rbody.querySelector("mark.loc"))markWords(LOC.hl,LOC.paras);}
+function q(text){var t=fill(text),qp=QP||(LOC&&LOC.paras);QP=null;setTimeout(function(){task.classList.add("ask");var ns=qp||(LOC&&LOC.hl?[]:mentionNums(t));if(ns.length)maskParas(ns);try{task.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}},0);return el("div",{class:"task-q",text:t});}
 
 /* ================= 步骤类型 ================= */
 var H={};
@@ -543,7 +544,7 @@ H.layering=function(s,tok){var who=s.feedbackWho||coach();return new Promise(fun
     if(ls.length>s.max&&tries<2){logStep(s.obs,{miss:"many"});sayQ(s.many,who,tok);return;}
     if(empty){logStep(s.obs,{miss:"empty"});sayQ(fill(s.empty,{n:empty}),who,tok);var fi=info.findIndex(function(x){return !x.sum.trim();});var fe=$("#in-layer-"+fi);if(fe)fe.focus();return;}
     keep();set(s.key+".at",new Date().toISOString());logStep(s.obs,{answer:info.map(function(x,i){return (i+1)+"．"+rng(ls[i])+" "+(x.sum||"")+(x.key?"（关键句："+x.key+"）":"");}).join("\n")});commit();R.onCut=null;R.onPick=null;setMode("none");
-    doneB.parentNode.remove();if(s.topQuote)task.append(el("div",{class:"topq"},[el("span",{class:"topl",text:s.topLabel||"台阶的顶"}),el("blockquote",{class:"quote",text:s.topQuote})]));
+    doneB.parentNode.remove();if(s.ref&&s.flat){var stp=strips(LS(),s.ref,info);task.append(stp);setTimeout(function(){try{stp.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}},300);}if(s.topQuote)task.append(el("div",{class:"topq"},[el("span",{class:"topl",text:s.topLabel||"台阶的顶"}),el("blockquote",{class:"quote",text:s.topQuote})]));
     SOUND.sfx("ok");var cmpT=null;if(s.ref&&s.cmp){var mine=Object.keys(R.cuts).map(Number),refc=s.ref.slice(0,-1).map(function(r){return r[r.length-1]-1;}),hit=refc.filter(function(c){return mine.indexOf(c)>=0;}).length;cmpT=hit===refc.length&&mine.length===refc.length?s.cmp.all:hit>=Math.ceil(refc.length/2)?s.cmp.some:s.cmp.none;logStep(s.obs,{answer:"和参考分法相同的分界："+hit+"/"+refc.length});}
     line(fill(s.done),s.who||lead(),tok).then(function(){return cmpT?line(cmpT,s.who||lead(),tok):null;}).then(function(){res();}).catch(function(){});});});};
 
@@ -677,10 +678,10 @@ H.scene=function(s,tok){var fn=window.HORA_SCENES&&window.HORA_SCENES[s.id];if(!
   };
   return Promise.resolve().then(function(){return fn(api,s);}).then(function(){if(s.obs&&!(S.log[s.obs.id]&&S.log[s.obs.id].answer))api.log("看完了");},function(e){throw e;}).then(function(){VOICE.stop();ov.remove();document.body.classList.remove("staged");},function(e){VOICE.stop();ov.remove();document.body.classList.remove("staged");throw e;});};
 H.mc=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.ask?say(fill(variant(s,"ask")),s.who,tok):Promise.resolve();
-  return pre.then(function(){return new Promise(function(res,rej){clearTask();if(s.feedbackWho==="xiaoman")closeReaderIfNarrow();keepQ();stepImg(s);if(s.q){QP=s.paras||null;task.append(q(s.q));}var box=el("div",{class:"mc"});
+  return pre.then(function(){return new Promise(function(res,rej){clearTask();if(s.feedbackWho==="xiaoman")closeReaderIfNarrow();keepQ();stepImg(s);var VB=s.vis?visBox(s.vis):null;if(s.q){QP=s.paras||null;task.append(q(s.q));}var box=el("div",{class:"mc"});
     var ord=s.options.map(function(o,i){return i;});if(!s.stance&&!s.fixed)for(var z=ord.length-1;z>0;z--){var r=Math.floor(Math.random()*(z+1)),tz=ord[z];ord[z]=ord[r];ord[r]=tz;}ord.forEach(function(i){var o=s.options[i];var b=el("button",{class:"mco",type:"button",text:fill(o.text)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
-        logStep(s.obs,{try:1});var ok=s.stance||o.ok===true;
-        if(ok){task.classList.remove("ask");$$(".mco",box).forEach(function(x){x.disabled=true;});b.classList.add("ok");SOUND.sfx(s.stance?"page":"ok");if(s.key)set(s.key,o.value!=null?o.value:i);logStep(s.obs,{answer:fill(o.text)});logMe(fill(o.text));commit();
+        logStep(s.obs,{try:1});var ok=s.stance||o.ok===true;showLoc();if(VB)VB.pick(i,ok);
+        if(ok){task.classList.remove("ask");$$(".mco",box).forEach(function(x){x.disabled=true;});b.classList.add("ok");SOUND.sfx(s.stance?"page":"ok");if(VB)VB.post();if(s.key)set(s.key,o.value!=null?o.value:i);logStep(s.obs,{answer:fill(o.text)});logMe(fill(o.text));commit();
           var r=o.reply?say(fill(o.reply),o.who||fbWho,tok):Promise.resolve();r.then(function(){res();},function(){});}
         else{b.classList.add(o.ok==="half"?"half":"no");b.disabled=true;SOUND.sfx("no");if(s.wrongFlag)addFlag(s.wrongFlag);logStep(s.obs,{miss:"o"+i});if(o.reply)sayQ(fill(o.reply),o.who||fbWho,tok);}});box.append(b);});
     task.append(box);});}).then(function(){if(s.wait===false)return;return next(s.next||"继续",tok,!!s.keep);});};
@@ -726,6 +727,43 @@ H.swap=function(s){clearTask();var bq=el("blockquote",{class:"quote swap"});var 
 function markedText(t,marks){var parts=[t];(marks||[]).forEach(function(m){var out=[];parts.forEach(function(x){if(typeof x!=="string"){out.push(x);return;}x.split(m).forEach(function(y,k){if(k)out.push({m:m});out.push(y);});});parts=out;});
   var d=el("div",{class:"ltext"});parts.forEach(function(x){d.append(typeof x==="string"?document.createTextNode(x):el("mark",{class:"swapw",text:x.m}));});return d;}
 /* 配图：mc / listen 步骤写 img:"img/xx.webp"（可加 alt），图放在题目上面；点一下放大看 */
+/* 11-10 八年级动画画面 vis：{img,zoom:[cx,cy,倍数],items:[{k:say|think|tag|stamp|card|doc|rung,x,y,w,text,post,at:"post",who,img,glyph,lines,hi,part,opt}],kind:"mountain",...}
+   图慢慢推近到题目说的地方，气泡一个个冒出来；答对后 post（揭晓）：at:"post" 的出现，有 post 文字的翻面。
+   opt:i ＝ 和第 i 个选项对应（答错时那个东西抖一下、变灰）。part:i ＝ frame 第 i 格写好才点亮。 */
+function visBox(v){var f=el("div",{class:"vis"+(v.kind?" vis-"+v.kind:"")}),pan=el("div",{class:"vis-pan"}),lay=el("div",{class:"vis-lay"});
+  if(v.img)pan.style.backgroundImage="url("+v.img+")";f.append(pan,lay);task.append(f);
+  var z=v.zoom||[50,50,1],ox=z[0],oy=z[1],sc=z[2];
+  function map(x,y){return [ox+sc*(x-ox),oy+sc*(y-oy)];}
+  var nodes=[],k0=0;
+  if(v.kind==="mountain")mountain(v,lay,nodes);
+  (v.items||[]).forEach(function(it,i){var n;var P=[it.x,it.y];
+    if(it.k==="card"){n=el("div",{class:"v-card"},[it.img?el("img",{src:it.img,alt:""}):el("b",{class:"v-glyph",text:it.glyph||""}),el("span",{class:"v-front",text:it.text}),it.post?el("span",{class:"v-back",text:it.post}):null]);}
+    else if(it.k==="doc"){n=el("div",{class:"v-doc"},[it.title?el("b",{text:it.title}):null].concat((it.lines||[]).map(function(t,j){return el("span",{class:"v-ln"+(j===it.hi?" v-hi":""),text:t});})));}
+    else if(it.k==="pic"){n=el("img",{class:"v-pic",src:it.img,alt:""});}
+    else if(it.k==="rung"){n=el("div",{class:"v-rung"},[it.img?el("img",{src:it.img,alt:""}):el("b",{class:"v-glyph",text:it.glyph||""}),el("span",{text:it.text})]);}
+    else{n=el("div",{class:"v-"+it.k+(it.k==="say"||it.k==="think"?" v-bub":""),text:it.text});if(it.post)n.dataset.post=it.post;}
+    n.style.left=P[0]+"%";n.style.top=P[1]+"%";if(it.w)n.style.width=it.w+"%";if(it.side==="r")n.classList.add("r");
+    n.classList.add("v-it");if(it.part!=null)n.classList.add("v-dim");lay.append(n);nodes.push({n:n,it:it});
+    if(it.at!=="post"){var d=(v.zoom?1100:250)+(k0++)*(it.gap||650);setTimeout(function(){n.classList.add("in");},reduce?0:d);}});
+  requestAnimationFrame(function(){requestAnimationFrame(function(){if(v.zoom){pan.style.transformOrigin=ox+"% "+oy+"%";pan.style.transform="scale("+sc+")";}f.classList.add("go");});});
+  var done=false;
+  return {post:function(){if(done)return;done=true;f.classList.add("post");nodes.forEach(function(o,j){var it=o.it;if(it.at==="post")setTimeout(function(){o.n.classList.add("in");},reduce?0:250+j*120);if(it.post){setTimeout(function(){o.n.classList.add("flip");if(o.n.dataset.post!=null)o.n.textContent=o.n.dataset.post;},reduce?0:300+j*260);}});},
+    pick:function(i,ok){nodes.forEach(function(o){if(o.it.opt===i){o.n.classList.remove("shake");void o.n.offsetWidth;o.n.classList.add(ok?"hit":"shake");if(!ok)o.n.classList.add("miss");}});},
+    lit:function(i,on){nodes.forEach(function(o){if(o.it.part===i){o.n.classList.toggle("v-dim",!on);if(on)o.n.classList.add("in");}});var all=nodes.filter(function(o){return o.it.part!=null;});if(all.length&&all.every(function(o){return !o.n.classList.contains("v-dim");}))this.post();}};}
+/* 情节山：横轴是段落，纵轴是“推得多高”；每部分一级台阶往上，转折后落下 */
+function mountain(v,lay,nodes){var N=v.n||37,parts=v.parts||[],W=100,Hh=100;function X(p){return 4+92*(p-1)/(N-1);}
+  var pts=[];parts.forEach(function(pt){pts.push([X(pt.a),pt.h]);pts.push([X(pt.b),pt.h]);});
+  var d="M"+pts.map(function(q){return q[0].toFixed(1)+" "+(92-q[1]*0.8).toFixed(1);}).join(" L");
+  var svg='<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="mt-line" d="'+d+'" pathLength="100"/>'+(v.after?'<path class="mt-after" d="M'+X(v.after.a).toFixed(1)+' '+(92-v.after.h0*0.8).toFixed(1)+' L'+X(v.after.b).toFixed(1)+' '+(92-v.after.h1*0.8).toFixed(1)+'" pathLength="100"/>':'')+'</svg>';
+  var box=el("div",{class:"mt",html:svg});lay.append(box);
+  parts.forEach(function(pt,i){var lb=el("div",{class:"v-it mt-lb",text:pt.label});lb.style.left=X((pt.a+pt.b)/2)+"%";lb.style.top=(92-pt.h*0.8+3)+"%";lay.append(lb);setTimeout(function(){lb.classList.add("in");},reduce?0:400+i*380);});
+  (v.flags||[]).forEach(function(fl){var n=el("div",{class:"v-it mt-flag",text:fl.text});var hh=fl.h!=null?fl.h:50;n.style.left=X(fl.p)+"%";n.style.top=(92-hh*0.8-14)+"%";lay.append(n);nodes.push({n:n,it:{opt:fl.opt,at:"pre"}});setTimeout(function(){n.classList.add("in");},reduce?0:2700);});}
+/* 分层做完：我的 / 参考 两条色带 */
+function strips(mine,ref,info){var N=PARAS.length,wrap=el("div",{class:"strips"});
+  function row(label,rs,names){var r=el("div",{class:"strip"},[el("span",{class:"sl",text:label})]),bar=el("div",{class:"sb"});rs.forEach(function(x,i){var a=x[0],b=x[x.length-1];var c=el("i",{title:names[i]||"",text:names[i]||""});c.style.flex=(b-a+1)+" 1 0";c.style.setProperty("--d",(i*0.18)+"s");c.style.setProperty("--h",(i*47%360));bar.append(c);});r.append(bar);return r;}
+  var m=mine.map(function(x){return [x[0]+1,x[1]+1];}),mc=m.slice(0,-1).map(function(x){return x[1];}),rc=ref.slice(0,-1).map(function(x){return x[x.length-1];});
+  wrap.append(row("我的",m,info.map(function(x){return x.sum;})),row("参考",ref,[]));
+  var marks=el("div",{class:"sb sm"});rc.forEach(function(c){var t=el("b",{class:mc.indexOf(c)>=0?"same":"diff",text:mc.indexOf(c)>=0?"✓":""});t.style.left=(c/N*100)+"%";marks.append(t);});wrap.append(el("div",{class:"strip"},[el("span",{class:"sl",text:""}),marks]));return wrap;}
 function stepImg(s){if(!s.img)return;var f=el("figure",{class:"simg"});var im=el("img",{src:s.img,alt:s.alt||"",draggable:"false"});f.append(im);f.addEventListener("click",function(){var ov=el("div",{class:"simg-big"});ov.append(el("img",{src:s.img,alt:s.alt||""}));ov.addEventListener("click",function(){ov.remove();});document.body.append(ov);});task.append(f);}
 H.listen=function(s,tok){var pre=s.ask?say(fill(s.ask),s.who||lead(),tok):Promise.resolve();
   return pre.then(function(){clearTask();closeReaderIfNarrow();var box=el("div",{class:"listen"}),cards=[];
@@ -744,8 +782,8 @@ function paintCal5(){var c=cal5El(),st=get("d3.cal")||{},P=L.cal5||{pages:[]};c.
 H.cal5=function(s){var st=get("d3.cal")||{};if(s.op==="stamp"){st[s.page]={mood:s.mood,fig:s.fig||""};set("d3.cal",st);commit();SOUND.sfx("ok");}else if(s.op==="map"){st.map=1;set("d3.cal",st);commit();}else if(s.op==="hide"){var c=$("#cal5");if(c)c.remove();return Promise.resolve();}paintCal5();return Promise.resolve();};
 
 /* 句框写作：几个空连成一句话。{t:"frame",key,q,example,parts:[{label,ph,min}],nudge:{field,re,text,who},replies:[{field,re,text,who}],button,obs} */
-H.frame=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.q)task.append(q(s.q));if(s.example)task.append(el("div",{class:"banner",html:fill(s.example)}));
-  var old=get(s.key)||{},ins=[];s.parts.forEach(function(pt,i){var inp=el("input",{type:"text",id:"in-"+s.key.replace(/\./g,"-")+"-"+i,placeholder:fill(pt.ph||""),autocomplete:"off"});inp.value=old["p"+i]||"";ins.push(inp);task.append(el("label",{class:"fr"},[el("span",{class:"frl",text:fill(pt.label)}),inp]));});
+H.frame=function(s,tok){return new Promise(function(res,rej){clearTask();var VB=s.vis?visBox(s.vis):null;if(s.q)task.append(q(s.q));if(s.example)task.append(el("div",{class:"banner",html:fill(s.example)}));
+  var old=get(s.key)||{},ins=[];s.parts.forEach(function(pt,i){var inp=el("input",{type:"text",id:"in-"+s.key.replace(/\./g,"-")+"-"+i,placeholder:fill(pt.ph||""),autocomplete:"off"});inp.value=old["p"+i]||"";ins.push(inp);if(VB){var lt=function(){VB.lit(i,inp.value.trim().length>=(pt.min||1));};inp.addEventListener("input",lt);setTimeout(lt,0);}task.append(el("label",{class:"fr"},[el("span",{class:"frl",text:fill(pt.label)}),inp]));});
   var b=btn(s.button||"写好了");task.append(el("div",{class:"row"},[b]));ins[0].focus();var nudged=false;
   b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);var v={};for(var i=0;i<ins.length;i++){var x=ins[i].value.trim();if(x.replace(/[，。！？、\s]/g,"").length<(s.parts[i].min||1)){ins[i].focus();sayQ(s.parts[i].short||"这一空再多写几个字。",coach(),tok);return;}v["p"+i]=x;}
     var nd=s.nudge;if(nd&&!nudged&&!new RegExp(nd.re).test(v["p"+nd.field])){nudged=true;logStep(s.obs,{miss:"nudge"});sayQ(fill(nd.text),nd.who||lead(),tok);return;}
