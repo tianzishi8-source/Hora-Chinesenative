@@ -414,7 +414,7 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 
 /* 背景画 */
 #scenebg{position:fixed;inset:0;z-index:-1;background:70% center/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none}
-#scenebg.on{opacity:.9}
+#scenebg.on{opacity:.42}
 #cast{position:relative;z-index:5}
 
 /* 还没做到的环节 */

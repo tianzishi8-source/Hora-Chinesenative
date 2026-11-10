@@ -414,7 +414,7 @@ function pickMulti(label,tok,preset,okLabel){return new Promise(function(res,rej
 function sleepTick(ms){return new Promise(function(r){setTimeout(r,reduce?10:ms);});}
 function textBox(id,rows,ph,val){var ta=el("textarea",{id:id,rows:String(rows||3),placeholder:ph||""});ta.value=val||"";return ta;}
 function inPara(id,paras){return paras.indexOf(SENT[id].p)>=0;}
-function q(text){var t=fill(text);setTimeout(function(){task.classList.add("ask");var ns=mentionNums(t);if(ns.length)maskParas(ns);try{task.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}},0);return el("div",{class:"task-q",text:t});}
+var QP=null;function q(text){var t=fill(text),qp=QP;QP=null;setTimeout(function(){task.classList.add("ask");var ns=qp||mentionNums(t);if(ns.length)maskParas(ns);try{task.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}},0);return el("div",{class:"task-q",text:t});}
 
 /* ================= 步骤类型 ================= */
 var H={};
@@ -663,7 +663,7 @@ H.scene=function(s,tok){var fn=window.HORA_SCENES&&window.HORA_SCENES[s.id];if(!
   };
   return Promise.resolve().then(function(){return fn(api,s);}).then(function(){if(s.obs&&!(S.log[s.obs.id]&&S.log[s.obs.id].answer))api.log("看完了");},function(e){throw e;}).then(function(){VOICE.stop();ov.remove();document.body.classList.remove("staged");},function(e){VOICE.stop();ov.remove();document.body.classList.remove("staged");throw e;});};
 H.mc=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.ask?say(fill(variant(s,"ask")),s.who,tok):Promise.resolve();
-  return pre.then(function(){return new Promise(function(res,rej){clearTask();if(s.feedbackWho==="xiaoman")closeReaderIfNarrow();keepQ();stepImg(s);if(s.q)task.append(q(s.q));var box=el("div",{class:"mc"});
+  return pre.then(function(){return new Promise(function(res,rej){clearTask();if(s.feedbackWho==="xiaoman")closeReaderIfNarrow();keepQ();stepImg(s);if(s.q){QP=s.paras||null;task.append(q(s.q));}var box=el("div",{class:"mc"});
     var ord=s.options.map(function(o,i){return i;});if(!s.stance&&!s.fixed)for(var z=ord.length-1;z>0;z--){var r=Math.floor(Math.random()*(z+1)),tz=ord[z];ord[z]=ord[r];ord[r]=tz;}ord.forEach(function(i){var o=s.options[i];var b=el("button",{class:"mco",type:"button",text:fill(o.text)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
         logStep(s.obs,{try:1});var ok=s.stance||o.ok===true;
         if(ok){task.classList.remove("ask");$$(".mco",box).forEach(function(x){x.disabled=true;});b.classList.add("ok");SOUND.sfx(s.stance?"page":"ok");if(s.key)set(s.key,o.value!=null?o.value:i);logStep(s.obs,{answer:fill(o.text)});logMe(fill(o.text));commit();
