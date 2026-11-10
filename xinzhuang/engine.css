@@ -585,3 +585,7 @@ body.staged{overflow:hidden}
 .stg-hot.on{box-shadow:0 0 0 3px rgba(255,236,170,.95),0 0 30px 8px rgba(255,220,120,.55)}
 .stage .zone{pointer-events:auto;cursor:pointer;background:transparent;padding:0}
 .lensclip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;z-index:2}
+/* 11-10 题目定位：词加底色；故事分段按顺序排，不做台阶 */
+mark.loc{background:linear-gradient(transparent 35%,rgba(230,160,40,.5) 35%);color:inherit;padding:0 1px;border-radius:2px}
+.stairs.flat{flex-direction:column}
+.stairs.flat .step{margin-left:0}
