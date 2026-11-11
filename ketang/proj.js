@@ -236,7 +236,9 @@
             try {
               wake();
               var c = getCtx(), src = c.createBufferSource(); src.buffer = buf; src.playbackRate.value = speed;
-              src.connect(outNode()); lipUsesAudio = true; curSrc = src;
+              // 11-11 课堂反馈：徽音老师的声音要大一点。每个人物可以单独加音量：L.voiceGain = { hy: 1.8 }（默认徽音老师 2.2 倍）
+              var vg = c.createGain(); vg.gain.value = (L.voiceGain || {})[who] || ({ hy: 2.2 })[who] || 1;
+              src.connect(vg); vg.connect(outNode()); lipUsesAudio = true; curSrc = src;
               src.onended = function () { if (curSrc === src) curSrc = null; fin(); };
               src.start(c.currentTime + 0.04);
               setTimeout(fin, (buf.duration / speed + 1.5) * 1000);   // 保险：从真正开始放算起
