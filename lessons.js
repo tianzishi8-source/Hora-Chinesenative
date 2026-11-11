@@ -61,6 +61,13 @@ window.HORA_LESSONS = [
       { label: "自学版", folder: "youyyl", desc: "4 个课时：读懂全文、比较《岳阳楼记》，最后写一篇有自己感悟的游记。" }
     ],
     pic: "youyyl/img/cover.webp", picAlt: "示意画：楼上的酒席，窗外洞庭湖风浪大作" },
+  { id: "g8-jiangping", folder: "ketang/jp-g8-1.html", grade: 8, title: "考试讲评", author: "试卷 · 作文",
+    blurb: "八年级第一、二单元检测：试卷逐题讲评（先亮答案、红笔批改，再讲怎样答完整）；作文讲评（最好的细节放对位置、结尾不说破、动作替人说话）。课堂投屏，助教点“继续”。",
+    open: 2, total: 2, unit: "节", static: true, chooseLead: "讲哪一个：",
+    choose: [
+      { label: "试卷讲评", folder: "ketang/jp-g8-1.html", desc: "课堂投屏，40 分钟：积累与运用、《绿》、《行是知之始》、仿写；每题先亮答案再讲。" },
+      { label: "作文讲评", folder: "ketang/jp-g8-2.html", desc: "课堂投屏，40 分钟：三件事，每件都是看原句 → 回答 → 看示范 → 用铅笔改自己的。" }
+    ] },
   { id: "g9-jiangping", folder: "ketang/jp-g9-1.html", grade: 9, title: "考试讲评", author: "试卷 · 作文",
     blurb: "九上第三单元考试：试卷逐题讲评（先看答案，再讲为什么）；作文讲评（结尾不说破、高潮写慢、别人替你说）。课堂投屏，助教点“继续”。",
     open: 2, total: 2, unit: "节", static: true, chooseLead: "讲哪一个：",

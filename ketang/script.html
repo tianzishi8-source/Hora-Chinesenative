@@ -40,7 +40,7 @@ h2 small{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}
 </main>
 <script>
 (function () {
-  var LIST = [["yyl-1","岳阳楼记 1"],["yyl-2","2"],["yyl-3","3"],["yyl-4","4"],["yyl-5","5"],["yyl-6","6"],["yyl-7","7"],["yyl-8","8"],["yyl-9","9"],["yyl-10","10"],["yyl-11","11"],["jp-g9-1","试卷讲评"],["jp-g9-2","作文讲评"]];
+  var LIST = [["yyl-1","岳阳楼记 1"],["yyl-2","2"],["yyl-3","3"],["yyl-4","4"],["yyl-5","5"],["yyl-6","6"],["yyl-7","7"],["yyl-8","8"],["yyl-9","9"],["yyl-10","10"],["yyl-11","11"],["jp-g9-1","试卷讲评"],["jp-g9-2","作文讲评"],["jp-g8-1","八年级试卷讲评"],["jp-g8-2","八年级作文讲评"]];
   var cur = (location.search.match(/l=([\w-]+)/) || [])[1] || "yyl-1";
   document.getElementById("nav").innerHTML = LIST.map(function (x) { return '<a href="?l=' + x[0] + '"' + (x[0] === cur ? ' class="on"' : "") + ">" + x[1] + "</a>"; }).join("");
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
