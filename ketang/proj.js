@@ -142,7 +142,7 @@
 
   /* ---------- 声音 ---------- */
   var VOICE_IDX = window.PROJ_VOICE || {};   // 录好的 mp3：{哈希: 秒数}
-  var soundOn = store.get("sound", true), speed = store.get("speed", 1), boost = store.get("boost", 2), boostNode = null;
+  var soundOn = store.get("sound", true), speed = store.get("speed", 1), boost = store.get("boost2", 0.8), boostNode = null;
   var zhVoices = [];
   function loadVoices() {
     if (!("speechSynthesis" in window)) return;
@@ -180,9 +180,15 @@
     var c = getCtx();
     if (!analyser) {
       analyser = c.createAnalyser(); analyser.fftSize = 512; abuf = new Uint8Array(analyser.fftSize);
+      // 11-11 课堂反馈“超大、大、正常差不多”：原来先加增益、再用阈值 -20 的压缩器，增益又被压回去了。
+      // 现在：前级增益 → 压缩限幅 → 软削波。实测（一句 -14 LUFS 的录音）：正常 -15、大 -11.5、很大 -9.7、超大 -8.5 dB rms；超大已到数字满幅，再响只能调电脑和音箱。增益越大，声音越“满”、越响。
       boostNode = c.createGain(); boostNode.gain.value = boost;
-      var comp = c.createDynamicsCompressor(); comp.threshold.value = -20; comp.knee.value = 8; comp.ratio.value = 4; comp.attack.value = 0.004; comp.release.value = 0.2;
-      boostNode.connect(comp); comp.connect(analyser); analyser.connect(c.destination);
+      var lim = c.createDynamicsCompressor(); lim.threshold.value = -12; lim.knee.value = 4; lim.ratio.value = 12; lim.attack.value = 0.002; lim.release.value = 0.12;
+      var post = c.createGain(); post.gain.value = 0.6;   // 1.8 × 1/3（软削波前的缩放）
+      var clip = c.createWaveShaper(), cv = new Float32Array(2049);
+      for (var k = 0; k < 2049; k++) cv[k] = Math.tanh((k - 1024) / 1024 * 3);   // 软削波：再大也不超过满幅，不破音
+      clip.curve = cv; clip.oversample = "2x";
+      boostNode.connect(lim); lim.connect(post); post.connect(clip); clip.connect(analyser); analyser.connect(c.destination);
     }
     return boostNode;
   }
@@ -756,7 +762,7 @@
     if (NUDGE_SETS[st.timer.nudge]) return st.timer.nudge;
     var lb = st.timer.label || "";
     if (/比划|看图|听/.test(lb) && !/写|订正/.test(lb)) return "look";
-    return /同桌补充|同桌猜|互讲|复述|说给|讨论|小组|交流|商量|口头|说一说|互相说/.test(lb) ? "talk" : "write";
+    return /同桌补充|同桌猜|互讲|交换|猜一猜|复述|说给|讨论|小组|交流|商量|口头|说一说|互相说/.test(lb) ? "talk" : "write";
   }
   function nudge(token) {
     var st = STEPS[cur], kind = nudgeKind(st), set = NUDGE_SETS[kind];
@@ -991,14 +997,14 @@
         '</select><button class="btn ghost" data-try="' + k + '">试听</button></label>';
     });
     h += '<label><b>语速</b><select id="spd">' + [0.85, 0.9, 1, 1.1, 1.2].map(function (x) { return '<option value="' + x + '"' + (x === speed ? " selected" : "") + ">" + (x === 1 ? "正常" : x < 1 ? "慢一点（" + x + "）" : "快一点（" + x + "）") + "</option>"; }).join("") + "</select></label>";
-    h += '<label><b>音量增强</b><select id="bst">' + [[1, "不增强"], [1.5, "大一点"], [2, "大（默认）"], [2.6, "很大（大教室）"]].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === boost ? " selected" : "") + ">" + x[1] + "</option>"; }).join("") + "</select></label>";
+    h += '<label><b>音量增强</b><select id="bst">' + [[0.3, "正常"], [0.8, "大（默认）"], [2, "很大"], [6, "超大（最响，再响请调电脑和音箱）"]].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === boost ? " selected" : "") + ">" + x[1] + "</option>"; }).join("") + "</select></label>";
     h += '<div class="hint">键盘：空格／→／翻页遥控器＝继续；←＝上一步；1–5＝助教回应按钮；P＝暂停计时；F＝全屏；N＝下一位；R＝提醒专心。</div>';
     h += '<div style="display:flex;justify-content:flex-end"><button class="btn" id="setok">好了</button></div>';
     d.querySelector(".box").innerHTML = h;
     d.querySelectorAll("select[data-k]").forEach(function (s) { s.onchange = function () { store.set("voice-" + s.dataset.k, s.value); }; });
     d.querySelectorAll("[data-try]").forEach(function (b) { b.onclick = function () { var k = b.dataset.try; stopVoice(); say(k, "同学们好，我是" + CAST[k].name + "。", TOKEN); }; });
     $("#spd").onchange = function () { speed = +this.value; store.set("speed", speed); };
-    $("#bst").onchange = function () { boost = +this.value; store.set("boost", boost); if (boostNode) boostNode.gain.value = boost; };
+    $("#bst").onchange = function () { boost = +this.value; store.set("boost2", boost); if (boostNode) boostNode.gain.value = boost; };
     $("#setok").onclick = function () { d.hidden = true; };
   }
 
