@@ -20,6 +20,7 @@ window.YK_CONF = {
     bx: ["zh-CN-XiaoxiaoNeural", "-12%", "-6Hz"],     // 冰心：温和
     "x-同学": ["zh-CN-YunxiaNeural", "+4%", "+0Hz"]
   },
+  sceneVariants: { riverbank: ["storm", "dusk", "winter"], lonetree: ["summer", "autumn", "winter"], lakeview: ["dusk"] },   // 同一场景不同季节/天气的真图：img/scene-键-色调.webp
   scenes: ["hall", "stream", "riverbank", "lonetree", "study", "night", "yard", "lakeview", "mount"],
   img: { moon: "../yueyanglou/img/moon.webp" }
 };

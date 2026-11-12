@@ -18,6 +18,7 @@ window.YK_CONF = {
     "x-阿爹": ["zh-CN-YunxiNeural", "-10%", "-18Hz"],
     "x-友人": ["zh-CN-YunxiaNeural", "-4%", "-8Hz"]
   },
+  sceneVariants: { tavern: ["storm"], lakeview: ["storm", "winter"] },   // 同一场景不同季节/天气的真图：img/scene-键-色调.webp
   scenes: ["tavern", "rail", "lakeview", "wharf", "study", "night"],
   img: { tower: "../yueyanglou/img/tower.webp", lake: "../yueyanglou/img/lake.webp", map: "../yueyanglou/img/map.webp", rainlake: "../yueyanglou/img/rain.webp" }
 };

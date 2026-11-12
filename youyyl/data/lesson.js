@@ -2,6 +2,7 @@
  * 四课时：① 读通全文，第1段：水与山 ② 第2段：一日三景与“真可哭也” ③ 比较《岳阳楼记》（课本练习三、四）④ 单元写作：有生命体温的感悟（体验·颖悟） */
 window.ZX = {
   id: "g9-youyyl", title: "游岳阳楼记", author: "袁中道", ver: "11052000",
+  sceneDir: "../youyyl-ke/img/",   // 画面先用课堂版的场景真图
   guide: { name: "袁中道", kind: "yuan", vkey: "yuan" },
   voices: { yuan: ["zh-CN-YunyangNeural", "-12%", "-6Hz"], read: ["zh-CN-YunyangNeural", "-20%", "-6Hz"] },
   lessons: [

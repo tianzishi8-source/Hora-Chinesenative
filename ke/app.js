@@ -262,7 +262,9 @@ function storyList() {
 var IMG = C.img || {};
 var LEGACY = {};
 var SCENE_KEYS = C.scenes || [], SCENE_IMG = {};
-function probeScenes() { SCENE_KEYS.forEach(function (k) { var u = "img/scene-" + k + ".webp?v=" + VER, im = new Image(); im.onload = function () { if (im.naturalWidth) SCENE_IMG[k] = u; }; im.src = u; }); }
+/* sceneVariants（conf）：{场景键: [色调…]}，有 img/scene-键-色调.webp 时，这个色调就用这张（不再叠色），例如 path-summer、stream-winter。 */
+function probeScenes() { var ks = SCENE_KEYS.slice(), V = C.sceneVariants || {}; Object.keys(V).forEach(function (k) { V[k].forEach(function (t) { ks.push(k + "-" + t); }); });
+  ks.forEach(function (k) { var u = "img/scene-" + k + ".webp?v=" + VER, im = new Image(); im.onload = function () { if (im.naturalWidth) SCENE_IMG[k] = u; }; im.src = u; }); }
 var CAM = { still: ["scale(1.05)", "scale(1.06)"], push: ["scale(1.02)", "scale(1.16)"], pull: ["scale(1.17)", "scale(1.03)"],
   panL: ["translateX(-4%) scale(1.12)", "translateX(4%) scale(1.12)"], panR: ["translateX(4%) scale(1.12)", "translateX(-4%) scale(1.12)"],
   up: ["translateY(-4.5%) scale(1.12)", "translateY(4.5%) scale(1.12)"], down: ["translateY(4.5%) scale(1.12)", "translateY(-4.5%) scale(1.12)"] };
@@ -278,6 +280,7 @@ function nodeShot(n) { return n ? normShot(n.shot || (n.lines && n.lines[0] && n
 function sceneHTML(s) {
   var inner;
   if (IMG[s.bg]) inner = '<img class="photo" src="' + IMG[s.bg] + '" alt="" draggable="false">';
+  else if (s.tone && SCENE_IMG[s.bg + "-" + s.tone]) inner = '<img class="photo" src="' + SCENE_IMG[s.bg + "-" + s.tone] + '" alt="" draggable="false">';
   else if (SCENE_IMG[s.bg]) inner = '<img class="photo" src="' + SCENE_IMG[s.bg] + '" alt="" draggable="false">' + (s.tone ? '<i class="tint t-' + s.tone + '"></i>' : "");
   else inner = window.YK_SCENE ? YK_SCENE.svg(s.bg, s.bg === "night" ? "night" : s.tone) : "";
   if (IMG[s.bg] && s.tone) inner += '<i class="tint t-' + s.tone + '"></i>';

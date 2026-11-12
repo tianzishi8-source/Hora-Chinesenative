@@ -3,6 +3,7 @@
  * 对话人物：bd 伴学（清弦或长歌）/ g 欧阳修（想象的对话）/ hy 徽音老师 / me 我 */
 window.ZX = {
   id: "g9-zuiweng", title: "醉翁亭记", author: "欧阳修", ver: "11051700",
+  sceneDir: "../zuiweng-ke/img/",   // 画面先用课堂版的场景真图
   guide: { name: "欧阳修", kind: "ouyang", fig: "", vkey: "g" },
   voices: {
     g: ["zh-CN-YunjianNeural", "-10%", "-8Hz"],

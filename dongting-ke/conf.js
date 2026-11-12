@@ -21,6 +21,7 @@ window.YK_CONF = {
     "x-阿娘": ["zh-CN-XiaoxiaoNeural", "-6%", "-10Hz"],
     "x-杜夫人": ["zh-CN-XiaoxiaoNeural", "-14%", "-14Hz"]
   },
+  sceneVariants: { wharf: ["winter", "storm"], lakeview: ["winter", "dusk"], boat: ["night"] },   // 同一场景不同季节/天气的真图：img/scene-键-色调.webp
   scenes: ["lakeview", "boat", "rail", "wharf", "tavern"],
   img: { tower: "../yueyanglou/img/tower.webp", lake: "../yueyanglou/img/lake.webp", moon: "../yueyanglou/img/moon.webp", spring: "../yueyanglou/img/spring.webp", rainlake: "../yueyanglou/img/rain.webp", map: "../yueyanglou/img/map.webp" }
 };

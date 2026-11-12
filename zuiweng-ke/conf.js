@@ -19,6 +19,7 @@ window.YK_CONF = {
     "x-智仙": ["zh-CN-YunyangNeural", "-18%", "-16Hz"],
     "x-客人": ["zh-CN-YunxiaNeural", "+6%", "-6Hz"]
   },
+  sceneVariants: { road: ["spring"], path: ["summer", "autumn"], stream: ["winter"], pavilion: ["autumn"] },   // 同一场景不同季节/天气的真图：img/scene-键-色调.webp
   scenes: ["mount", "stream", "pavilion", "path", "feast", "road", "yard", "study", "night", "gate"],
   img: {}
 };
