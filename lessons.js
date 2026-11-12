@@ -36,13 +36,13 @@ window.HORA_LESSONS = [
       { label: "自学版", folder: "yueyanglou", desc: "原来的 8 课时课件，自己从头读一遍全文和讲解。" }
     ],
     pic: "yueyanglou/img/tower.webp", picAlt: "水墨岳阳楼，城墙上的三层楼阁，远处是洞庭湖与帆船" },
-  { id: "g9-zuiweng", folder: "zuiweng", grade: 9, title: "醉翁亭记", author: "欧阳修",
+  { id: "g9-zuiweng-zx", folder: "zuiweng", grade: 9, title: "醉翁亭记", author: "欧阳修",
     blurb: "滁州四面是山。一个被贬的太守，为什么满篇都在写“乐”？他乐的到底是什么？",
     open: 4, total: 4, unit: "课时",
-    /* 课堂版：课后单机（沉浸剧情《琅琊山的一年》、背诵、字词、测验），引擎 ke/；自学版：4 课时，引擎 zx/。老师点开进自学版（老师预览）。 */
+    /* 课堂版：课后单机（沉浸剧情《琅琊山的一年》、背诵、字词、测验），引擎 ke/；自学版（11-12 改版）：4 天，剧场式引擎（同《皇帝的新装》《蜘蛛》），山雀领读。id 跟自学版走（首页进度读它）。 */
     choose: [
       { label: "课堂版", folder: "zuiweng-ke", desc: "配合课堂上的 4 节课，课后每次 20 分钟：沉浸剧情、背诵、字词、模拟测验，分数存给老师。" },
-      { label: "自学版", folder: "zuiweng", desc: "4 个课时，自己从头读：听朗读、正音、逐段读懂、练笔、背诵。" }
+      { label: "自学版", folder: "zuiweng", desc: "4 天，跟着一只山雀上琅琊山：镜头推近、一亭四季、逐句翻译、三层乐、找出 21 个“也”，还有仿写和背诵。" }
     ],
     pic: "zuiweng/img/cover.webp", picAlt: "示意画：秋天，琅琊山中泉水上的一座亭子，檐角高高翘起" },
   { id: "g9-dongting", folder: "dongting", grade: 9, title: "洞庭三诗", author: "杜甫 · 孟浩然 · 李白",
