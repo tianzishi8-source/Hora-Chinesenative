@@ -1,7 +1,7 @@
 /* 《醉翁亭记》课堂版 · 设置（window.YK_CONF，引擎 ../ke/app.js 读）。字段说明见 ../ke/app.js 开头。 */
 window.YK_CONF = {
-  id: "g9-zuiweng-ke", title: "醉翁亭记", short: "醉翁亭记", lessons: 4, ver: "11051600",
-  guide: { name: "欧阳公", alt: "欧阳修", fig: "", figKind: "ouyang" },   // 有立绘后把 fig 改成 "ouyangxiu_outfit_ancient.webp"（放进 chars/）
+  id: "g9-zuiweng-ke", title: "醉翁亭记", short: "醉翁亭记", lessons: 4, ver: "11121210",
+  guide: { name: "欧阳公", alt: "欧阳修", fig: "", figKind: "ouyang" },   // 立绘：ke/app.js 的 FIGFILE 按 figKind 找 chars/ouyangxiu_outfit_ancient.webp
   storyTitle: "琅琊山的一年",
   storyLead: "庆历六年，滁州。你是琅琊山脚下樵夫家的孩子，给新来的太守带路上山。",
   hero: {

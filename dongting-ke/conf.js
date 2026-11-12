@@ -1,6 +1,6 @@
 /* 《洞庭三诗》课堂版 · 设置（window.YK_CONF）。字段说明见 ../ke/app.js 开头。三位诗人在不同年代，每章的 guide 在 data/story.js 里换。 */
 window.YK_CONF = {
-  id: "g9-dongting-ke", title: "洞庭三诗", short: "洞庭三诗", lessons: 3, ver: "11051800",
+  id: "g9-dongting-ke", title: "洞庭三诗", short: "洞庭三诗", lessons: 3, ver: "11121210",
   guide: { name: "杜公", alt: "杜甫", fig: "", figKind: "dufu", vkey: "du" },
   storyTitle: "湖上三船客",
   storyLead: "你是岳州湖边船家的孩子。三章三个年代，你的船上先后来了三位诗人。",

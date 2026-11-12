@@ -1,6 +1,6 @@
 /* 《最苦与最乐 · 谈生命》课堂版 · 设置（window.YK_CONF）。字段说明见 ../ke/app.js 开头。前两章是梁启超，后两章是冰心（章节 guide）。 */
 window.YK_CONF = {
-  id: "g9-kule-ke", title: "最苦与最乐 · 谈生命", short: "最苦与最乐·谈生命", lessons: 3, ver: "11052100",
+  id: "g9-kule-ke", title: "最苦与最乐 · 谈生命", short: "最苦与最乐·谈生命", lessons: 3, ver: "11121210",
   guide: { name: "梁先生", alt: "梁启超", fig: "", figKind: "liang", vkey: "liang" },
   board: "最苦与最乐",
   storyTitle: "两位先生",

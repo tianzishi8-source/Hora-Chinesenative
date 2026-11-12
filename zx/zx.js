@@ -41,7 +41,8 @@ var BUD = { qingxian: { name: "清弦", c: [488, 346], v: "qx" }, changge: { nam
 function buddy() { var b = lsGet("hora-buddy") || {}; var w = BUD[b.who] ? b.who : "qingxian"; return { who: w, outfit: ["daily", "sport", "formal", "ancient"].indexOf(b.outfit) >= 0 ? b.outfit : "ancient" }; }
 function myHair() { var a = lsGet("hora-avatar") || {}; return /^[gb][1-4]$/.test(a.hair) ? a.hair : "g1"; }
 function GD() { return (Z.lessons && Z.lessons[L - 1] && Z.lessons[L - 1].guide) || Z.guide || {}; }
-function guideSrc() { var g = GD(); return g.fig ? (/^(\.|\/|http|data:)/.test(g.fig) ? g.fig : CHARS + g.fig) : (window.YK_SCENE && YK_SCENE.figure ? YK_SCENE.figure(g.kind || "scholar") : ""); }
+var FIGFILE = { ouyang: "ouyangxiu_outfit_ancient.webp", dufu: "dufu_outfit_ancient.webp", meng: "menghaoran_outfit_ancient.webp", libai: "libai_outfit_ancient.webp", yuan: "yuanzhongdao_outfit_ancient.webp", liang: "liangqichao_outfit_formal.webp", bingxin: "bingxin_outfit_formal.webp" };   // 11-12 立绘到了：没写 fig 时按剪影样式找 chars/ 里的立绘
+function guideSrc() { var g = GD(); if (!g.fig && FIGFILE[g.kind]) return CHARS + FIGFILE[g.kind]; return g.fig ? (/^(\.|\/|http|data:)/.test(g.fig) ? g.fig : CHARS + g.fig) : (window.YK_SCENE && YK_SCENE.figure ? YK_SCENE.figure(g.kind || "scholar") : ""); }
 /* 头像：把 1024×1536 的立绘按头部中心放大裁进圆框 */
 function avatar(src, c, box, scale) { var sc = (scale || 1) * box / 316; return '<img src="' + src + '" alt="" style="width:' + Math.round(1024 * sc) + "px;left:" + Math.round(box / 2 - c[0] * sc) + "px;top:" + Math.round(box / 2 - c[1] * sc) + 'px" draggable="false">'; }
 function who(w) {

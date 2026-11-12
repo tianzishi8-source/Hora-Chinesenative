@@ -1,6 +1,6 @@
 /* 《游岳阳楼记》课堂版 · 设置（window.YK_CONF）。字段说明见 ../ke/app.js 开头。 */
 window.YK_CONF = {
-  id: "g9-youyyl-ke", title: "游岳阳楼记", short: "游岳阳楼记", lessons: 3, ver: "11052000",
+  id: "g9-youyyl-ke", title: "游岳阳楼记", short: "游岳阳楼记", lessons: 3, ver: "11121210",
   guide: { name: "袁先生", alt: "袁中道", fig: "", figKind: "yuan", vkey: "yuan" },
   storyTitle: "楼上的一天",
   storyLead: "明朝万历年间，岳州。你是岳阳楼下茶酒铺的孩子，给楼上的客人送酒菜。",

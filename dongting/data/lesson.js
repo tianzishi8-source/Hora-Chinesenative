@@ -2,7 +2,7 @@
  * 三课时：① 杜甫《登岳阳楼》 ② 孟浩然《临洞庭湖赠张丞相》 ③ 李白《陪侍郎叔游洞庭醉后》与三诗比较
  * 对话：bd 伴学 / g 这一课时的诗人（想象的对话）/ hy 徽音老师 */
 window.ZX = {
-  id: "g9-dongting", title: "洞庭三诗", author: "杜甫 · 孟浩然 · 李白", ver: "11051900",
+  id: "g9-dongting", title: "洞庭三诗", author: "杜甫 · 孟浩然 · 李白", ver: "11121210",
   sceneDir: "../dongting-ke/img/",   // 画面先用课堂版的场景真图
   guide: { name: "杜甫", kind: "dufu", vkey: "du" },
   voices: {

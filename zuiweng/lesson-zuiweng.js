@@ -40,7 +40,7 @@ cast:{
       voices:[{id:"a",name:"山雀",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"+2%",pitch:"+12Hz"}]},
   hy:{name:"徽音老师",img:"img/huiyin.webp",extra:true,ink:"--accent",voice:{gender:"female",pitch:1,rate:1},
       voices:[{id:"a",name:"徽音老师",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-6%",pitch:"-4Hz"}]},
-  ou:{name:"欧阳修",extra:true,shape:"seal",glyph:"欧",ink:"#5e6b4a",voice:{gender:"male",pitch:1,rate:1},
+  ou:{name:"欧阳修",img:"img/ou.webp",extra:true,shape:"seal",glyph:"欧",ink:"#5e6b4a",voice:{gender:"male",pitch:1,rate:1},
       voices:[{id:"a",name:"欧阳修",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-10%",pitch:"-8Hz"}]},
   zhou:{name:"清弦",sprite:"buddy",shape:"seal",glyph:"弦",seal:"伴学",ink:"--cool",voice:{gender:"female",pitch:1.15,rate:1},
       sample:"我是{buddy|清弦}。这几天，我和你一起上琅琊山。",

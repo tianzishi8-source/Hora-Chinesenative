@@ -1,7 +1,7 @@
 /* 《最苦与最乐 · 谈生命》自学版 · 课时与环节（window.ZX；块的写法见 ../../zx/zx.js 开头）
  * 三课时：① 梁启超《最苦与最乐》 ② 冰心《谈生命》 ③ 两篇比较、语文趣谈“知足常乐”、课本练习三 */
 window.ZX = {
-  id: "g9-kule", title: "最苦与最乐 · 谈生命", author: "梁启超 · 冰心", ver: "11052100",
+  id: "g9-kule", title: "最苦与最乐 · 谈生命", author: "梁启超 · 冰心", ver: "11121210",
   sceneDir: "../kule-ke/img/",   // 画面先用课堂版的场景真图
   guide: { name: "梁启超", kind: "liang", vkey: "liang" },
   voices: { liang: ["zh-CN-YunyangNeural", "-6%", "-8Hz"], bx: ["zh-CN-XiaoxiaoNeural", "-12%", "-6Hz"], read: ["zh-CN-YunxiNeural", "-14%", "-6Hz"] },

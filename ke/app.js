@@ -49,7 +49,8 @@ var HEADC = { qingxian: [488, 346], changge: [493, 214], g: [480, 318], b: [470,
 function myHair() { var a = lsGet("hora-avatar") || {}; return HAIRS.indexOf(a.hair) >= 0 ? a.hair : "g1"; }
 function myBuddy() { var b = lsGet("hora-buddy") || {}; return { who: BUDDY[b.who] ? b.who : "qingxian", outfit: ["daily", "sport", "formal", "ancient"].indexOf(b.outfit) >= 0 ? b.outfit : "daily" }; }
 function meSrc() { return CHARS + myHair() + "_outfit_ancient.webp"; }
-function fanSrc() { return G.fig ? (/^(\.|\/|http|data:)/.test(G.fig) ? G.fig : CHARS + G.fig) : (window.YK_SCENE && YK_SCENE.figure ? YK_SCENE.figure(G.figKind || "scholar") : ""); }
+var FIGFILE = { ouyang: "ouyangxiu_outfit_ancient.webp", dufu: "dufu_outfit_ancient.webp", meng: "menghaoran_outfit_ancient.webp", libai: "libai_outfit_ancient.webp", yuan: "yuanzhongdao_outfit_ancient.webp", liang: "liangqichao_outfit_formal.webp", bingxin: "bingxin_outfit_formal.webp" };   // 11-12 立绘到了：没写 fig 时按剪影样式找 chars/ 里的立绘
+function fanSrc() { if (!G.fig && FIGFILE[G.figKind]) return CHARS + FIGFILE[G.figKind]; return G.fig ? (/^(\.|\/|http|data:)/.test(G.fig) ? G.fig : CHARS + G.fig) : (window.YK_SCENE && YK_SCENE.figure ? YK_SCENE.figure(G.figKind || "scholar") : ""); }
 function faceSrc(kind) { var h = myHair(); return FACES[h] && FACES[h][kind] ? CHARS + h + "_ancient_face_" + kind + ".webp" : ""; }
 function restFace() { return myHair() === "g1" ? "idle" : ""; }
 function meFig(cls) { var r = restFace(); return '<div class="fig me ' + (cls || "") + '"><img class="b" src="' + meSrc() + '" alt="我（' + esc(ME ? ME.name : "") + '）的立绘" draggable="false"><img class="f" alt="" draggable="false"' + (r ? ' src="' + faceSrc(r) + '"' : " hidden") + '></div>'; }
