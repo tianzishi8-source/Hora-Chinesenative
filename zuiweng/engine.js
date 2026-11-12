@@ -73,7 +73,7 @@ function fill(str,extra){var out=String(str==null?"":str).replace(/\{([\w.]+)(?:
 
 /* ---- 学情 ---- */
 var OBS={},OBSORDER=[];
-function regObs(step,day){var o=step.obs;if(!o||OBS[o.id])return;var ml={};(step.misses||[]).forEach(function(m){if(m.id)ml[m.id]=m.label||m.text;});if(step.requireEnd)ml.noEnd=step.requireEnd.label||"没有按要求收尾";if(step.fallback)ml.other="点了其他不相关的句子";if(step.t==="layering"){ml.few="层分得太少";ml.many="层分得太密";ml.keyOut="关键句不在这一层";}if(step.options&&step.t==="mc")step.options.forEach(function(op,i){if(op.ok!==true&&!ml["o"+i])ml["o"+i]="选了“"+String(op.text||"").replace(/\{[a-z]+\}/g,"…").slice(0,40)+"”";});OBS[o.id]={id:o.id,label:o.label,skill:o.skill||"",day:day,misses:ml,kind:step.t,stance:!!step.stance,q:String(step.q||"").replace(/\{[^}|]*\|([^}]*)\}/g,"$1").replace(/\{[^}]*\}/g,"…").slice(0,80)};OBSORDER.push(o.id);}
+function regObs(step,day){var o=step.obs;if(!o||OBS[o.id])return;var ml={};(step.misses||[]).forEach(function(m){if(m.id)ml[m.id]=m.label||m.text;});if(step.requireEnd)ml.noEnd=step.requireEnd.label||"没有按要求收尾";if(step.fallback)ml.other="点了其他不相关的句子";if(step.t==="layering"){ml.few="层分得太少";ml.many="层分得太密";ml.keyOut="关键句不在这一层";}if(step.t==="ask"){ml.h0="第一次没说对";ml.h1="提示后还没说对";ml.h2="要看选项";(step.choices||[]).forEach(function(c,i){if(!c.ok)ml["c"+i]="选了“"+String(c.text).slice(0,30)+"”";});}if(step.options&&step.t==="mc")step.options.forEach(function(op,i){if(op.ok!==true&&!ml["o"+i])ml["o"+i]="选了“"+String(op.text||"").replace(/\{[a-z]+\}/g,"…").slice(0,40)+"”";});OBS[o.id]={id:o.id,label:o.label,skill:o.skill||"",day:day,misses:ml,kind:step.t,stance:!!step.stance,q:String(step.q||"").replace(/\{[^}|]*\|([^}]*)\}/g,"$1").replace(/\{[^}]*\}/g,"…").slice(0,80)};OBSORDER.push(o.id);}
 function logStep(obs,patch){if(!obs)return;if(patch&&patch.answer!=null&&S.data._dr&&typeof task!=="undefined"){try{delete S.data._dr[draftSig()];}catch(e){}}var r=S.log[obs.id]||{tries:0,misses:{}};if(patch.try)r.tries++;if(patch.miss){r.misses[patch.miss]=(r.misses[patch.miss]||0)+1;}if(patch.answer!=null){r.answer=patch.answer;r.at=new Date().toISOString();}if(patch.ai!=null)r.ai=patch.ai;S.log[obs.id]=r;}
 
 /* ---- 作答存哪里：BK（后台）有三种
@@ -417,14 +417,14 @@ function inPara(id,paras){return paras.indexOf(SENT[id].p)>=0;}
 var QP=null,LOC=null,LOCK={};
 /* 11-10 定位：题目写 paras:[段落号…] 亮出这几段，hl:["词或句"…] 把含这些词的句子标出来、词加底色。
    换到下一道题（mc/input/frame/pick/focus/read/layering/text）时清掉。pick 只标不遮（找句子要自己找）。 */
-var LOCNEW={mc:1,input:1,frame:1,pick:1,focus:1,read:1,layering:1,text:1,listen:1};
+var LOCNEW={mc:1,ask:1,trans:1,author:1,input:1,frame:1,pick:1,focus:1,read:1,layering:1,text:1,listen:1};
 function clearLoc(){$$("mark.loc",rbody).forEach(function(m){m.replaceWith(document.createTextNode(m.textContent));});rbody.normalize();Object.keys(LOCK).forEach(function(k){delete R.keys[k];});LOCK={};paintMarks();}
 function markWords(ws,ns){var ps=$$("p[data-p]",rbody).filter(function(p){return !ns||!ns.length||ns.indexOf(+p.dataset.p+1)>=0;});
   ws.forEach(function(w){ps.forEach(function(p){var walk=document.createTreeWalker(p,NodeFilter.SHOW_TEXT),n,hits=[];while((n=walk.nextNode())){if(n.parentNode.closest&&n.parentNode.closest("mark.loc"))continue;var i=n.nodeValue.indexOf(w);if(i>=0)hits.push([n,i]);}
     hits.forEach(function(h){var r=document.createRange();r.setStart(h[0],h[1]);r.setEnd(h[0],h[1]+w.length);var m=el("mark",{class:"loc"});try{r.surroundContents(m);}catch(e){}});});
     SENT.forEach(function(x){if(x.t.indexOf(w)>=0&&(!ns||!ns.length||ns.indexOf(x.p+1)>=0)&&!R.keys[x.id]){R.keys[x.id]=1;LOCK[x.id]=1;}});});
   paintMarks();var f=rbody.querySelector("mark.loc");if(f)try{f.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}
-function locStep(s){if(LOCNEW[s.t]&&(LOC||Object.keys(LOCK).length))clearLoc();LOC=null;if(!s.paras&&!s.hl)return;LOC={paras:s.paras||null,hl:s.hl||null};
+function locStep(s){if(LOCNEW[s.t]&&(LOC||Object.keys(LOCK).length))clearLoc();LOC=null;if(!s.paras&&!s.hl)return;LOC={paras:s.paras||null,hl:s.hl?(Array.isArray(s.hl)?s.hl:[s.ctx&&s.t==="ask"?s.ctx:s.hl]):null};
   if(s.t==="pick")return;
   if(s.paras)maskParas(s.paras);if(isNarrow())openReader();}
 function showLoc(){if(LOC&&LOC.hl&&!rbody.querySelector("mark.loc"))markWords(LOC.hl,LOC.paras);}
@@ -459,11 +459,13 @@ H.input=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.q)
 var TRMETH={"留":"留：人名地名等照抄","换":"换：古义换今义、单音词换双音词","补":"补：补出省略的成分","调":"调：调整语序"};
 H.trans=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.paras)QP=s.paras;task.append(q(s.q||"先自己说说这一句的意思，再看译文。"));
   var src=el("div",{class:"tr-src"});(s.pairs||[]).forEach(function(pr,i){src.append(el("span",{class:"tr-seg c"+(i%6),text:pr[0]}));});if(!s.pairs||!s.pairs.length)src.textContent=s.src;
-  var mine=textBox("in-"+(s.key||"tr").replace(/\./g,"-"),2,"可以先写几个字：这一句说的是……（不判分，也可以不写）",get(s.key+".mine")||"");
-  var show=btn("看译文");task.append(src,el("div",{class:"field"},[mine]),el("div",{class:"row"},[show]));
+  var MIN=s.min||Math.min(8,Math.max(4,Math.round((s.src||"").replace(/[，。；？！、：“”]/g,"").length*.6)));
+  var mine=textBox("in-"+(s.key||"tr").replace(/\./g,"-"),2,"先写下你的翻译（至少 "+MIN+" 个字），写完才能看译文",get(s.key+".mine")||"");
+  var show=btn("看译文");var cnt=el("span",{class:"note"});var upd=function(){var n=mine.value.replace(/\s/g,"").length;show.disabled=n<MIN;cnt.textContent=n<MIN?"还差 "+(MIN-n)+" 个字":"";};mine.addEventListener("input",upd);upd();
+  task.append(src,el("div",{class:"field"},[mine]),el("div",{class:"row"},[show,cnt]));
   if(s.hint)task.append(el("p",{class:"note",text:"提示："+fill(s.hint)}));
   if(s.read!==false)sayQ(s.src,s.who||lead(),tok);
-  show.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);show.disabled=true;mine.disabled=true;SOUND.sfx("page");if(s.read!==false&&s.tr)sayQ(s.tr,s.who||lead(),tok);
+  show.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);if(mine.value.replace(/\s/g,"").length<MIN){mine.focus();return;}show.disabled=true;mine.disabled=true;cnt.textContent="";SOUND.sfx("page");if(s.read!==false&&s.tr)sayQ(s.tr,s.who||lead(),tok);
     var tr=el("div",{class:"tr-out"});(s.pairs||[]).forEach(function(pr,i){var seg=el("span",{class:"tr-seg c"+(i%6)+(pr[2]?" m":""),text:pr[1]});if(pr[2])seg.setAttribute("data-m",pr[2]);tr.append(seg);});if(!s.pairs||!s.pairs.length)tr.textContent=s.tr;
     var ms={};(s.pairs||[]).forEach(function(pr){if(pr[2])ms[pr[2]]=1;});var leg=el("div",{class:"tr-leg"});Object.keys(ms).forEach(function(m){leg.append(el("span",{class:"tr-m",text:TRMETH[m]||m}));});
     var self=el("div",{class:"row tr-self"},[el("span",{class:"note",text:"和你说的比一比："})]);
@@ -471,6 +473,42 @@ H.trans=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.pa
       if(s.key){set(s.key+".self",o[0]);set(s.key+".mine",mine.value.trim());}logStep(s.obs,{try:1,answer:o[1]+(mine.value.trim()?"（"+mine.value.trim()+"）":"")});if(o[0]!=="ok")logStep(s.obs,{miss:o[0]});commit();showLoc();res(o[0]);});self.append(b);});
     task.append(el("div",{class:"tr-lab",text:"译文"}),tr);if(leg.childNodes.length)task.append(leg);task.append(self);});
 }).then(function(v){var r=s.replies&&(s.replies[v]||s.replies.all);return (r?say(fill(r),s.who||coach(),tok):Promise.resolve()).then(function(){return next(s.next||"下一句",tok);});});};
+
+
+/* 11-12 自己说出答案（字词意思、写法名称）：{t:"ask",who,q,ctx:"原句",hl:"要标出的字",accept:["可接受的说法"...],hints:["第一次错的提示","第二次错的提示"],choices:[{text,ok,reply}],ans:"标准答案",reply:"答对后说的话",obs,key,paras}
+ * 先自己写 → 错了只给提示（不给答案）→ 提示用完还不对，给几个选项选 → 选对了才讲明白。 */
+H.ask=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.say?say(fill(s.say),s.who,tok):Promise.resolve();
+  return pre.then(function(){return new Promise(function(res,rej){clearTask();keepQ();if(s.paras)QP=s.paras;task.append(q(s.q));
+    if(s.ctx){var cx=el("div",{class:"ask-ctx"});var parts=s.hl?String(s.ctx).split(s.hl):[s.ctx];parts.forEach(function(pt,i){cx.append(document.createTextNode(pt));if(i<parts.length-1)cx.append(el("mark",{text:s.hl}));});task.append(cx);}
+    var inp=el("input",{type:"text",class:"ask-in",autocomplete:"off",placeholder:s.ph||"写下你的答案",id:"in-ask-"+(s.obs?s.obs.id:"x")});var go=btn("确定");var row=el("div",{class:"orow"},[inp,go]);task.append(row);
+    var miss=0,done=false,chBox=null;
+    function norm(v){return String(v).replace(/[\s，。、；：！？“”‘’"'（）()……\.,!?]/g,"");}
+    function finish(v,how){if(done)return;done=true;inp.disabled=true;go.disabled=true;if(chBox)$$("button",chBox).forEach(function(x){x.disabled=true;});task.classList.remove("ask");SOUND.sfx("ok");
+      logStep(s.obs,{answer:v+(how?"（"+how+"）":"")});logMe(v);if(s.key)set(s.key,v);commit();showLoc();
+      if(s.note!==false&&(s.paras||s.hl))task.append(typeof s.hl==="string"&&!s.note?noteChip({note:"在“"+s.hl+"”旁边写："+(s.ans||v)},{}):noteChip(s,{text:s.ans||v}));
+      var r=s.reply||(s.ans?"对。"+s.ans:"对。");say(fill(r),s.who||fbWho,tok).then(function(){res();},function(){});}
+    function showChoices(){if(chBox||!s.choices)return false;chBox=el("div",{class:"mc"});var ord=s.choices.map(function(c,i){return i;});for(var z=ord.length-1;z>0;z--){var r=Math.floor(Math.random()*(z+1)),tz=ord[z];ord[z]=ord[r];ord[r]=tz;}
+      ord.forEach(function(i){var c=s.choices[i];var b=el("button",{class:"mco",type:"button",text:fill(c.text)});b.addEventListener("click",function(){if(tok!==RUN.token||done)return;logStep(s.obs,{try:1});
+        if(c.ok){b.classList.add("ok");finish(fill(c.text),"选的");}else{b.classList.add("no");b.disabled=true;SOUND.sfx("no");logStep(s.obs,{miss:"c"+i});sayQ(fill(c.reply||"再回到原句读一读。"),fbWho,tok);}});chBox.append(b);});
+      task.append(el("p",{class:"note",text:"从下面选一个："}),chBox);return true;}
+    function check(){if(tok!==RUN.token)return rej(CANCEL);if(done)return;var v=inp.value.trim();if(norm(v).length<1){inp.focus();return;}logStep(s.obs,{try:1});
+      var nv=norm(v);if(!(s.reject||[]).some(function(a){return nv.indexOf(norm(a))>=0;})&&(s.accept||[]).some(function(a){return nv.indexOf(norm(a))>=0;})){finish(v);return;}
+      logStep(s.obs,{miss:"h"+Math.min(miss,2)});SOUND.sfx("no");var h=(s.hints||[])[miss];miss++;
+      if(h){sayQ(fill(h),fbWho,tok);inp.select();return;}
+      if(showChoices()){sayQ("不着急，从这几个里选一选。",fbWho,tok);return;}
+      finish(s.ans||v,"看了答案");}
+    go.addEventListener("click",check);inp.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.isComposing){e.preventDefault();check();}});setTimeout(function(){try{inp.focus({preventScroll:true});}catch(e){}},60);
+  });}).then(function(){if(s.wait===false)return;return next(s.next||"继续",tok);});};
+
+/* 11-12 问作者：{t:"author",who:"ou",q,qs:[{q:"学生问的话",a:["作者答的话",...]}],min:1,note}
+ * 学生挑问题问，作者用第一人称回答（根据课文和史料；想象的部分在 note 里说明）。至少问 min 个，可以都问。 */
+H.author=function(s,tok){return new Promise(function(res,rej){clearTask();task.append(q(s.q||"你想问他什么？点一个问题。"));if(s.note)task.append(el("p",{class:"note",text:fill(s.note)}));
+  var box=el("div",{class:"mc author-qs"}),asked=0,busy=false,MIN=s.min||1,fin=btn(s.done||"问完了");fin.hidden=true;
+  s.qs.forEach(function(it){var b=el("button",{class:"mco",type:"button",text:fill(it.q)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);if(busy||b.disabled)return;busy=true;b.disabled=true;b.classList.add("ok");$$("button",box).forEach(function(x){x.classList.add("wait");});
+      logMe(fill(it.q));var chain=Promise.resolve();it.a.forEach(function(line){chain=chain.then(function(){return say(fill(line),it.who||s.who,tok);});});
+      chain.then(function(){busy=false;asked++;$$("button",box).forEach(function(x){x.classList.remove("wait");});logStep(s.obs,{try:1,answer:"问了"+asked+"个"});commit();if(asked>=s.qs.length){res();return;}if(asked>=MIN)fin.hidden=false;},function(){});});box.append(b);});
+  fin.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);if(busy)return;res();});
+  task.append(box,el("div",{class:"row"},[fin]));}).then(function(){return next(s.next||"继续",tok);});};
 
 H.quoteOrPick=function(s,tok){var v=get(s.from)||"";var hits=findQuotedAll(v);
   return say(hits.length?s.hitText:s.askText,s.who,tok).then(function(){clearTask();task.append(q(s.task||s.pickLabel),el("p",{class:"note",text:"在左边原文里点句子；点错了再点一下就取消。选好了按原文上方的按钮。"}));return pickMulti(s.pickLabel,tok,hits,s.okLabel);})
@@ -837,8 +875,8 @@ function pgCur(){var base=S.day<=NVIS?S.day:S.retDay;if(!base||base>NVIS){base=1
 function cloneStep(st,obs){var c=JSON.parse(JSON.stringify(st));delete c.day;delete c.wait;delete c.feedbackWho;delete c.wrongFlag;delete c.ask;delete c.who;delete c.key;(c.options||[]).forEach(function(o){delete o.who;});c.obs=obs;return c;}
 function buildPractice(gi){var P=L.practice||{},g=PG[gi]||{days:[]},inG=function(n){return g.days.indexOf(n)>=0;},two=g.days.length>1;
   var cur="main",tx=function(arr,day){var w=PTXT(day);if(w!==cur){arr.push({t:"text",id:w});cur=w;}};var core=[{t:"text",id:PTXT(g.days[0])}];cur=core[0].id;(P.core||[]).filter(function(c){return inG(c.day);}).forEach(function(c){tx(core,c.day);core.push(cloneStep(c,c.obs));});
-  var mine=[],n=0;cur="?";OBSORDER.forEach(function(id){if(n>=6)return;var o=OBS[id],r=S.log[id];if(!o||!tGrad(o)||!inG(o.day)||!r||!tMiss(r))return;var V=(P.variants||{})[id];if(!V)return;if(tFirst(S.log["pv-"+id]))return;n++;
-    tx(mine,o.day);var st=STEPOF[id];if(st&&st.t==="mc"&&!/db/.test(id)){var cs=cloneStep(st,{id:"px-"+id,label:"重做："+o.label,skill:o.skill});cs.q="（第"+o.day+"天原题 · "+o.label+"）"+fill(cs.q||"");mine.push(cs);}
+  var mine=[],n=0;cur="?";OBSORDER.forEach(function(id){if(n>=10)return;var o=OBS[id],r=S.log[id];if(!o||!tGrad(o)||!inG(o.src||o.day)||!r||!tMiss(r))return;var V=(P.variants||{})[id];if(!V)return;if(tFirst(S.log["pv-"+id]))return;n++;
+    tx(mine,o.src||o.day);var st=STEPOF[id];if(st&&(st.t==="mc"||st.t==="ask")&&!/db/.test(id)){var cs=cloneStep(st,{id:"px-"+id,label:"重做："+o.label,skill:o.skill});delete cs.say;cs.q="（"+(o.src?"第"+o.src+"天基础检测":"第"+o.day+"天原题")+" · "+o.label+"）"+fill(cs.q||"");mine.push(cs);}
     mine.push(cloneStep(V,{id:"pv-"+id,label:"新题："+o.label,skill:o.skill}));});
   var beats=[{title:"基础检测",mood:"focus",steps:[{t:"say",who:L.cast.lead,text:"这是"+pgTitle(gi)+"。先做基础检测，人人都要做；再做你在这"+(two?"两":"一")+"天错过的题，每道后面跟一道相似的新题。"}].concat(core)}];
   beats.push({title:"旧题和新题",mood:"focus",steps:mine.length?[{t:"say",who:L.cast.lead,text:"下面是你自己错过的题。先把原题再做一次，再做一道相似的新题。"}].concat(mine):[{t:"say",who:L.cast.lead,text:"这"+(two?"两":"一")+"天你没有错过的题。基础检测做完，这一组练习就完成了。"}]});
@@ -851,7 +889,7 @@ function openPxMenu(){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("bu
 function reviewIdx(day){for(var i=0;i<DAYS.length;i++)if(DAYS[i].reviewOf===day)return i+1;return 0;}
 function openReview(day){var n=reviewIdx(day);if(!n)return;if(!hwOf(day)){openHw(day);return;}closeOv();S.retDay=S.day>NVIS?(S.retDay||1):S.day;startDay(n,false);}
 DAYS.forEach(function(d,di){d.beats.forEach(function(b){b.steps.forEach(function(s){if(s.obs)STEPOF[s.obs.id]=s;regObs(s,di+1);});});});
-(function(){var P=L.practice||{};if(!practiceIdx())return;PG.forEach(function(g,gi){var idx=practiceIdx(gi),inG=function(d){return g.days.indexOf(d)>=0;};(P.core||[]).forEach(function(c){if(inG(c.day))regObs(c,idx);});Object.keys(P.variants||{}).forEach(function(id){var o=STEPOF[id]&&STEPOF[id].obs,od=OBS[id]&&OBS[id].day;if(P.variants[id]&&o&&inG(od)){regObs({t:"mc",obs:{id:"px-"+id,label:"重做："+o.label,skill:o.skill||""},options:STEPOF[id].options},idx);regObs({t:"mc",obs:{id:"pv-"+id,label:"新题："+o.label,skill:o.skill||""},options:P.variants[id].options},idx);}});});})();
+(function(){var P=L.practice||{};if(!practiceIdx())return;PG.forEach(function(g,gi){var idx=practiceIdx(gi),inG=function(d){return g.days.indexOf(d)>=0;};(P.core||[]).forEach(function(c){if(inG(c.day)){regObs(c,idx);if(c.obs){STEPOF[c.obs.id]=c;if(OBS[c.obs.id])OBS[c.obs.id].src=c.day;}}});Object.keys(P.variants||{}).forEach(function(id){var o=STEPOF[id]&&STEPOF[id].obs,od=OBS[id]&&(OBS[id].src||OBS[id].day);if(P.variants[id]&&o&&inG(od)){regObs({t:STEPOF[id].t,obs:{id:"px-"+id,label:"重做："+o.label,skill:o.skill||""},options:STEPOF[id].options},idx);regObs({t:P.variants[id].t||"mc",obs:{id:"pv-"+id,label:"新题："+o.label,skill:o.skill||""},options:P.variants[id].options},idx);}});});})();
 var TMODE=false;
 function paintDays(){var nav=$("#days");nav.innerHTML="";setTimeout(paintPx,0);DAYS.forEach(function(d,i){var n=i+1;if(d.hidden)return;var b=el("button",{class:"dpad"+(S.done[n]?" done":""),type:"button","aria-current":String(n===S.day),title:d.title},[el("small",{text:"第"}),el("b",{text:String(n)}),el("small",{text:"天"}),el("span",{text:S.done[n]?"读完":d.short||""})]);b.addEventListener("click",function(){startDay(n,false);});nav.append(b);});
   if(L.totalDays&&L.totalDays>NVIS)nav.append(el("span",{class:"more",text:"共 "+L.totalDays+" 天，已开放 "+NVIS+" 天"}));}
@@ -983,7 +1021,7 @@ function progressText(d){d=d||S;var out=[];(L.days||[]).forEach(function(dy,i){v
 function studentText(d){var lines=[(d.name||"未写名字")+"　进度："+progressText(d)];OBSORDER.forEach(function(id){var r=(d.log||{})[id];if(!r||r.answer==null)return;lines.push("【"+OBS[id].label+"】"+r.answer+(r.ai?"\n  （AI 的点评："+r.ai+"）":""));});var hw=(d.data||{}).hw||{};Object.keys(hw).forEach(function(k){var o=hw[k];lines.push("【作业·第"+k+"天】"+(o.text||"")+((o.photos||[]).length?"（照片 "+o.photos.length+" 张："+o.photos.map(function(p){return p.url;}).filter(Boolean).join(" ")+"）":""));});var dr=(d.data||{})._dr||{};Object.keys(dr).forEach(function(k){var o=dr[k],v=(o.v||[]).filter(function(x){return x&&String(x).trim();});if(!v.length)return;var ks=k.split("|");lines.push("【草稿·第"+ks[0]+"天】"+(o.q||"")+"："+v.join(" / "));});return lines.join("\n");}
 /* ---------- 老师看板的小工具 ---------- */
 function DNAME(n){var d=DAYS[n-1]||{};return d.hidden?d.title:"第 "+n+" 天";}
-function tGrad(o){return o&&((o.kind==="mc"&&!o.stance)||o.kind==="pick"||o.kind==="layering"||o.kind==="order"||o.kind==="match"||o.kind==="cloze");}
+function tGrad(o){return o&&((o.kind==="mc"&&!o.stance)||o.kind==="ask"||o.kind==="pick"||o.kind==="layering"||o.kind==="order"||o.kind==="match"||o.kind==="cloze");}
 function tMiss(r){var n=0;for(var k in (r&&r.misses)||{})n+=r.misses[k];return n;}
 function tFirst(r){return r&&r.answer!=null&&!tMiss(r);}
 function tDayStat(d,n){var g=0,ok=0,w=0,wl=0;OBSORDER.forEach(function(id){var o=OBS[id];if(o.day!==n)return;var r=(d.log||{})[id];if(!r)return;if(tGrad(o)){if(r.answer!=null||tMiss(r)){g++;if(tFirst(r))ok++;}}else if(r.answer!=null){w++;wl+=String(r.answer).length;}});return {g:g,ok:ok,w:w,wl:wl};}

@@ -686,3 +686,8 @@ mark.loc{background:linear-gradient(transparent 35%,rgba(230,160,40,.5) 35%);col
 .tr-leg{display:flex;flex-wrap:wrap;gap:.3rem .8rem;font-size:.82rem;color:var(--muted);margin:.2rem 0 .5rem}
 .tr-m::before{content:"";display:inline-block;width:.5em;height:.5em;background:var(--accent);border-radius:2px;margin-right:.3em}
 .tr-self .btn.on{background:var(--ink);color:var(--page)}
+/* 11-12 ask：自己说出答案；author：问作者 */
+.ask-ctx{font-family:var(--f-text);font-size:1.25em;line-height:1.9;margin:.4em 0 .8em;padding:.5em .8em;background:var(--paper2,#f6efe0);border-radius:.5em}
+.ask-ctx mark{background:#f3d27a;color:inherit;padding:0 .15em;border-radius:.2em}
+.ask-in{flex:1;min-width:10em;font:inherit;font-size:1.1em;padding:.55em .8em;border:1.5px solid var(--line,#cdbf9f);border-radius:.6em;background:#fffdf7}
+.author-qs .mco.wait{opacity:.6}

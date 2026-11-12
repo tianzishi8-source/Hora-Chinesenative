@@ -40,25 +40,22 @@ function chips(A,list,okIdx,wrongKey){return new Promise(function(res){var row=A
   list.forEach(function(t,i){var b=A.el("button",{type:"button",class:"zw-chip",text:t});b.addEventListener("click",function(){if(!document.body.contains(row))return;
     if(i===okIdx){A.sfx("ok");b.classList.add("ok");setTimeout(function(){row.remove();res();},350);}else{A.sfx("no");b.classList.add("no");b.disabled=true;if(wrongKey)A.line(wrongKey).catch(function(){});}});row.append(b);});});}
 
-/* ---------- 第1天 跟着镜头上山 ---------- */
+/* ---------- 第1天 跟着镜头上山：每一步先把原文空着的字找回来，镜头才往前推 ---------- */
 SC.zoom=function(A){
   var p=pic(A,"mount","day","kb"),c;
   function zoom(sc,ox,oy){var n=p.firstChild;if(n){n.style.transformOrigin=ox+"% "+oy+"%";n.style.transform="scale("+sc+")";}}
-  A.hint("按山雀说的，点下面的选项");
+  function cloze(key,txt,opts,ok){c=cap(A,txt);return A.line(key).then(function(){return chips(A,opts,ok,"wrong");}).then(function(){c.remove();});}
+  A.hint("按原文把空着的字选出来");
   return A.line("intro")
-  .then(function(){return chips(A,["天上的云","四面的山","城里的屋顶"],1,"wrong");})
+  .then(function(){return cloze("a1","环滁皆＿＿也",["水","山","城"],1);})
   .then(function(){c=cap(A,"环滁皆山也");return A.line("s1");})
-  .then(function(){c.remove();return A.line("a2");})
-  .then(function(){return chips(A,["北面的山","东面的山","西南的山峰"],2,"wrong");})
-  .then(function(){zoom(1.8,75,58);c=cap(A,"其西南诸峰，林壑尤美……琅琊也");return A.line("s2");})
-  .then(function(){c.remove();p=swapPic(A,p,"path","day","kb");return A.line("a3");})
-  .then(function(){return chips(A,["👀 看一看","👂 听一听"],1,"wrong");})
+  .then(function(){c.remove();return cloze("a2","其＿＿诸峰，林壑尤美",["东南","西北","西南"],2);})
+  .then(function(){zoom(1.8,70,55);c=cap(A,"其西南诸峰，林壑尤美，望之蔚然而深秀者，琅琊也");return A.line("s2");})
+  .then(function(){c.remove();p=swapPic(A,p,"path","day","kb");return cloze("a3","山行六七里，渐闻＿＿潺潺",["鸟声","水声","人声"],1);})
   .then(function(){A.sfx("page");c=cap(A,"山行六七里，渐闻水声潺潺");return A.line("s3");})
-  .then(function(){c.remove();return A.line("a4");})
-  .then(function(){return chips(A,["从两座山峰之间","从天上下下来","从山下的井里"],0,"wrong");})
+  .then(function(){c.remove();return cloze("a4","而泻出于＿＿之间者，酿泉也",["两峰","两岸","林木"],0);})
   .then(function(){p=swapPic(A,p,"stream","day","kb");c=cap(A,"而泻出于两峰之间者，酿泉也");return A.line("s4");})
-  .then(function(){c.remove();return A.line("a5");})
-  .then(function(){return chips(A,["一座桥","一座塔","一座亭"],2,"wrong");})
+  .then(function(){c.remove();return cloze("a5","峰回路转，有＿＿翼然临于泉上者",["桥","塔","亭"],2);})
   .then(function(){p=swapPic(A,p,"pavilion","day","kb");c=cap(A,"峰回路转，有亭翼然临于泉上者，醉翁亭也");return A.line("s5");})
   .then(function(){return A.line("end");})
   .then(function(){A.log("山 → 琅琊 → 酿泉 → 醉翁亭");return A.button("回到课文");});
@@ -78,16 +75,16 @@ SC.seasons=function(A){
 };
 function $all(row){return Array.prototype.slice.call(row.querySelectorAll("button"));}
 
-/* ---------- 第3天 游、宴、欢、醉：点四群人 ---------- */
+/* ---------- 第3天 游、宴、欢、醉：点一群人，自己用一个字给它题名 ---------- */
 SC.feast=function(A){
   pic(A,"feast","day");var c=null,seen={};
-  var tags=[["g1",14,30,"山路上的行人"],["g2",58,44,"溪边、席上的酒菜"],["g3",80,70,"投壶下棋的宾客"],["g4",40,72,"白发的太守"]];
-  A.hint("点画面上的标签，一群一群看");
+  var tags=[["g1",14,30,"山路上的行人","游"],["g2",58,44,"溪边、席上的酒菜","宴"],["g3",80,70,"投壶下棋的宾客","欢"],["g4",40,72,"白发的太守","醉"]];
+  A.hint("点一群人，再用一个字给它题名");
   return A.line("intro").then(function(){return new Promise(function(res){var busy=false;
     tags.forEach(function(tg){var b=A.el("button",{type:"button",class:"zw-tag",text:tg[3]});b.style.left=tg[1]+"%";b.style.top=tg[2]+"%";A.frame.append(b);
       b.addEventListener("click",function(){if(busy||seen[tg[0]])return;busy=true;A.sfx("page");if(c)c.remove();
-        var key={g1:"滁人游也",g2:"太守宴也",g3:"众宾欢也",g4:"太守醉也"}[tg[0]];c=cap(A,"……者，"+key);
-        A.line(tg[0]).then(function(){seen[tg[0]]=1;b.classList.add("done");b.textContent=key.replace("也","");busy=false;if(Object.keys(seen).length>=4)res();},function(){});});});});})
+        A.line(tg[0]).then(function(){c=cap(A,"……者，＿＿＿也（用一个字题名）");return chips(A,["游","宴","欢","醉"],["游","宴","欢","醉"].indexOf(tg[4]),"wrong");})
+        .then(function(){c.remove();var key={g1:"滁人游也",g2:"太守宴也",g3:"众宾欢也",g4:"太守醉也"}[tg[0]];c=cap(A,"……者，"+key);seen[tg[0]]=1;b.classList.add("done");b.textContent=tg[4];busy=false;if(Object.keys(seen).length>=4)res();},function(){});});});});})
   .then(function(){if(c)c.remove();var hold=A.box(40,60,26,null,"stg-pair");var bb=A.el("div",{class:"stg-bub think",text:A.text("think")});hold.append(bb);requestAnimationFrame(function(){bb.classList.add("on");});return A.line("think");})
   .then(function(){return A.line("end");})
   .then(function(){A.log("游、宴、欢、醉");return A.button("回到课文");});
