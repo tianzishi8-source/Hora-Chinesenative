@@ -646,6 +646,9 @@ mark.loc{background:linear-gradient(transparent 35%,rgba(230,160,40,.5) 35%);col
 .sm{height:18px}
 .sm b{position:absolute;top:0;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;font-size:.7rem;display:grid;place-items:center;color:#fff;background:#3d7a4a;animation:sgrow .4s .8s both}
 .sm b.diff{background:#c9a24a}
+.sm b.ask{background:#8a6fb0}
+.slegend{margin:.35rem 0 0;font-size:.78rem;opacity:.75}
+.alsoq{margin:.5rem 0 0;font-size:.9rem;line-height:1.6;padding:.5rem .7rem;border-left:3px solid #3d7a4a;background:rgba(61,122,74,.08);border-radius:6px}
 @keyframes sgrow{from{transform:scaleX(0);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.vis-pan,.v-it,.mt-line{transition:none}.sb i,.sm b{animation:none}}
 .mco.ok{animation:mcok .45s}
