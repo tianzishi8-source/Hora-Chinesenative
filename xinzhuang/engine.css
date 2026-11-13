@@ -678,3 +678,16 @@ mark.loc{background:linear-gradient(transparent 35%,rgba(230,160,40,.5) 35%);col
 @keyframes hand{50%{transform:translate(-50%,-8px)}}
 @media (prefers-reduced-motion:reduce){.stg-hot::before,.stg-hint{animation:none!important}}
 .quote{white-space:pre-line}
+
+/* 11-13 醒目提醒 */
+.notechip{font-size:1rem;border:2px solid #d9a530;background:#fff1c4;box-shadow:0 0 0 4px rgba(217,165,48,.18);animation:sgrow .4s both,ncpulse 1.6s .5s 3}
+.notechip b{font-size:1.05rem}
+@keyframes ncpulse{50%{box-shadow:0 0 0 9px rgba(217,165,48,.05)}}
+.todocard{display:flex;gap:.7em;align-items:flex-start;margin:12px 0;padding:.8em 1em;border-radius:12px;background:#fff1c4;border:2px solid #d9a530;color:#5a4214;font-size:1.05rem;line-height:1.6;font-weight:600;animation:sgrow .4s both,ncpulse 1.6s .5s 3}
+.todocard b{font-size:1.4rem;line-height:1.1}
+.todocard.done{opacity:.6;border-style:dashed;font-weight:400}
+.mc.gated{visibility:hidden}
+.readgate{margin:10px 0;color:#8a5a14;font-size:.95rem;animation:rgblink 1.2s infinite}
+@keyframes rgblink{50%{opacity:.45}}
+.banner.hwb{border:2px solid #d9a530;background:#fff1c4;font-size:1.02rem}
+@media (prefers-reduced-motion:reduce){.notechip,.todocard,.readgate{animation:none}}

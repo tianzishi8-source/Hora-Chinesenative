@@ -435,6 +435,8 @@ var H={};
 /* 一句台词的几个版本：textBy＝按学生选的伴学（qingxian／changge）；textIf＝按之前某一题的选择 {key, map:{值:台词}, other} */
 function variant(s,f){var by=s[f+"By"];if(by&&by[myBuddy().who])return by[myBuddy().who];var ci=s[f+"If"];if(ci){var v=get(ci.key);if(v!=null&&ci.map[v]!=null)return ci.map[v];if(ci.other!=null)return ci.other;}return s[f];}
 var NOWAIT={next:1,input:1,choose:1,independent:1,markHeard:1,layering:1,clear:1,mc:1,findWord:1,frame:1};
+H.todo=function(s,tok){var card=el("div",{class:"todocard"},[el("b",{text:s.icon||"✍"}),el("span",{text:fill(s.card||s.text)})]);task.append(card);try{card.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}
+  return say(fill(s.text),s.who,tok).then(function(){return next(s.btn||"做好了",tok,true);}).then(function(){card.classList.add("done");});};
 H.say=function(s,tok){var nx=NEXT;return say(fill(variant(s,"text")),s.who,tok).then(function(){if(s.wait===false||NOWAIT[nx])return;return next(s.next||"继续",tok,true);});};
 H.me=function(s,tok){return line(fill(s.text),"me",tok);};
 H.next=function(s,tok){return next(fill(s.label),tok,s.keep);};
@@ -682,14 +684,20 @@ H.mc=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.ask?say(fill(vari
     var ord=s.options.map(function(o,i){return i;});if(!s.stance&&!s.fixed)for(var z=ord.length-1;z>0;z--){var r=Math.floor(Math.random()*(z+1)),tz=ord[z];ord[z]=ord[r];ord[r]=tz;}ord.forEach(function(i){var o=s.options[i];var b=el("button",{class:"mco",type:"button",text:fill(o.text)});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
         logStep(s.obs,{try:1});var ok=s.stance||o.ok===true;showLoc();if(VB)VB.pick(i,ok);
         if(ok){task.classList.remove("ask");$$(".mco",box).forEach(function(x){x.disabled=true;});b.classList.add("ok");SOUND.sfx(s.stance?"page":"ok");if(VB)VB.post();if(s.key)set(s.key,o.value!=null?o.value:i);logStep(s.obs,{answer:fill(o.text)});logMe(fill(o.text));commit();
-          if(!s.stance&&s.note!==false&&(s.note||s.paras||s.hl))task.append(noteChip(s,o));
-          var r=o.reply?say(fill(o.reply),o.who||fbWho,tok):Promise.resolve();r.then(function(){res();},function(){});}
+          var NC=!s.stance&&s.note!==false&&(s.note||s.paras||s.hl);if(NC){task.append(noteChip(s,o));s.__nc=1;}
+          var r=o.reply?say(fill(o.reply),o.who||fbWho,tok):Promise.resolve();if(NC)r=r.then(function(){var t=todoLine("note");return t?say(t,lead(),tok):null;});r.then(function(){res();},function(){});}
         else{b.classList.add(o.ok==="half"?"half":"no");b.disabled=true;SOUND.sfx("no");if(s.wrongFlag)addFlag(s.wrongFlag);logStep(s.obs,{miss:"o"+i});if(o.reply)sayQ(fill(o.reply),o.who||fbWho,tok);}});box.append(b);});
     if(s.other){var ob=el("button",{class:"mco other",type:"button",text:(s.other===true?"其他":s.other)+"：________"});ob.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
       var inp=el("input",{type:"text",placeholder:s.otherPh||"写下你自己的想法",autocomplete:"off",id:"in-other-"+(s.key||"x").replace(/\./g,"-")}),okb=btn("就是这个");var row=el("div",{class:"orow"},[inp,okb]);ob.replaceWith(row);inp.focus();
       okb.addEventListener("click",function(){var v=inp.value.trim();if(v.length<2){inp.focus();return;}$$(".mco",box).forEach(function(x){x.disabled=true;});inp.disabled=true;okb.disabled=true;SOUND.sfx("page");
         if(s.key)set(s.key,"其他："+v);logStep(s.obs,{try:1,answer:"其他："+v});logMe("其他："+v);commit();var r=s.otherReply?say(fill(s.otherReply),fbWho,tok):Promise.resolve();r.then(function(){res();},function(){});});});box.append(ob);}
-    task.append(box);});}).then(function(){if(s.wait===false)return;return next(s.next||"继续",tok,!!s.keep);});};
+    task.append(box);readGate(s,box,tok);});}).then(function(){if(s.wait===false)return;var nc=s.__nc;s.__nc=0;return next(nc?"✎ 批注好了":(s.next||"继续"),tok,!!s.keep);});};
+/* 11-13 要学生动手的地方：老师开口说（预录的几句轮换） */
+var TODO_I={};function todoLine(k){var a=(L.todoSay||{})[k]||[];if(!a.length)return "";var i=TODO_I[k]=((TODO_I[k]==null?-1:TODO_I[k])+1)%a.length;return a[i];}
+/* 11-13 七年级先读题：题目长，选项晚一点出来，先显示“先把题目读完” */
+function readGate(s,box,tok){if(s.stance||!s.q||get("g")!=="7")return;var n=fill(s.q).length;if(n<18)return;var ms=Math.min(6500,Math.max(1800,n*110));if(reduce)ms=Math.min(ms,2500);
+  box.classList.add("gated");var tip=el("div",{class:"readgate",text:"👀 先把题目读完，选项马上出来"});box.parentNode.insertBefore(tip,box);
+  setTimeout(function(){if(tok!==RUN.token)return;tip.remove();box.classList.remove("gated");},ms);}
 /* 11-10 答对后提醒：把答案批注在课本上。s.note 可自写；否则用段落号 + 正确选项 */
 function noteChip(s,o){var ns=s.paras||[];var where=ns.length?("第"+(ns.length>1&&ns[ns.length-1]!==ns[0]?ns[0]+"—"+ns[ns.length-1]:ns[0])+"段旁边"):"相关句子旁边";
   return el("div",{class:"notechip"},[el("b",{text:"✎ 批注到课本"}),el("span",{text:s.note?fill(s.note):("在"+where+"写："+fill(o.text))})]);}
@@ -855,7 +863,7 @@ function runFrom(n,b){var dP=DAYS[n-1];if(dP&&dP.practice&&!dP._built){if(!pgOpe
 function endOfDay(n,tok){clearTask();var d=DAYS[n-1],last=n===NVIS;
   if(d.practice){$("#stTitle").textContent="练习做完了";say(fill(d.end||"练习做完了。"),lead(),tok).then(function(){var r=el("div",{class:"row"}),b1=btn("再练一次");b1.addEventListener("click",function(){openPractice(d.pg);});var bb=el("button",{class:"ghost",type:"button",text:"回到第"+(S.retDay||1)+"天"});bb.addEventListener("click",function(){startDay(Math.min(S.retDay||1,NVIS),true);});r.append(b1,bb);task.append(r);}).catch(function(){});return;}
   if(d.hidden){$("#stTitle").textContent="讲评完了";say(fill(d.end||"讲评完了。"),d.endWho||lead(),tok).then(function(){var r=el("div",{class:"row"}),bh=btn("补交第"+d.reviewOf+"天的作业");bh.addEventListener("click",function(){openHw(d.reviewOf);});var bb=el("button",{class:"ghost",type:"button",text:"回到第"+(S.retDay||d.reviewOf+1)+"天"});bb.addEventListener("click",function(){startDay(Math.min(S.retDay||d.reviewOf+1,NVIS),true);});r.append(bh,bb);task.append(r);}).catch(function(){});return;}$("#stTitle").textContent=last?"读完了":"今天读完了";
-  say(fill(d.end||(last?"读完了。":"第"+n+"天读完了。下次见。")),d.endWho||lead(),tok).then(function(){if(d.after)task.append(el("div",{class:"banner",html:fill(d.after)}));var r=el("div",{class:"row"});if(hwList().some(function(h){return h.day===n;})){var bh=btn("交第"+n+"天的作业");bh.addEventListener("click",function(){openHw(n);});r.append(bh);}var pgi=pgOf(n);if(pgi>=0&&PG[pgi].days[PG[pgi].days.length-1]===n&&pgOpen(pgi)){var bx=btn("做"+pgTitle(pgi));bx.addEventListener("click",function(){openPractice(pgi);});r.append(bx);}var b1=btn("打开"+L.notebook.button);b1.addEventListener("click",openBook);r.append(b1);
+  say(fill(d.end||(last?"读完了。":"第"+n+"天读完了。下次见。")),d.endWho||lead(),tok).then(function(){if(d.after){task.append(el("div",{class:"banner"+(/课后作业/.test(d.after)?" hwb":""),html:fill(d.after)}));var hwt=/课后作业/.test(d.after)&&todoLine("hw");if(hwt)say(hwt,lead(),tok).catch(function(){});}var r=el("div",{class:"row"});if(hwList().some(function(h){return h.day===n;})){var bh=btn("交第"+n+"天的作业");bh.addEventListener("click",function(){openHw(n);});r.append(bh);}var pgi=pgOf(n);if(pgi>=0&&PG[pgi].days[PG[pgi].days.length-1]===n&&pgOpen(pgi)){var bx=btn("做"+pgTitle(pgi));bx.addEventListener("click",function(){openPractice(pgi);});r.append(bx);}var b1=btn("打开"+L.notebook.button);b1.addEventListener("click",openBook);r.append(b1);
     if(!last){var b2=el("button",{class:"ghost",type:"button",text:"去第"+(n+1)+"天"});b2.addEventListener("click",function(){startDay(n+1,false);});r.append(b2);}
     var b3=el("button",{class:"ghost",type:"button",text:"这一天从头再来"});b3.addEventListener("click",function(){startDay(n,false);});r.append(b3);task.append(r);}).catch(function(){});}
 
