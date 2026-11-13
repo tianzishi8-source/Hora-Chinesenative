@@ -698,3 +698,8 @@ mark.loc{background:linear-gradient(transparent 35%,rgba(230,160,40,.5) 35%);col
 .ask-in{flex:1;min-width:10em;font:inherit;font-size:1.1em;padding:.55em .8em;border:1.5px solid var(--line,#cdbf9f);border-radius:.6em;background:#fffdf7}
 .hwc .hwgo{font-size:1.05rem}
 .task-q{white-space:pre-line}
+
+/* 11-13 听写时盖住原文 */
+body.cover-text #reader{position:relative}
+body.cover-text #rbody{filter:blur(9px);pointer-events:none;user-select:none}
+body.cover-text #reader::after{content:"听写中，原文先盖住";position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:#fff1c4;border:2px solid #d9a530;color:#5a4214;padding:.6em 1.1em;border-radius:10px;font-weight:600;z-index:5}
