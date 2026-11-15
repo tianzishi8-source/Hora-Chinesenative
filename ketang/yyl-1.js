@@ -156,10 +156,10 @@ window.PROJ_LESSON = {
       { who: "fan", say: "可是，一个被贬的人，为什么要请我为一座楼写文章？这个，以后再说。现在，先去看看这片湖。" }
     ]},
     { t: "衔远山，吞长江", s: "衔·吞", min: 7, ask: true, steps: [
-      { vis: { type: "pic", img: "lake.webp", cap: "洞庭晚秋图（示意）" }, board: [], who: "fan",
+      { vis: { type: "pic", img: "5b-xiantun.webp", cap: "洞庭晚秋图（示意）" }, board: [], who: "fan",
         say: "子京随信寄来一幅画，叫《洞庭晚秋图》。我在邓州，常常对着它想那片湖。" },
       { who: "qx", say: "哇……好大的湖。", face: "happy" },
-      { vis: { type: "pic", img: "lake.webp", cap: "洞庭晚秋图（示意）", big: ["衔", "吞"],
+      { vis: { type: "pic", img: "5b-xiantun.webp", cap: "洞庭晚秋图（示意）", big: ["衔", "吞"],
                line: "予观夫巴陵胜状，在洞庭一湖。衔远山，吞长江，浩浩汤汤，横无际涯。" },
         who: "fan", say: "我是这样写它的：“予观夫巴陵胜状，在洞庭一湖。衔远山，吞长江，浩浩汤汤，横无际涯。”" },
       { who: "cg", say: "湖又没有嘴，怎么“衔”？我怎么想都不对。", face: "think" },
@@ -179,7 +179,7 @@ window.PROJ_LESSON = {
             { k: "换字", d: "“连”“接”只是挨着，没有生气", who: "qx", say: "嗯，“连”“接”的湖是不动的，“衔”“吞”的湖在动。" },
             { k: "其他", d: "不在上面的想法", who: "qx", say: "这个想法我没想到，我要记下来。" }
           ] } },
-      { vis: { type: "pic", img: "lake.webp", cap: "洞庭晚秋图（示意）", big: ["衔", "吞"],
+      { vis: { type: "pic", img: "5b-xiantun.webp", cap: "洞庭晚秋图（示意）", big: ["衔", "吞"],
                line: "衔远山，吞长江，浩浩汤汤，横无际涯。" }, sfx: "qing",
         who: "fan", say: "你们说的，我都想过。湖本来不会动，可我想让你们觉得，它是活的。" },
       { who: "fan", say: "意思上，它确实是连着远山、吞吐着长江的水。可我偏不用“连”字。" },

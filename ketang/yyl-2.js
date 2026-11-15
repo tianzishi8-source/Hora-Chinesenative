@@ -169,7 +169,7 @@ window.PROJ_LESSON = {
           why: "登楼的人，为什么会“感极而悲”？", whyAns: ["他本来就离开了国都，心里有事；", "阴雨一来，自己的处境全涌上心头。"] } }
     ]},
     { t: "第4段逐句串讲：春晴与月夜", s: "第4段", min: 9, steps: [
-      { vis: { type: "pic", img: "spring.webp", cap: "春晴的洞庭湖（示意）" }, who: "fan", say: "可是，天总会晴的。还是这片湖。" },
+      { vis: { type: "pic", img: "5b-spring.webp", cap: "春晴的洞庭湖（示意）" }, who: "fan", say: "可是，天总会晴的。还是这片湖。" },
       { vis: { type: "pair", ids: ["p4-1", "p4-2", "p4-3"], mode: "learn", title: "第4段 · 逐句对译（一）" }, who: "fan", sent: "p4-1", part: "src" },
       { who: "fan", sent: "p4-1", pre: "意思是：" },
       { who: "fan", say: "景（jǐng），日光，不是风景；惊，起、动。" },

@@ -93,8 +93,8 @@ window.PROJ_LESSON = {
       { who: "fan", say: "好。上一次学了方法1，借景物传达情绪。今天再学两个办法，然后，你们自己动笔，写一个地方。" }
     ]},
     { t: "方法2：同一个地方，两种样子", s: "方法2", min: 6, steps: [
-      { vis: { type: "pic", img: "rain.webp", cap: "阴雨中的洞庭湖（示意）" }, who: "fan", say: "这是雨天的洞庭湖。" },
-      { vis: { type: "pic", img: "spring.webp", cap: "春晴的洞庭湖（示意）" }, who: "fan", say: "这是晴天的洞庭湖。" },
+      { vis: { type: "pic", img: "5b-storm.webp", cap: "阴雨中的洞庭湖（示意）" }, who: "fan", say: "这是雨天的洞庭湖。" },
+      { vis: { type: "pic", img: "5b-spring.webp", cap: "春晴的洞庭湖（示意）" }, who: "fan", say: "这是晴天的洞庭湖。" },
       { vis: { type: "card", n: "方法2", title: "同一片湖，同样的东西，两种样子",
                cols: [{ h: "雨天（第3段）", tone: "bad", lines: ["**水**：浊浪排空", "**光**：日星隐曜", "**活物**：虎啸猿啼", "**人**：商旅不行"] },
                       { h: "晴天（第4段）", tone: "good", lines: ["**水**：波澜不惊", "**光**：上下天光", "**活物**：沙鸥翔集，锦鳞游泳", "**人**：渔歌互答"] }] },
