@@ -14,7 +14,7 @@ var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
 /* 老师：首页点“我是老师”进来（sessionStorage hora-teacher，或地址 #teacher）。可以预览各板块（不存档），顶栏“全班作答”看全班（ke/teacher.js）。 */
 var TEACH = /^#(teacher|class)/.test(location.hash); try { TEACH = TEACH || sessionStorage.getItem("hora-teacher") === "1"; } catch (e) {}
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11152100";
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11152110";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -272,7 +272,7 @@ function storyList() {
  * 节点或台词上的 shot：{ bg, tone, cam, fx, prop, pt, open, peek, fan, side, tr, dur, dream, cap }（详见 data/story.js 开头的说明）。
  * 每个 shot 是一整个画面，不继承上一个；bg 相同（道具、色调也相同）时只换镜头、效果、范公的位置，不切画面。
  * 场景图：有 img/scene-{bg}.webp 就用（启动时探一下），没有就用 scene.js 画的替代画面。 */
-var IMG = { lake: "lake", "rain-lake": "rain", "spring-lake": "5b-spring", "moon-lake": "5b-moon", tower: "5b-tower", map: "map", bi: "bi" };
+var IMG = { lake: "lake", "rain-lake": "5b-rainwin", "spring-lake": "5b-spring", "moon-lake": "5b-moon", tower: "5b-tower", map: "map", bi: "bi" };
 var LEGACY = { rain: "rain-yard", sunny: "yard", spring: "spring-lake", moon: "moon-lake" };
 var SCENE_KEYS = ["study", "study-rain", "yard", "rain-yard", "harvest", "night", "hill", "gate"], SCENE_IMG = {};
 // 11-06：七张真图都已放进 img/，直接用（同时预载）；万一某张缺了，加载失败就退回画的场景

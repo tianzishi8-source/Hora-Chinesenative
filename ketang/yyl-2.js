@@ -134,7 +134,7 @@ window.PROJ_LESSON = {
         vis: { type: "pair", ids: ["p2-2", "p2-5", "p2-7"], mode: "talk", title: "同桌互讲：说出第2段重点句的意思" }, timer: { s: 60, label: "同桌互讲" } }
     ]},
     { t: "第3段逐句串讲：阴雨", s: "第3段", min: 10, steps: [
-      { vis: { type: "pic", img: "rain.webp", cap: "阴雨的洞庭湖（示意）" }, who: "fan", say: "迁客骚人看了这片湖，心情会一样吗？先看下雨的日子。" },
+      { vis: { type: "pic", img: "5b-rainwin.webp", cap: "阴雨的洞庭湖（示意）" }, who: "fan", say: "迁客骚人看了这片湖，心情会一样吗？先看下雨的日子。" },
       { vis: { type: "pair", ids: ["p3-1", "p3-2", "p3-3"], mode: "learn", title: "第3段 · 逐句对译（一）" }, who: "fan", sent: "p3-1", part: "src" },
       { who: "fan", sent: "p3-1", pre: "意思是：" },
       { who: "fan", say: "淫雨，连绵不断的雨；开，放晴。连月不开，接连几个月不放晴。" },
