@@ -30,12 +30,17 @@ async def rec(item, out):
     path = os.path.join(out, item["hash"] + ".mp3")
     if not os.path.exists(path) or os.path.getsize(path) == 0:
         v, rate, pitch = VOICES[item["who"]]
-        for t in range(3):
+        for t in range(6):
             try:
                 await edge_tts.Communicate(item["text"], v, rate=rate, pitch=pitch, proxy=PROXY).save(path); break
             except Exception as e:
-                print("重试", item["hash"], e); await asyncio.sleep(2)
-        norm(path)
+                print("重试", item["hash"], e); await asyncio.sleep(3 + 3 * t)
+        try:
+            norm(path); return item["hash"], round(MP3(path).info.length, 2)
+        except Exception as e:   # 服务偶尔不出声：删掉坏文件，这句先跳过，再跑一次会补录
+            print("跳过", item["hash"], e)
+            if os.path.exists(path): os.remove(path)
+            return item["hash"], None
     return item["hash"], round(MP3(path).info.length, 2)
 
 def norm(path):
@@ -55,7 +60,9 @@ async def main():
         m = re.search(r"=\s*(\{.*\})", open(ip, encoding="utf-8").read(), re.S)
         if m: idx = json.loads(m.group(1))
     for i, it in enumerate(lines):
-        h, d = await rec(it, out); idx[h] = d
+        h, d = await rec(it, out)
+        if d is None: continue
+        idx[h] = d
         print(f"{i+1}/{len(lines)} {it['who']} {d}s {it['text'][:24]}")
     with open(os.path.join(out, "index.js"), "w", encoding="utf-8") as f:
         f.write("window.PROJ_VOICE = " + json.dumps(idx) + ";\nwindow.PROJ_VOICE_V = \"" + __import__("time").strftime("%m%d%H%M") + "\";\n")

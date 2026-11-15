@@ -14,7 +14,7 @@ var LID = "g9-yueyanglou-ke", LTITLE = "岳阳楼记 · 课堂版";
 var QS = new URLSearchParams(location.search), SAMPLE = QS.get("sample") === "1";
 /* 老师：首页点“我是老师”进来（sessionStorage hora-teacher，或地址 #teacher）。可以预览各板块（不存档），顶栏“全班作答”看全班（ke/teacher.js）。 */
 var TEACH = /^#(teacher|class)/.test(location.hash); try { TEACH = TEACH || sessionStorage.getItem("hora-teacher") === "1"; } catch (e) {}
-var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11091230";
+var DATA = SAMPLE ? "data/_sample/" : "data/", VER = "11151700";
 var CHARS = HOME + "chars/";
 var NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 var PNAME = { p1: "第1段", p2: "第2段", p3: "第3段", p4: "第4段", p5: "第5段", all: "全文" };
@@ -180,7 +180,7 @@ function route() {
 
 var KETANG = { base: "../ketang/", list: [
   ["yyl-1", "第1节", "两个被贬的人；读懂第1、2段"], ["yyl-2", "第2节", "第1、2段补课；第3、4段逐句串讲"], ["yyl-3", "第3节", "第5段逐句串讲；全文结构"],
-  ["yyl-4", "第4节", "这篇记写给谁；先忧后乐"], ["yyl-5", "第5节", "两个人，一片湖：读杜甫《登岳阳楼》"], ["yyl-6", "第6节", "方法1：借景物传达情绪"],
+  ["yyl-4", "第4节", "这篇记写给谁；先忧后乐"], ["yyl-5", "第5节", "两个人，一片湖：读杜甫《登岳阳楼》"], ["yyl-5b", "第5节（剧场版）", "孤舟与三次登楼：跟着画面读懂、背下第3、4段（11-15 新）"], ["yyl-6", "第6节", "方法1：借景物传达情绪"],
   ["yyl-7", "第7节", "方法2、方法5；《我的____楼》提纲和开头"], ["yyl-8", "第8节", "单元写作《我的____楼》：写两种样子"], ["yyl-9", "第9节", "写结尾、写完、自查、同桌互评"],
   ["yyl-10", "第10节", "背诵检查；修改、朗读分享"], ["yyl-11", "第11节", "单元总复习：字词与翻译总过关；单元小测"]],
   extra: [["yyl-duiyi.pdf", "逐句对译讲义（PDF，4 页，人手一份放桌上）"], ["duiyi.html", "对译讲义（网页版，可直接打印）"], ["yyl-1-sheet.pdf", "第1节作答单（PDF，A4 双面）"]] };
