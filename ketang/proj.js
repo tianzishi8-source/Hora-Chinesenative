@@ -371,7 +371,7 @@
     vis.innerHTML = ""; heroEl.innerHTML = ""; picEl.innerHTML = "";
     if (!v) return;
     if (v.type === "hero" || v.type === "end") {
-      setScene(v.type === "end" ? "lake.webp" : "tower.webp", false);
+      setScene(v.scene || (v.type === "end" ? "lake.webp" : "tower.webp"), false);
       heroEl.innerHTML = v.type === "end" ? '<div class="bye">下次见</div>'
         : '<div class="vt">' + esc(L.title) + '</div><div class="vs">北宋　范仲淹</div><div class="seal">弦歌</div>';
       return;

@@ -22,6 +22,7 @@ VOICES = {
     "cg":  ("zh-CN-YunxiNeural", "+6%", "-2Hz"),      # 长歌：云希（11-02 课堂反馈“太柔太平”：调快、调亮）
     "qx":  ("zh-CN-XiaoyiNeural", "+6%", "+12Hz"),    # 清弦：晓伊·活泼
     "hy":  ("zh-CN-XiaoxiaoNeural", "+4%", "+2Hz"),   # 徽音老师：晓晓（11-02：语速、音调提回来，更有精神）
+    "ou":  ("zh-CN-YunjianNeural", "-10%", "-8Hz"),   # 欧阳修：同 zuiweng-ke/conf.js（爽朗、从容）
 }
 # 录完统一响度（-14 LUFS，和视频平台差不多响），教室里听得清；页面里还会再加增益和压缩
 LOUD = "loudnorm=I=-14:TP=-1.0:LRA=7"
