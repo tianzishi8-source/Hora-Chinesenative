@@ -691,3 +691,9 @@ mark.loc{background:linear-gradient(transparent 35%,rgba(230,160,40,.5) 35%);col
 .ask-ctx mark{background:#f3d27a;color:inherit;padding:0 .15em;border-radius:.2em}
 .ask-in{flex:1;min-width:10em;font:inherit;font-size:1.1em;padding:.55em .8em;border:1.5px solid var(--line,#cdbf9f);border-radius:.6em;background:#fffdf7}
 .author-qs .mco.wait{opacity:.6}
+/* 11-18 批注到课本：更醒目，出现时闪一下 */
+.notechip{font-size:1.02rem;border-width:2px;background:#fff1c9}
+.notechip b{font-size:1.05rem}
+.notechip.pulse{animation:notepulse 1.2s ease-out 2}
+@keyframes notepulse{0%{box-shadow:0 0 0 0 rgba(201,162,74,.7)}100%{box-shadow:0 0 0 14px rgba(201,162,74,0)}}
+#bCont:disabled,.cont:disabled{opacity:.75;cursor:wait}

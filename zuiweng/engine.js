@@ -400,8 +400,14 @@ function logMe(txt){DLOG.push({who:"me",text:txt});}
 function clearTask(){task.innerHTML="";task.classList.remove("plain","ask");}
 function btn(label){return el("button",{class:"btn",type:"button",text:label});}
 var contKey=null;
-function next(label,tok,keep){return new Promise(function(res,rej){task.classList.remove("ask");bCont.hidden=false;bCont.textContent=(label||"继续")+" ▸";bCont.focus({preventScroll:true});
-  function go(){if(tok!==RUN.token)return rej(CANCEL);SOUND.sfx("page");VOICE.stop();bCont.hidden=true;bCont.onclick=null;removeEventListener("keydown",contKey);contKey=null;if(!keep)clearTask();res();}
+/* 11-18 老师：所有人都要把笔记记在课本上。屏幕上出现“批注到课本”时，继续键改成“写好了”，先停几秒，留出动笔的时间。 */
+var NOTE_WAIT=6;
+function next(label,tok,keep){return new Promise(function(res,rej){task.classList.remove("ask");bCont.hidden=false;bCont.disabled=false;if(bCont._iv){clearInterval(bCont._iv);bCont._iv=null;}bCont.textContent=(label||"继续")+" ▸";bCont.focus({preventScroll:true});
+  var chip=task.querySelector(".notechip:not(.seen)"),wait=0;
+  if(chip){chip.classList.add("seen","pulse");wait=(typeof CANEDIT!=="undefined"&&CANEDIT)?0:NOTE_WAIT;var lab="✎ 我写在课本上了";
+    if(wait>0){bCont.disabled=true;bCont.textContent="✎ 先写到课本上…"+wait;bCont._iv=setInterval(function(){wait--;if(wait<=0){clearInterval(bCont._iv);bCont._iv=null;bCont.disabled=false;bCont.textContent=lab+" ▸";}else bCont.textContent="✎ 先写到课本上…"+wait;},1000);}
+    else bCont.textContent=lab+" ▸";}
+  function go(){if(tok!==RUN.token)return rej(CANCEL);if(bCont.disabled)return;SOUND.sfx("page");VOICE.stop();bCont.hidden=true;bCont.onclick=null;removeEventListener("keydown",contKey);contKey=null;if(!keep)clearTask();res();}
   if(contKey)removeEventListener("keydown",contKey);
   contKey=function(e){if((e.key==="Enter"||e.key===" ")&&!/TEXTAREA|INPUT|SELECT|BUTTON/.test(document.activeElement.tagName)){e.preventDefault();go();}};
   bCont.onclick=go;addEventListener("keydown",contKey);});}
@@ -456,6 +462,10 @@ H.input=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.q)
 
 /* 11-12 文言逐句翻译（《岳阳楼记》逐句翻译的做法）：{t:"trans",who,src:"原句",pairs:[[原文片段,译文片段,"留|换|补|调"]...],tr:"参考译文",key,paras:[段落号],hint,obs}
  * 先看原句（自己先说一说，可写几个字，不判分）→ 点“看译文”：原文和译文同色对应、标出翻译方法 → 自评“说对了／差一点／没说出来”。 */
+/* 11-18 逐句翻译后：把“换”“调”“补”的地方批注到课本这一句旁边（太长的只写前几处） */
+function transNote(s){if(s.note===false)return "";if(s.note)return s.note;var ps=(s.pairs||[]).filter(function(p){return p[2]&&p[2]!=="留"&&p[0].replace(/[，。；？！、]/g,"")!==p[1].replace(/[，。；？！、]/g,"");});
+  if(!ps.length)return "";var out=[],len=0;ps.forEach(function(p){var a=p[0].replace(/[，。；？！、：]/g,""),b=p[1].replace(/[，。；？！、：]/g,"");var t=a+"＝"+b;if(len+t.length>46)return;out.push(t);len+=t.length;});
+  return out.length?"在这一句旁边写："+out.join("；"):"";}
 var TRMETH={"留":"留：人名地名等照抄","换":"换：古义换今义、单音词换双音词","补":"补：补出省略的成分","调":"调：调整语序"};
 H.trans=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.paras)QP=s.paras;task.append(q(s.q||"先自己说说这一句的意思，再看译文。"));
   var src=el("div",{class:"tr-src"});(s.pairs||[]).forEach(function(pr,i){src.append(el("span",{class:"tr-seg c"+(i%6),text:pr[0]}));});if(!s.pairs||!s.pairs.length)src.textContent=s.src;
@@ -470,7 +480,7 @@ H.trans=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.pa
     var ms={};(s.pairs||[]).forEach(function(pr){if(pr[2])ms[pr[2]]=1;});var leg=el("div",{class:"tr-leg"});Object.keys(ms).forEach(function(m){leg.append(el("span",{class:"tr-m",text:TRMETH[m]||m}));});
     var self=el("div",{class:"row tr-self"},[el("span",{class:"note",text:"和你说的比一比："})]);
     [["ok","说对了"],["half","差一点"],["no","没说出来"]].forEach(function(o){var b=btn(o[1]);b.classList.add("ghost");b.addEventListener("click",function(){if(tok!==RUN.token)return;$$("button",self).forEach(function(x){x.disabled=true;});b.classList.add("on");
-      if(s.key){set(s.key+".self",o[0]);set(s.key+".mine",mine.value.trim());}logStep(s.obs,{try:1,answer:o[1]+(mine.value.trim()?"（"+mine.value.trim()+"）":"")});if(o[0]!=="ok")logStep(s.obs,{miss:o[0]});commit();showLoc();res(o[0]);});self.append(b);});
+      if(s.key){set(s.key+".self",o[0]);set(s.key+".mine",mine.value.trim());}logStep(s.obs,{try:1,answer:o[1]+(mine.value.trim()?"（"+mine.value.trim()+"）":"")});if(o[0]!=="ok")logStep(s.obs,{miss:o[0]});commit();showLoc();var nt=transNote(s);if(nt)task.append(noteChip({note:nt},{}));res(o[0]);});self.append(b);});
     task.append(el("div",{class:"tr-lab",text:"译文"}),tr);if(leg.childNodes.length)task.append(leg);task.append(self);});
 }).then(function(v){var r=s.replies&&(s.replies[v]||s.replies.all);return (r?say(fill(r),s.who||coach(),tok):Promise.resolve()).then(function(){return next(s.next||"下一句",tok);});});};
 
