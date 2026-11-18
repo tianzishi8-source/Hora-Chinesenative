@@ -118,7 +118,8 @@ SC.ye=function(A){
 
 /* ---------- 第4天 背一背：三轮，字一点点藏起来 ---------- */
 function phrases(t){var out=[],buf="";for(var i=0;i<t.length;i++){buf+=t[i];if("，。；？！：".indexOf(t[i])>=0){out.push(buf);buf="";}}if(buf)out.push(buf);return out;}
-SC.beisong=function(A){
+/* 11-18：step 写 only:[段号(0起)] 时不出菜单，直接背这几段（每天课末背当天这一段） */
+SC.beisong=function(A,st){
   var P=(window.LESSON&&window.LESSON.paras)||[];var done=A.get("zw4.recite")||{};pic(A,"pavilion","day");
   function menu(){return new Promise(function(res){var m=A.box(0,0,null,null,"zw-pick");m.style.left="";m.style.top="";
     P.forEach(function(t,i){var b=A.el("button",{type:"button",class:"zw-chip"+(done[i]?" done":""),text:"第"+(i+1)+"段　"+t.slice(0,8)+"……"});b.addEventListener("click",function(){A.sfx("page");m.remove();res(i);});m.append(b);});
@@ -133,6 +134,8 @@ SC.beisong=function(A){
     .then(function(){return A.button("藏起全部");}).then(function(){b.remove();b=show(i,3);return A.line("r3");})
     .then(function(){return A.button("背下来了",{plain:true});}).then(function(){b.remove();done[i]=1;A.set("zw4.recite",done);A.sfx("ok");return A.line("done");});}
   function loop(){return menu().then(function(i){if(i<0)return;return run(i).then(loop);});}
+  if(st&&st.only&&st.only.length){var seq=A.line("intro");st.only.forEach(function(i){seq=seq.then(function(){return run(i);});});
+    return seq.then(function(){A.log("背过第"+st.only.map(function(k){return +k+1;}).join("、")+"段");return A.line("end");}).then(function(){return A.button("回到课文");});}
   return A.line("intro").then(loop).then(function(){var n=Object.keys(done).length;A.log(n?("背过第"+Object.keys(done).map(function(k){return +k+1;}).join("、")+"段"):"没有背");return A.line("end");})
   .then(function(){return A.button("回到课文");});
 };
