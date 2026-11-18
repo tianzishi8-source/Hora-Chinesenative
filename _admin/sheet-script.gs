@@ -74,6 +74,7 @@ function handle(q) {
   if (a === 'share') return share(me, q);
   if (a === 'gallery') return gallery(me, q);
   if (a === 'reply') return reply(me, q);
+  if (a === 'board') return board(me);
   if (a === 'hw_photo') return hwPhoto(me, q);
   if (a === 'hw') return hwSubmit(me, q);
   if (a === 'hw_status') return hwStatus(me);
@@ -203,6 +204,26 @@ function gallery(me, q) {
     if (to === me.sid && lesson === me.lesson && k === key) got.push(String(text));
   }
   return { ok: true, shares: shares, got: got };
+}
+
+/* 课外阅读（11-19 加）：同班同学的阅读进度。只给名字和每段读完的时间（进度数据里的 passes），名单上还没打开的同学也列出来。 */
+function board(me) {
+  const rows = [], seen = {};
+  const an = sheet('作答').getDataRange().getValues();
+  for (let i = 1; i < an.length; i++) {
+    const [, sid, l, , cls, name] = an[i];
+    if (l !== me.lesson || cls !== me.cls) continue;
+    let p = null;
+    try { p = JSON.parse(an[i].slice(9, 14).join('')); } catch (e) {}
+    seen[String(name)] = 1;
+    rows.push({ name: name, me: sid === me.sid, passes: (p && p.passes) || [] });
+  }
+  const r = sheet('名单');
+  if (r.getLastRow() > 1) r.getRange(2, 1, r.getLastRow() - 1, 2).getDisplayValues().forEach(x => {
+    const c = String(x[0] || '').replace(/\s+/g, '').toUpperCase(), n = String(x[1] || '').replace(/\s+/g, ' ').trim();
+    if (c === me.cls && n && !seen[n]) { seen[n] = 1; rows.push({ name: n, me: false, passes: [] }); }
+  });
+  return { ok: true, rows: rows };
 }
 
 function reply(me, q) {
