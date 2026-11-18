@@ -697,3 +697,13 @@ mark.loc{background:linear-gradient(transparent 35%,rgba(230,160,40,.5) 35%);col
 .notechip.pulse{animation:notepulse 1.2s ease-out 2}
 @keyframes notepulse{0%{box-shadow:0 0 0 0 rgba(201,162,74,.7)}100%{box-shadow:0 0 0 14px rgba(201,162,74,0)}}
 #bCont:disabled,.cont:disabled{opacity:.75;cursor:wait}
+/* 11-18 顶栏收起：收起后课文和题目占满整屏；顶上中间只留一枚小签，点开恢复 */
+.barpill{display:none}
+body.barmin .bar{display:none}
+body.barmin .barpill{display:block;position:fixed;top:max(4px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:30;font:inherit;font-size:.82rem;line-height:1.2;padding:.32em .95em;border-radius:0 0 12px 12px;border:1px solid var(--line);border-top:0;background:color-mix(in srgb,var(--tex-page,#f6f1e3) 92%,transparent);color:var(--ink,#222);box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer;max-width:92vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.92}
+body.barmin .barpill:hover{opacity:1}
+body.barmin .main{padding-top:30px}
+.barhide{white-space:nowrap}
+.barpill2{display:none!important}
+@media (max-width:53.75rem){body.barmin .barpill2{display:block!important;position:fixed;top:max(4px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));z-index:30;font:inherit;font-size:.82rem;padding:.32em .9em;border-radius:0 0 12px 12px;border:1px solid var(--line);border-top:0;background:var(--tex-page,#f6f1e3);color:var(--ink,#222);box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer}
+  body.barmin .barpill{left:12px;transform:none;max-width:calc(100vw - 90px)}}

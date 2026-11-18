@@ -38,6 +38,17 @@ document.body.append(app,
  el("div",{class:"ov",id:"ovBook",hidden:""},[el("div",{class:"sheet",role:"dialog","aria-label":L.notebook.button,id:"bookSheet"})]),
  el("div",{class:"ov",id:"ovTeacher",hidden:""},[el("div",{class:"sheet",role:"dialog","aria-label":"看作答",id:"teacherSheet"})]),
  el("div",{class:"ov",id:"ovLog",hidden:""},[el("div",{class:"sheet log",role:"dialog","aria-label":"对话回看",id:"logSheet"})]));
+/* 11-18 顶栏可以收起：小屏幕、手机、全屏时默认收起，只留顶上一枚小签“▾ 第N天·环节”；点开看全部按钮，再点“收起”。学生的选择记在本机。 */
+(function(){var KEYB="hora-barmin",bar=$(".bar",app),pill=el("button",{type:"button",class:"barpill",title:"展开顶栏"}),hide=el("button",{type:"button",class:"tbtn barhide",title:"收起顶栏，让课文和题目更大",text:"收起 ︿"});
+  $(".tools",bar).append(hide);var txt=el("button",{type:"button",class:"barpill2 only-narrow",text:"原文"});txt.addEventListener("click",function(){var b=$("#bText");if(b)b.click();});document.body.append(pill,txt);
+  function pref(){try{return localStorage.getItem(KEYB);}catch(e){return null;}}
+  function small(){return innerHeight<820||innerWidth<900||!!(document.fullscreenElement||document.webkitFullscreenElement);}
+  function want(){var p=pref();return p==="1"?true:p==="0"?false:small();}
+  function paint(){var on=want();document.body.classList.toggle("barmin",on);var w=$("#stWhen"),t=$("#stTitle");pill.textContent="▾ "+((w&&w.textContent.split(" · ")[0])||"")+((t&&t.textContent)?" · "+t.textContent:"")+"　展开";}
+  hide.addEventListener("click",function(){try{localStorage.setItem(KEYB,"1");}catch(e){}paint();});
+  pill.addEventListener("click",function(){try{localStorage.setItem(KEYB,"0");}catch(e){}paint();});
+  addEventListener("resize",paint);document.addEventListener("fullscreenchange",function(){try{localStorage.removeItem(KEYB);}catch(e){}paint();});document.addEventListener("webkitfullscreenchange",paint);
+  new MutationObserver(paint).observe($("#stTitle"),{childList:true,characterData:true,subtree:true});paint();})();
 var task=$("#task"),dWho=$("#dWho"),dTxt=$("#dTxt"),bCont=$("#bCont"),bSkip=$("#bSkip"),bChat=$("#bChat");
 
 /* ================= 原文 ================= */
