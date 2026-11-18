@@ -434,6 +434,8 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 .hwt{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
 .hwt figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
 .hwt img{width:96px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.hwt figure.aud{flex-direction:row;gap:8px}.hwt audio{width:min(260px,70vw);height:36px}
+.btn.rec.on{background:#b3412e;border-color:#b3412e;color:#fff;animation:recp 1.2s ease-in-out infinite}@keyframes recp{50%{opacity:.75}}
 .hwm{margin:6px 0 0}
 
 /* 老师看板 */

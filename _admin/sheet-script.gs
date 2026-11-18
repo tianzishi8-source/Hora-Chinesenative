@@ -255,10 +255,15 @@ function hwPhoto(me, q) {
   const data = String(q.data || '');
   if (!data) fail('bad');
   if (data.length > 8000000) fail('big');
+  // 照片一律 jpg；朗读录音按格式存（11-18 加，网页靠返回的 mime 知道脚本已更新）
+  const TYPES = { 'image/jpeg': 'jpg', 'audio/webm': 'webm', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/mpeg': 'mp3', 'audio/aac': 'aac', 'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/ogg': 'ogg' };
+  const asked = String(q.mime || '').split(';')[0].toLowerCase();
+  const mime = TYPES[asked] ? asked : 'image/jpeg';
+  const audio = mime.indexOf('audio/') === 0;
   const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'MMdd-HHmmss');
-  const blob = Utilities.newBlob(Utilities.base64Decode(data), 'image/jpeg', '第' + day + '天-' + stamp + '-' + (Number(q.n) || 1) + '.jpg');
+  const blob = Utilities.newBlob(Utilities.base64Decode(data), mime, '第' + day + '天-' + (audio ? '朗读-' : '') + stamp + '-' + (Number(q.n) || 1) + '.' + TYPES[mime]);
   const f = hwFolder(me).createFile(blob);
-  return { ok: true, id: f.getId(), url: f.getUrl() };
+  return { ok: true, id: f.getId(), url: f.getUrl(), mime: mime };
 }
 
 function hwSubmit(me, q) {
