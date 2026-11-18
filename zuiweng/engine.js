@@ -42,12 +42,19 @@ document.body.append(app,
 (function(){var KEYB="hora-barmin",bar=$(".bar",app),pill=el("button",{type:"button",class:"barpill",title:"展开顶栏"}),hide=el("button",{type:"button",class:"tbtn barhide",title:"收起顶栏，让课文和题目更大",text:"收起 ︿"});
   $(".tools",bar).append(hide);var txt=el("button",{type:"button",class:"barpill2 only-narrow",text:"原文"});txt.addEventListener("click",function(){var b=$("#bText");if(b)b.click();});document.body.append(pill,txt);
   function pref(){try{return localStorage.getItem(KEYB);}catch(e){return null;}}
-  function small(){return innerHeight<820||innerWidth<900||!!(document.fullscreenElement||document.webkitFullscreenElement);}
-  function want(){var p=pref();return p==="1"?true:p==="0"?false:small();}
+  function isFs(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}
+  /* 11-18 老师：默认顶栏展开；全屏时自动收起（全屏里点小签可以再展开）；不全屏时学生也可以自己点“收起” */
+  function want(){var p=pref();return isFs()?p!=="0":p==="1";}
   function paint(){var on=want();document.body.classList.toggle("barmin",on);var w=$("#stWhen"),t=$("#stTitle");pill.textContent="▾ "+((w&&w.textContent.split(" · ")[0])||"")+((t&&t.textContent)?" · "+t.textContent:"")+"　展开";}
   hide.addEventListener("click",function(){try{localStorage.setItem(KEYB,"1");}catch(e){}paint();});
   pill.addEventListener("click",function(){try{localStorage.setItem(KEYB,"0");}catch(e){}paint();});
-  addEventListener("resize",paint);document.addEventListener("fullscreenchange",function(){try{localStorage.removeItem(KEYB);}catch(e){}paint();});document.addEventListener("webkitfullscreenchange",paint);
+  addEventListener("resize",paint);function fsch(){try{localStorage.removeItem(KEYB);}catch(e){}paint();}document.addEventListener("fullscreenchange",fsch);document.addEventListener("webkitfullscreenchange",fsch);
+  /* 原文默认一直显示；宽屏上可以点“收起原文”，让右边的题目占满；再点左上角“原文 ›”放回来 */
+  var KEYR="hora-readermin",rh=$(".rhead",app),rbtn=el("button",{type:"button",class:"ghost rhide",title:"收起原文，题目占满整屏",text:"‹ 收起原文"}),rpill=el("button",{type:"button",class:"rpill",text:"原文 ›",title:"把原文放回来"});
+  if(rh)rh.append(rbtn);document.body.append(rpill);
+  function rpaint(){var on=false;try{on=localStorage.getItem(KEYR)==="1";}catch(e){}document.body.classList.toggle("readermin",on);}
+  rbtn.addEventListener("click",function(){try{localStorage.setItem(KEYR,"1");}catch(e){}rpaint();});
+  rpill.addEventListener("click",function(){try{localStorage.removeItem(KEYR);}catch(e){}rpaint();});rpaint();
   new MutationObserver(paint).observe($("#stTitle"),{childList:true,characterData:true,subtree:true});paint();})();
 var task=$("#task"),dWho=$("#dWho"),dTxt=$("#dTxt"),bCont=$("#bCont"),bSkip=$("#bSkip"),bChat=$("#bChat");
 
