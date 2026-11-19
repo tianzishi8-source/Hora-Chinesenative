@@ -1,0 +1,391 @@
+/* 课文配置：李商隐《夜雨寄北》（八年级，自学版，学生每人一台电脑；引擎同《下雨天，真好》）
+ * 11-19 老师定：自学版，2 节课；接在《下雨天，真好》之后。
+ * 形式（老师 11-19）：沉浸式。学生是“我”，回到那场巴山夜雨，李商隐和“我”说话，作者自己娓娓道来；先理解意味，再识别词意。
+ * 口径：作者和诗只用课本注释（李商隐，约813—858，唐代诗人；滞留巴蜀时寄怀妻子王氏；北指长安；巴山泛指川东一带的山；何当＝何时能够；却话＝重提，再说）。
+ *   李商隐、琦君说的话都是“想象”，开场和问答处标明；琦君只说她文章里的原话。不说第几段。
+ *   课本注释扫描作“《玉熟生诗笺注》”，应为《玉谿生诗笺注》（玉谿生是李商隐的号），已请老师核对。
+ */
+window.LESSON={
+id:"g8-yeyujibei",
+title:"读《夜雨寄北》",sub:"八年级 · 李商隐",
+textTitle:"夜雨寄北",author:"李商隐",
+source:"选自《玉谿生诗笺注》卷三（《四部备要》本）。这是作者滞留巴蜀（今重庆、四川一带）时寄怀他的妻子王氏的诗。北，指长安（今陕西西安），在巴蜀之北。李商隐（约813—858），唐代诗人。虚线下面的词，点一下看意思。",
+gloss:{
+ "巴山":"泛指川东（重庆）一带的山。此地古代属巴国。",
+ "何当":"何时能够。",
+ "却话":"重提，再说。却，还，再。"
+},
+todoSay:{},
+voiceSub:[["涨秋池","掌秋池"],["涨满","掌满"],["涨了","掌了"],["“涨”","“掌”"],["涨起来","掌起来"],["涨？","掌？"],["重提","虫提"],["长谈","常谈"],["长安","常安"]],
+cast:{
+ lead:"hy",coach:"zhou",left:["hy"],right:["me","zhou"],
+ people:{
+  hy:{name:"徽音老师",img:"img/huiyin.webp",ink:"--accent",voice:{gender:"female",pitch:1,rate:1},
+      sample:"我是徽音老师。今天，我们回到一千多年前的一场雨。",
+      voices:[{id:"a",name:"徽音老师",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-6%",pitch:"-4Hz"}]},
+  zhou:{name:"清弦",sprite:"buddy",shape:"seal",glyph:"弦",seal:"伴学",ink:"--cool",voice:{gender:"female",pitch:1.15,rate:1},
+      sample:"我是{buddy|清弦}。今天，我和你一起去。",
+      voicesBy:{
+        qingxian:[{id:"q1",name:"清亮",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-4%",pitch:"+14Hz"},{id:"q2",name:"温柔",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-10%",pitch:"+6Hz"},{id:"q3",name:"活泼",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-2%",pitch:"+10Hz"}],
+        changge:[{id:"c1",name:"沉稳",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-10%",pitch:"-18Hz"},{id:"c2",name:"低沉",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-8%",pitch:"-12Hz"},{id:"c3",name:"温和",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-6%",pitch:"-8Hz"}]}},
+  lsy:{name:"李商隐",short:"李商隐",extra:true,img:"img/yy-lsy.webp",shape:"seal",glyph:"商",ink:"#5b4a7a",voice:{gender:"male",pitch:.9,rate:.95},
+      voices:[{id:"a",name:"李商隐",gender:"male",tts:"zh-CN-YunyangNeural",rate:"-12%",pitch:"-8Hz"}]},
+  qj:{name:"琦君",short:"琦君",extra:true,shape:"seal",glyph:"琦",ink:"#8a5a3a",voice:{gender:"female",pitch:.95,rate:.95},
+      voices:[{id:"a",name:"琦君",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-14%",pitch:"-16Hz"}]},
+  xiaoman:{name:"小满（同学）",short:"小满",extra:true,fig:{a:"img/xm-a.webp",b:"img/xm-b.webp",head:[505,228]},shape:"seal",glyph:"满",ink:"#b0662a",voice:{gender:"female",pitch:1.05,rate:1},voices:[{id:"a",name:"小满",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-6%",pitch:"-4Hz"}]},
+  me:{name:"我",sprite:"me",shape:"seal",glyph:"我",seal:"同学",ink:"--warm",
+      sample:"这是我的声音。读到我的话时，就用这个声音。",
+      voicesBy:{
+        g:[{id:"f1",name:"温和",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-6%",pitch:"-8Hz"},{id:"f2",name:"清爽",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-6%",pitch:"-6Hz"}],
+        b:[{id:"m2",name:"清朗",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-2%",pitch:"+10Hz"},{id:"m3",name:"爽朗",gender:"male",tts:"zh-CN-YunjianNeural",rate:"+0%",pitch:"+8Hz"}]}}
+ },
+ hello:{hy:"我是徽音老师。关于这首诗，你想问什么都可以。",zhou:"我是{buddy|清弦}。哪里没读懂，我们一起想想。"},
+ sys:{
+  hy:"你在扮演“徽音老师”，一位温和、有学问的语文老师，在陪海外国际学校的八年级中国学生读李商隐的《夜雨寄北》。说浅白的现代汉语，一般一两句，不超过100字。讲作者只讲课本注释里有的（李商隐，约813—858，唐代诗人；这首诗是他滞留巴蜀时寄怀妻子王氏的），拿不准就说不确定。不直接给练习答案。不用Markdown符号，不用表情符号。",
+  zhou:"你在扮演“清弦”，学生的伴学：一个和学生同龄的中国学生，正和学生一起读《夜雨寄北》。说话像同学，一般一两句，不超过80字。不直接给标准答案。不用Markdown符号，不用表情符号。"
+ }
+},
+ai:{peer:"说话一律用现代汉语，不用表情符号，不用任何Markdown符号。你在陪海外国际学校的八年级中国学生读李商隐《夜雨寄北》。",pre:"说话一律用现代汉语，不用表情符号，不用任何Markdown符号。你是徽音老师。只评点，不打分。"},
+voiceFix:{"对。水位升高叫“涨”，这里读 zhǎng。": "对。水位升高叫“掌”，这里读掌。", "体积变大（比如“豆子泡涨了”）读 zhàng。这里是池水升高，读 zhǎng。": "体积变大（比如“豆子泡丈了”）读丈。这里是池水升高，读掌。"},
+paras:["君问归期未有期，","巴山夜雨涨秋池。","何当共剪西窗烛，","却话巴山夜雨时。"],
+narration:{prefix:"voice/n",sub:[["涨秋池","掌秋池"]],voice:{tts:"zh-CN-YunyangNeural",rate:"-30%",pitch:"-8Hz"}},
+images:{},
+visuals:{
+ /* 示意地图：巴蜀在南，长安在北（只标两个地方和方向，不画边界） */
+ map:function(el){var d=el("div",{class:"yymap"});d.innerHTML='<svg viewBox="0 0 400 300" role="img" aria-label="示意图：长安在北，巴蜀在南"><defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#b8342a"/></marker></defs><rect x="0" y="0" width="400" height="300" rx="14" fill="#f4ecdc"/><path d="M40,230 C110,190 150,215 220,180 S330,160 370,120" fill="none" stroke="#c9b48a" stroke-width="2" stroke-dasharray="4 6"/><g font-family="Noto Serif SC,serif"><circle cx="250" cy="70" r="7" fill="#b8342a"/><text x="265" y="76" font-size="20" fill="#1f1b17">长安（今西安）</text><circle cx="170" cy="225" r="7" fill="#35607c"/><text x="40" y="262" font-size="20" fill="#1f1b17">巴蜀（今重庆、四川一带）</text><text x="186" y="212" font-size="15" fill="#35607c">巴山夜雨</text><path d="M178,212 L242,84" stroke="#b8342a" stroke-width="2.5" fill="none" marker-end="url(#ah)"/><text x="215" y="150" font-size="16" fill="#b8342a">寄北</text><text x="350" y="40" font-size="18" fill="#6f675b">北↑</text></g></svg><p class="note" style="margin:6px 0 0">示意图，不按比例。</p>';return d;}
+},
+sound:{mood:"calm",vol:.4,
+ notes:[392,440,493.88,587.33,659.25,783.99,880,987.77],
+ moods:{calm:{music:.7,tick:0},memory:{music:.5,tick:0},focus:{music:0,tick:.3},bright:{music:1,tick:0}},
+ amb:{dir:"amb/",v:1,vol:.85,duck:.4,def:"study",byBg:{
+  "img/yy-door.webp":"window","img/yy-bashan.webp":"study","img/yy-letter.webp":"study","img/yy-pool.webp":"lake",
+  "img/yy-candle.webp":"study","img/yy-xichuang.webp":"bed"}}},
+rainfx:{byBg:{
+  "img/yy-door.webp":{rain:80,angle:4,speed:820,len:20,drops:50,alpha:.42},
+  "img/yy-bashan.webp":{rain:110,angle:8,speed:900,len:24,alpha:.36},
+  "img/yy-letter.webp":{rain:70,angle:8,speed:880,len:22,alpha:.26},
+  "img/yy-pool.webp":{rain:130,angle:5,speed:900,len:24,ripples:9,alpha:.44},
+  "img/yy-candle.webp":{rain:50,angle:8,speed:880,len:20,alpha:.22},
+  "img/yy-xichuang.webp":{rain:0,drops:0}}},
+practiceOpen:true,
+/* 课后练习：每天一组。core 人人做；variants 键＝课上那道题的 obs id，课上错了的学生先重做原题，再做这道相似的新题。
+   只考课上讲过的：字词（君、涨、何当、剪烛、却话、巴山、北）、两句实两句虚、两次巴山夜雨、借景抒情、七言绝句、和琦君对读。 */
+practice:{
+ groups:[{days:[1]},{days:[2]}],
+ core:[
+  {day:1,t:"mc",q:"“何当共剪西窗烛”的“何当”，意思是：",
+   options:[{text:"何时能够",ok:true,reply:"对。课本注释：何当，何时能够。"},{text:"应当",ok:false,reply:"诗人在问日子：什么时候才能？课本注释：何当，何时能够。"},{text:"为何",ok:false,reply:"他问的不是原因，是什么时候。课本注释：何当，何时能够。"}],
+   obs:{id:"yp1-hedang",label:"练习：何当",skill:"词义"}},
+  {day:1,t:"mc",q:"“却话巴山夜雨时”的“却话”，意思是：",
+   options:[{text:"重提，再说",ok:true,reply:"对。课本注释：却话，重提，再说。却，还，再。"},{text:"推辞不说",ok:false,reply:"这里的“却”不是推辞。课本注释：却，还，再。"},{text:"却说起别的事",ok:false,reply:"说的正是“巴山夜雨时”。课本注释：却话，重提，再说。"}],
+   obs:{id:"yp1-quehua",label:"练习：却话",skill:"词义"}},
+  {day:1,t:"mc",q:"“巴山夜雨涨秋池”的“涨”，读音和意思都对的是：",
+   options:[{text:"zhǎng，水位升高",ok:true,reply:"对。秋雨下个不停，池水涨满了。"},{text:"zhàng，体积变大",ok:false,reply:"体积变大（比如“豆子泡涨了”）读 zhàng。这里是池水升高，读 zhǎng。"},{text:"zhǎng，价格上升",ok:false,reply:"读音对了，意思不对。这里说的是池里的水升高了。"}],
+   obs:{id:"yp1-zhang",label:"练习：涨",skill:"词义"}},
+  {day:1,t:"mc",q:"题目《夜雨寄北》，“北”指什么地方？",
+   options:[{text:"长安（今陕西西安）",ok:true,reply:"对。长安在巴蜀的北边，诗是寄给那里的妻子的。"},{text:"巴山的北坡",ok:false,reply:"“寄北”是寄到北边去，不是山的北坡。课本注释：北，指长安。"},{text:"北方的边塞",ok:false,reply:"这是寄给家里的诗。课本注释：北，指长安（今陕西西安），在巴蜀之北。"}],
+   obs:{id:"yp1-bei",label:"练习：北",skill:"词义"}},
+  {day:1,t:"mc",q:"四句诗里，哪两句写的是诗人想象中的将来？",
+   options:[{text:"“何当共剪西窗烛，却话巴山夜雨时”",ok:true,reply:"对。“何当”，什么时候才能：那是还没来的日子。"},{text:"“君问归期未有期，巴山夜雨涨秋池”",ok:false,reply:"这两句是此刻：她问归期，他答不出；窗外正下着雨。"},{text:"“巴山夜雨涨秋池，何当共剪西窗烛”",ok:false,reply:"“巴山夜雨涨秋池”是眼前正在下的雨。想象从“何当”开始。"}],
+   obs:{id:"yp1-xu",label:"练习：哪两句是想象",skill:"结构"}},
+  {day:1,t:"mc",q:"《夜雨寄北》四句，每句七个字。这样的诗叫什么？",
+   options:[{text:"七言绝句",ok:true,reply:"对。四句是绝句，每句七字是七言。"},{text:"七言律诗",ok:false,reply:"律诗是八句。这首只有四句。"},{text:"五言绝句",ok:false,reply:"数一数，“君问归期未有期”是几个字？"}],
+   obs:{id:"yp1-jueju",label:"练习：七言绝句",skill:"文学常识"}},
+  {day:1,t:"mc",q:"下面哪一句，一个字都没有写错？",
+   options:[{text:"何当共剪西窗烛",ok:true,reply:"对。"},{text:"何当共剪西窗竹",ok:false,reply:"剪的是蜡烛的烛芯，“烛”是火字旁。"},{text:"何时共剪西窗烛",ok:false,reply:"诗里是“何当”（何时能够），不是“何时”。"}],
+   obs:{id:"yp1-zi1",label:"练习：字形（何当句）",skill:"默写"}},
+  {day:1,t:"mc",q:"下面哪一句，一个字都没有写错？",
+   options:[{text:"巴山夜雨涨秋池",ok:true,reply:"对。"},{text:"巴山夜雨长秋池",ok:false,reply:"池水升高，是三点水的“涨”。"},{text:"巴山夜雨涨秋迟",ok:false,reply:"涨满的是池子，三点水的“池”。"}],
+   obs:{id:"yp1-zi2",label:"练习：字形（涨秋池）",skill:"默写"}},
+
+  {day:2,t:"mc",q:"诗里两次写到“巴山夜雨”。下面说法正确的是：",
+   options:[{text:"第一次是眼前的实景，第二次是将来回忆时说起的，一实一虚",ok:true,reply:"对。同样四个字，一实一虚。"},{text:"两次都是眼前的实景",ok:false,reply:"第二次前面有“却话”：那是将来相聚时再说起。"},{text:"两次都是想象",ok:false,reply:"第一次，雨正在窗外下，池水正在涨。"}],
+   obs:{id:"yp2-liangci",label:"练习：两次巴山夜雨",skill:"结构"}},
+  {day:2,t:"mc",q:"“共剪西窗烛”，两个人一起剪烛芯。这个细节写出了什么？",
+   options:[{text:"两个人话说不完，一直谈到深夜",ok:true,reply:"对。蜡烛点久了烛芯才要剪，说明长谈到很晚。"},{text:"家里的蜡烛质量不好",ok:false,reply:"诗人关心的不是蜡烛。烛芯为什么要剪？因为点得久。"},{text:"诗人喜欢做手工",ok:false,reply:"剪烛是因为蜡烛点了很久：两个人说了很久的话。"}],
+   obs:{id:"yp2-jianzhu",label:"练习：剪烛",skill:"体会意味"}},
+  {day:2,t:"mc",q:"这首诗写的时间顺序，哪一项对？",
+   options:[{text:"此刻巴山 → 将来西窗 → 将来回头说起此刻",ok:true,reply:"对。时间来回穿梭，时空交错。"},{text:"此刻巴山 → 过去西窗 → 又回到此刻",ok:false,reply:"西窗剪烛前面是“何当”：什么时候才能。那是还没来的日子，不是过去。"},{text:"将来 → 此刻 → 过去",ok:false,reply:"开头“君问归期未有期”就是此刻。"}],
+   obs:{id:"yp2-shijian",label:"练习：时间顺序",skill:"结构"}},
+  {day:2,t:"mc",q:"“巴山夜雨涨秋池”没有一个“愁”字。我们怎么读出诗人的愁？",
+   options:[{text:"借景抒情：异乡的秋夜、下个不停的雨、涨满的池水，让人感到孤寂愁闷",ok:true,reply:"对。景里藏着情。"},{text:"因为诗人怕池水漫进屋里",ok:false,reply:"诗里没有写怕水。是这样的雨夜景色，衬出他一个人的孤寂。"},{text:"这一句读不出感情，只是写天气",ok:false,reply:"写景也是在写心情。一个人在异乡，听着下个不停的秋雨，心里是什么滋味？"}],
+   obs:{id:"yp2-jiejing",label:"练习：借景抒情",skill:"体会感情"}},
+  {day:2,t:"mc",q:"全诗表达的感情，哪一项最准确？",
+   options:[{text:"滞留异乡的孤寂，对妻子的思念，盼望早日团聚",ok:true,reply:"对。"},{text:"对巴山美景的喜爱",ok:false,reply:"巴山夜雨写得冷清，不是在赞美景色。"},{text:"埋怨妻子催他回家",ok:false,reply:"他没有埋怨。他答不出归期，反而盼着和她西窗长谈。"}],
+   obs:{id:"yp2-qing",label:"练习：感情",skill:"体会感情"}},
+  {day:2,t:"mc",q:"和琦君的《下雨天，真好》比，哪一项说得对？",
+   options:[{text:"都在雨中想念亲人；琦君是回到过去，李商隐是想到将来",ok:true,reply:"对。一个往回走，一个往前盼。"},{text:"两篇都是想象将来",ok:false,reply:"琦君写的是童年、母亲、二十年前的笛声：是过去。"},{text:"两篇都没有写到亲人",ok:false,reply:"琦君写母亲、父亲；李商隐写给妻子。"}],
+   obs:{id:"yp2-duidu",label:"练习：对读",skill:"比较阅读"}},
+  {day:2,t:"mc",q:"下面哪一句，一个字都没有写错？",
+   options:[{text:"君问归期未有期",ok:true,reply:"对。"},{text:"君问归期末有期",ok:false,reply:"“未有期”，是还没有确定的日子。“未”上短下长；“末”上长下短。"},{text:"君问规期未有期",ok:false,reply:"回家的日期，是“归期”：归来的“归”。"}],
+   obs:{id:"yp2-zi3",label:"练习：字形（归期句）",skill:"默写"}},
+  {day:2,t:"mc",q:"下面哪一句，一个字都没有写错？",
+   options:[{text:"却话巴山夜雨时",ok:true,reply:"对。"},{text:"确话巴山夜雨时",ok:false,reply:"“却”，还，再。不是“确实”的“确”。"},{text:"却话巴山夜语时",ok:false,reply:"说的是“夜雨”：夜里的雨。"}],
+   obs:{id:"yp2-zi4",label:"练习：字形（却话句）",skill:"默写"}}
+ ],
+ variants:{
+  "y1-wuna":{t:"mc",q:"“君问归期未有期”，“未有期”是什么意思？",options:[{text:"还没有确定的日期，说不准哪天回",ok:true,reply:"对。她问哪天，他只能答：说不准。"},{text:"永远不回去了",ok:false,reply:"“未有期”是还没有日期，不是永远不回。他还盼着西窗下的那一天。"},{text:"日子早就定好了",ok:false,reply:"定好了就会写明。“未”，是还没有。"}],obs:{id:"yv-wuna",label:"相似题：未有期",skill:"体会感情"}},
+  "y1-zhang":{t:"mc",q:"“巴山夜雨涨秋池”，池水为什么会“涨”？",options:[{text:"秋雨下了很久，下得大",ok:true,reply:"对。“涨”字写出雨下得久、下得大。"},{text:"有人往池里灌水",ok:false,reply:"诗里只写了夜雨。是雨让池水升高的。"},{text:"池水结冰变多了",ok:false,reply:"秋夜下雨，池水没有结冰。是雨水让它涨起来。"}],obs:{id:"yv-zhang",label:"相似题：涨",skill:"词义"}},
+  "y1-chou":{t:"mc",q:"诗人写“巴山夜雨涨秋池”，主要想让人感到什么？",options:[{text:"一个人在异乡雨夜里的孤寂和愁闷",ok:true,reply:"对。借景抒情。"},{text:"巴山的雨夜很热闹",ok:false,reply:"夜深人静，只有他一个人听雨。"},{text:"下雨让人心情轻松",ok:false,reply:"回家的日子定不下来，这雨听着，是轻松还是愁？"}],obs:{id:"yv-chou",label:"相似题：巴山夜雨的心情",skill:"体会感情"}},
+  "y1-hedang":{t:"mc",q:"“何当共剪西窗烛”，用自己的话说是：",options:[{text:"什么时候才能一起在西窗下剪烛呢",ok:true,reply:"对。何当，何时能够。"},{text:"应当一起在西窗下剪烛",ok:false,reply:"“何当”不是“应当”，是“何时能够”。"},{text:"为什么要在西窗下剪烛",ok:false,reply:"他问的不是原因，是日子。"}],obs:{id:"yv-hedang",label:"相似题：何当",skill:"词义"}},
+  "y1-jianzhu":{t:"mc",q:"“剪烛”，为什么要剪烛芯？",options:[{text:"蜡烛点了很久，烛芯烧长了，光变暗",ok:true,reply:"对。点得久，是因为两个人谈得久。"},{text:"蜡烛太短了",ok:false,reply:"剪的是烛芯，不是蜡烛。烛芯烧长了光就暗。"},{text:"为了把蜡烛吹灭",ok:false,reply:"剪烛芯是为了让烛光重新亮起来，好接着说话。"}],obs:{id:"yv-jianzhu",label:"相似题：剪烛",skill:"体会意味"}},
+  "y1-jianglai":{t:"mc",q:"写“西窗剪烛”的时候，诗人身在哪里？",options:[{text:"还在巴山，一个人",ok:true,reply:"对。西窗剪烛，是他在巴山想象的将来。"},{text:"已经回到长安家里",ok:false,reply:"他写诗的时候，还“未有期”，回不去。"},{text:"在去长安的路上",ok:false,reply:"诗里没有写上路。他还在巴山的雨夜里。"}],obs:{id:"yv-jianglai",label:"相似题：西窗剪烛是想象",skill:"结构"}},
+  "y1-quehua":{t:"mc",q:"“却话巴山夜雨时”的“却”，意思是：",options:[{text:"还，再",ok:true,reply:"对。却话，重提，再说。"},{text:"推辞",ok:false,reply:"这里不是推辞。课本注释：却，还，再。"},{text:"但是",ok:false,reply:"这里不表示转折。课本注释：却，还，再。"}],obs:{id:"yv-quehua",label:"相似题：却",skill:"词义"}},
+  "y1-jun":{t:"mc",q:"“君问归期”，是谁在问？",options:[{text:"诗人的妻子",ok:true,reply:"对。“君”，指她。"},{text:"诗人问自己",ok:false,reply:"“君问”，是对方在问他。"},{text:"巴山的朋友",ok:false,reply:"问他哪天回家的，是在长安的妻子。"}],obs:{id:"yv-jun",label:"相似题：君",skill:"词义"}},
+  "y1-bashan":{t:"mc",q:"课本注释说“巴山”是“泛指”。这是什么意思？",options:[{text:"不是指某一座山，是指那一带的山",ok:true,reply:"对。泛指川东（重庆）一带的山。"},{text:"指全国所有的山",ok:false,reply:"不是全国。是川东（重庆）一带的山。"},{text:"指一座很高的山",ok:false,reply:"“泛指”，不是某一座。"}],obs:{id:"yv-bashan",label:"相似题：巴山",skill:"词义"}},
+  "y1-bei":{t:"mc",q:"诗人写诗的地方和寄去的地方，哪一项对？",options:[{text:"在巴蜀写，寄到北边的长安",ok:true,reply:"对。“寄北”，寄到北边。"},{text:"在长安写，寄到巴蜀",ok:false,reply:"反了。他滞留在巴蜀，家在长安。"},{text:"在长安写，寄到北方边疆",ok:false,reply:"他写诗时在巴蜀，正听着巴山夜雨。"}],obs:{id:"yv-bei",label:"相似题：寄北",skill:"词义"}},
+  "y2-liangci":{t:"mc",q:"第一次“巴山夜雨”和第二次“巴山夜雨”，带给人的感觉有什么不同？",options:[{text:"第一次愁闷冷清；第二次是团聚时说起的往事，是暖的",ok:true,reply:"对。一愁一暖。"},{text:"两次都很愁",ok:false,reply:"第二次，是两个人在西窗下说起的。说起来，还会那么冷清吗？"},{text:"两次都很欢乐",ok:false,reply:"第一次，他一个人答不出归期。欢乐吗？"}],obs:{id:"yv-liangci",label:"相似题：两次巴山夜雨",skill:"结构"}},
+  "y2-pan":{t:"mc",q:"诗人把将来的团聚想得那么温暖，反过来更衬出了什么？",options:[{text:"此刻一个人的孤寂",ok:true,reply:"对。想得越暖，越显出此刻冷清。"},{text:"此刻的热闹",ok:false,reply:"此刻他一个人在巴山。"},{text:"他已经不想念家了",ok:false,reply:"正因为想念，才会想象团聚。"}],obs:{id:"yv-pan",label:"相似题：想象衬出此刻",skill:"体会感情"}},
+  "y2-duidu":{t:"mc",q:"琦君写“二十年了，那笛声低沉而遥远，然而我，仍然依稀听见，在雨中……”，她的心在往哪里走？",options:[{text:"往回走，回到过去",ok:true,reply:"对。李商隐是往前盼，盼着将来。"},{text:"往前走，盼着将来",ok:false,reply:"“二十年了”：她在回想二十年前。"},{text:"哪里也不去，只写眼前",ok:false,reply:"笛声是二十年前的。她在回想过去。"}],obs:{id:"yv-duidu",label:"相似题：对读",skill:"比较阅读"}},
+  "y2-du1":{t:"mc",q:"朗读“君问归期未有期”，哪里放慢、停一停最好？",options:[{text:"“未有期”",ok:true,reply:"对。答不出归期的无奈，在这三个字里。"},{text:"“君问”",ok:false,reply:"“君问”可以平平读出。最无奈的是哪三个字？"},{text:"一点都不停，越快越好",ok:false,reply:"这是答不出归期的话，快不起来。"}],obs:{id:"yv-du1",label:"相似题：朗读前两句",skill:"朗读"}},
+  "y2-du2":{t:"mc",q:"朗读“何当共剪西窗烛，却话巴山夜雨时”，声音为什么可以暖一些？",options:[{text:"写的是盼望中的团聚",ok:true,reply:"对。"},{text:"因为雨停了",ok:false,reply:"诗里没写雨停。暖，是因为想到了团聚。"},{text:"因为已经回到了家",ok:false,reply:"还没回去。那是他盼着的将来。"}],obs:{id:"yv-du2",label:"相似题：朗读后两句",skill:"朗读"}}
+ }
+},
+bg:"img/yy-bashan.webp",
+totalDays:2,
+days:[
+/* ===================== 第 1 天：回到那场雨 ===================== */
+{title:"走进那场雨",bg:"img/yy-door.webp",short:"那场雨",beats:[
+ {title:"穿过雨幕",mood:"memory",bg:"img/yy-door.webp",steps:[
+  {t:"poemHide",upto:0},
+  {t:"say",who:"hy",text:"前三天，我们读了琦君的雨。雨把她带回亲人身边的日子。"},
+  {t:"say",who:"hy",text:"今天，换我们跟着雨走一回。这一次，走得更远：一千多年以前。"},
+  {t:"say",who:"zhou",text:"一千多年？那时候还没有电灯，也没有手机……"},
+  {t:"say",who:"hy",text:"下面的场景，是根据这首诗和课本注释想象出来的。诗人的话，也是想象的。"},
+  {t:"say",who:"hy",text:"听，窗外的雨声。闭上眼睛，让它把你带过去。"},
+  {t:"lines",tap:"🌧 推开这扇雨中的窗",items:["唐代。一个秋天的夜里。","巴山，在今天的重庆一带。","雨，已经下了好些天。"]},
+  {t:"say",who:"hy",text:"屋里只点着一支蜡烛。一个人坐在桌前，桌上摆着一封信。",bg:"img/yy-bashan.webp"},
+  {t:"say",who:"hy",text:"他叫李商隐，唐代诗人。这时候，他滞留在巴蜀，回不了家。"},
+  {t:"vis",name:"map"},
+  {t:"say",who:"hy",text:"他的家在北边的长安，就是今天的陕西西安。妻子在那里等他。"},
+  {t:"say",who:"lsy",text:"你是从很远的地方来的吧？外面雨大，进来坐。"},
+  {t:"mc",stance:true,q:"李商隐请你进屋。你先说什么？",fixed:true,
+   options:[{text:"“先生，这么晚了，您还没睡？”",reply:"睡不着。雨一直下，信也一直摆在这里。"},
+    {text:"“先生，您在给谁写信？”",reply:"给家里。给她。"},
+    {text:"（不说话，坐到烛光旁边。）",reply:"坐吧。听听这雨。"}],key:"y1.first",obs:{id:"y1-first",label:"进屋先说什么",skill:"进入情境"},feedbackWho:"lsy"}
+ ]},
+ {title:"她问我归期",mood:"memory",bg:"img/yy-letter.webp",steps:[
+  {t:"poemHide",upto:0},
+  {t:"say",who:"lsy",text:"这封信，是长安寄来的。她在信里问我：你什么时候回来？"},
+  {t:"say",who:"lsy",text:"我想了一晚上。哪一天能回去？我说不出。我自己也不知道。"},
+  {t:"say",who:"lsy",text:"那就照实写吧。"},
+  {t:"write",line:0,who:"lsy"},
+  {t:"mc",q:"他写下这一句的时候，心里是什么滋味？",feedbackWho:"lsy",
+   options:[{text:"想回去，却说不出哪天能回，只能照实告诉她，很无奈",ok:true,reply:"是。她问得那么切，我却答不上来。"},
+    {text:"他不想回家，所以故意不说日子",ok:false,reply:"我若不想回，何必想了一晚上？再看看我是怎么说的。"},
+    {text:"他已经定好了回家的日子，想给她一个惊喜",ok:false,reply:"若定好了，我就写明日子了。我写的是“未有期”。"}],
+   obs:{id:"y1-wuna",label:"君问归期未有期：心情",skill:"体会感情"}},
+  {t:"say",who:"zhou",text:"一句话里有两个“期”。一个是她问的，一个是他答的。"},
+  {t:"say",who:"hy",text:"对。“君问归期”是她问；“未有期”是他答。一问一答，就把两个人隔着千里的牵挂，放进了一句里。"}
+ ]},
+ {title:"窗外的秋池",mood:"memory",bg:"img/yy-pool.webp",steps:[
+  {t:"poemHide",upto:1},
+  {t:"say",who:"lsy",text:"你听，雨还没停。这雨，下了好些天了。"},
+  {t:"say",who:"lsy",text:"院子里那个池子，前几天水还浅，现在都满了，快漫出来了。"},
+  {t:"pond",q:"看窗外的池子。",note:"雨一直下，池水一点一点升上来。"},
+  {t:"say",who:"lsy",text:"巴山的夜里，秋雨，一个人听着。"},
+  {t:"write",line:1,who:"lsy"},
+  {t:"mc",q:"“涨秋池”，你刚才看见了什么？这个“涨”是什么意思？",feedbackWho:"hy",
+   options:[{text:"池里的水升高了，涨满了",ok:true,reply:"对。水位升高叫“涨”，这里读 zhǎng。"},
+    {text:"池塘变大了，有人在挖池子",ok:false,reply:"再看看刚才的池子：变的是什么？是池子，还是池里的水？"},
+    {text:"池水结冰了",ok:false,reply:"秋天的雨夜，池水没有结冰。刚才的池子，水怎么了？"}],
+   obs:{id:"y1-zhang",label:"涨：意思",skill:"词义"}},
+  {t:"mc",q:"雨下了这么久，池水都涨满了。他一个人在异乡听着，心里是什么样？",feedbackWho:"lsy",
+   options:[{text:"孤单、愁闷，心事也像池水一样满",ok:true,reply:"是。我没写“愁”字，可这一池秋水，你看得出来。"},
+    {text:"轻松快活，喜欢听雨",ok:false,reply:"夜深了，回家的日子又定不下来，你说我快活吗？"},
+    {text:"害怕，担心房子被淹",ok:false,reply:"我没有担心房子。我是一个人，在离家很远的地方。"}],
+   obs:{id:"y1-chou",label:"巴山夜雨：心情",skill:"体会感情"}},
+  {t:"say",who:"hy",text:"他不写“我很愁”，只写眼前的雨和池水。这叫借景抒情：景里藏着情。"},
+  {t:"say",who:"hy",text:"“涨”字，写雨下得久、下得大；也有人读出：他的愁思，像池水一样涨满了。"}
+ ]},
+ {title:"剪烛",mood:"memory",bg:"img/yy-candle.webp",steps:[
+  {t:"poemHide",upto:2},
+  {t:"say",who:"zhou",text:"咦，屋里怎么越来越暗了？"},
+  {t:"say",who:"lsy",text:"蜡烛点久了，烛芯烧得又长又焦，光就暗了。得剪一剪。"},
+  {t:"candle",q:"烛光暗了。帮他剪一剪烛芯。",btn:"✂ 剪烛",done:"烛光又亮了。"},
+  {t:"say",who:"lsy",text:"你看，剪掉烧焦的烛芯，就又亮了。"},
+  {t:"say",who:"lsy",text:"要是她在这里就好了。我们两个人，在家里的西窗下，一起剪着烛，说话说到深夜……"},
+  {t:"say",who:"lsy",text:"那样的一天，什么时候才能有呢？"},
+  {t:"write",line:2,who:"lsy"},
+  {t:"mc",q:"他刚才说“什么时候才能有呢”，写下来是“何当”。“何当”是什么意思？",feedbackWho:"hy",
+   options:[{text:"何时能够",ok:true,reply:"对。课本注释：何当，何时能够。"},
+    {text:"应当、应该",ok:false,reply:"听他刚才说的：“那样的一天，什么时候才能有呢？”"},
+    {text:"为什么",ok:false,reply:"他问的不是原因，是日子。再听他刚才那一句。"}],
+   obs:{id:"y1-hedang",label:"何当：意思",skill:"词义"}},
+  {t:"mc",q:"“共剪西窗烛”，两个人一起剪烛芯。这说明什么？",feedbackWho:"lsy",
+   options:[{text:"两个人一直说话，说到很晚，烛芯都烧长了，舍不得睡",ok:true,reply:"是。话说不完，烛芯剪了一回又一回。"},
+    {text:"家里很穷，只有一支蜡烛",ok:false,reply:"我想说的不是蜡烛多少。是两个人坐在一起多久。"},
+    {text:"两个人在比赛谁剪得好",ok:false,reply:"不是比谁剪得好。想想烛芯为什么要剪：点了很久。"}],
+   obs:{id:"y1-jianzhu",label:"共剪西窗烛：说明什么",skill:"体会意味"}},
+  {t:"say",who:"zhou",text:"可是，“何当共剪西窗烛”，这件事现在发生了吗？"},
+  {t:"mc",q:"“何当共剪西窗烛”，写的是什么时候的事？",feedbackWho:"hy",
+   options:[{text:"将来的事，是他心里的想象和盼望",ok:true,reply:"对。此刻他一个人在巴山；西窗剪烛，是他盼着的将来。"},
+    {text:"此刻正在发生",ok:false,reply:"此刻，屋里只有他一个人。“共剪”，要两个人。"},
+    {text:"过去发生过，他在回忆",ok:false,reply:"“何当”，是“什么时候才能”，问的是还没来的日子。"}],
+   obs:{id:"y1-jianglai",label:"西窗剪烛：什么时候",skill:"结构"}}
+ ]},
+ {title:"却话巴山夜雨时",mood:"memory",bg:"img/yy-candle.webp",steps:[
+  {t:"poemHide",upto:3},
+  {t:"say",who:"lsy",text:"到了那一天，我们剪着烛，说些什么呢？"},
+  {t:"say",who:"lsy",text:"我要跟她说说今天晚上：巴山的秋夜，雨下个不停，池子涨满了，我一个人坐在这里想她。"},
+  {t:"write",line:3,who:"lsy"},
+  {t:"mc",q:"“却话巴山夜雨时”：到那一天，他们会再说起什么？",feedbackWho:"lsy",
+   options:[{text:"今天这场巴山夜雨，和他此刻的心情",ok:true,reply:"是。今晚的雨，到那时候，就成了我们一起说起的往事。"},
+    {text:"长安城里的热闹",ok:false,reply:"我说的是“巴山夜雨时”。哪一场雨？"},
+    {text:"以后要去哪里游玩",ok:false,reply:"我说的是“却话”，再说起一件已经过去的事。是哪件？"}],
+   obs:{id:"y1-quehua",label:"却话：说起什么",skill:"体会意味"}},
+  {t:"say",who:"hy",text:"“却话”，就是重提、再说。课本注释：却，还，再。"},
+  {t:"say",who:"hy",text:"这两句，课本注释写得很清楚：什么时候能够相聚在西窗下剪烛长谈，再来回忆诉说今天巴山夜雨的情景呢？"}
+ ]},
+ {title:"问李商隐",mood:"calm",bg:"img/yy-bashan.webp",steps:[
+  {t:"poemHide",upto:4},
+  {t:"say",who:"hy",text:"四句写完了。你可以问李商隐几个问题，至少问一个。他的回答，是根据诗和课本注释想象的。"},
+  {t:"askAuthor",who:"lsy",min:1,q:"想问他什么？点一个问题。",
+   questions:[{q:"“巴山夜雨”，您为什么写了两次？",a:["第一次，是今晚真的雨。我一个人听着，心里愁。","第二次，是将来我们说起的雨。那时候人已团聚，这场雨就成了往事，说起来是暖的。","同样四个字，一个是眼前，一个是将来。"]},
+    {q:"您为什么不直接写“我很想你”？",a:["我写了她问我、我答不出；写了涨满的池水；写了想和她一起剪烛。","想不想她，她读得出来。你也读得出来，对吗？"]},
+    {q:"您到底什么时候能回家？",a:["我也不知道。所以我写“未有期”。","正因为不知道，我才更要想那一天：西窗下，剪着烛，说起今晚。"]}],
+   obs:{id:"y1-ask",label:"问李商隐",skill:"体会意味"}},
+  {t:"say",who:"lsy",text:"天快亮了。这首诗，我寄回北边去。"},
+  {t:"say",who:"hy",text:"题目就叫《夜雨寄北》：在雨夜里写，寄给北边长安的妻子。"}
+ ]},
+ {title:"认一认字词",mood:"focus",bg:"img/yy-bashan.webp",steps:[
+  {t:"poemHide",upto:4},
+  {t:"say",who:"hy",text:"意思懂了，再来认字词。刚才他用大白话说过的，现在对上诗里的字。"},
+  {t:"mc",q:"“君问归期未有期”的“君”，指谁？",
+   options:[{text:"他的妻子",ok:true,reply:"对。课本注释说，这是寄怀妻子王氏的诗。“君”，是对对方的尊称，这里指她。"},
+    {text:"他自己",ok:false,reply:"“君问”，是对方问他。问的人是谁？"},
+    {text:"皇帝",ok:false,reply:"问他哪天回家的，是在长安等他的人。"}],
+   obs:{id:"y1-jun",label:"君：指谁",skill:"词义"}},
+  {t:"mc",q:"“巴山夜雨”的“巴山”，指哪里？",
+   options:[{text:"泛指川东（重庆）一带的山",ok:true,reply:"对。课本注释：此地古代属巴国。"},
+    {text:"一座名叫巴山的山",ok:false,reply:"课本注释说“泛指”：不是一座山，是一带的山。"},
+    {text:"长安附近的山",ok:false,reply:"长安是他的家。他此刻在哪里？"}],
+   obs:{id:"y1-bashan",label:"巴山：指哪里",skill:"词义"}},
+  {t:"mc",q:"题目《夜雨寄北》的“北”，指哪里？",
+   options:[{text:"长安，在巴蜀的北边",ok:true,reply:"对。今天的陕西西安。"},
+    {text:"北方的边疆",ok:false,reply:"诗是寄给家里的。家在哪里？"},
+    {text:"巴山的北坡",ok:false,reply:"“寄北”，是寄到北边去。寄给谁？她在哪里？"}],
+   obs:{id:"y1-bei",label:"北：指哪里",skill:"词义"}},
+  {t:"say",who:"hy",text:"数一数：四句，每句七个字。这样的诗，叫七言绝句。"},
+  {t:"note",n:1,text:"把这些字词抄到课本上。",mark:["君问归期未有期","巴山夜雨涨秋池","何当共剪西窗烛","却话巴山夜雨时"],
+   how:["在课本《夜雨寄北》“涨”字旁边注拼音 zhǎng，“当”字旁边注 dāng。","在诗句旁边的空白处，照抄下面四行。"],
+   what:["君：你，指妻子　涨：水位升高","何当：何时能够","剪烛：剪去烧焦的烛芯，指长谈到深夜","却话：重提，再说（却：还，再）"]}
+ ]},
+ {title:"跟着画面背",mood:"calm",bg:"img/yy-bashan.webp",steps:[
+  {t:"poemHide",upto:4},
+  {t:"say",who:"hy",text:"现在背下来。不靠死记，靠刚才的画面：信、池子、蜡烛、将来的西窗。"},
+  {t:"listenAll",id:"y1listen",q:"先听一遍，跟着在心里念",rate:1,silentMin:20,button:"听完了，开始背",
+   scenes:[{p:0,bg:"img/yy-letter.webp"},{p:1,bg:"img/yy-pool.webp"},{p:2,bg:"img/yy-candle.webp"},{p:3,bg:"img/yy-xichuang.webp"}],beads:[],
+   note:"四句诗，每句配着刚才的画面。",obs:{id:"y1-listen",label:"听读全诗",skill:"朗读"}},
+  {t:"recite",q:"跟着画面背。每一轮，先小声读出来，再点“我背出来了”。",
+   pics:["img/yy-letter.webp","img/yy-pool.webp","img/yy-candle.webp","img/yy-xichuang.webp"],
+   cues:["她问哪天回家","窗外的秋池涨满了","两个人一起剪烛","说起今晚的雨"],obs:{id:"y1-recite",label:"当堂背诵",skill:"背诵"}},
+  {t:"dictate",key:"y1.dict",q:"不看课本，把全诗默写下来（一句一行，标点可以不写）。",obs:{id:"y1-dict",label:"当堂默写",skill:"默写"}}
+ ]},
+ {title:"今天的雨",mood:"calm",bg:"img/yy-bashan.webp",steps:[
+  {t:"poemHide",upto:4},
+  {t:"say",who:"hy",text:"今天，我们回到了那场雨。他答不出归期，听着秋雨涨满池塘，盼着有一天，和她在西窗下说起今晚。"},
+  {t:"say",who:"hy",text:"明天，我们再走进他盼着的那一天。琦君，也会来。"}
+ ]}
+],
+ after:"<b>课后作业</b><br>1. 课后练习：点上面的“第1天练习”，做基础检测（约 8 分钟）。课上做错的题，练习里会让你再做一遍，再做一道相似的新题。<br>2. 背诵录音：把《夜雨寄北》背熟，不看书背一遍录下来交。在这里按“🎙 录朗读”，读完按停止，听一遍再交；用手机录好的，按“选录音文件”。<br>3. 课本拍照交：今天的笔记卡抄在课本《夜雨寄北》这首诗旁边，拍照上传。",
+ rec:true,
+ end:"第1天读完了。作业：做第1天练习；背诵录音；把课本上的笔记拍照交上来。"},
+
+/* ===================== 第 2 天：雨把时间连起来 ===================== */
+{title:"雨把时间连起来",bg:"img/yy-xichuang.webp",short:"连起时间",beats:[
+ {title:"先背一遍",mood:"focus",bg:"img/yy-bashan.webp",steps:[
+  {t:"poemHide",upto:0},
+  {t:"say",who:"hy",text:"先不看课本，把昨天背的诗默写下来。"},
+  {t:"dictate",key:"y2.dict",q:"不看课本，默写全诗（一句一行，标点可以不写）。",obs:{id:"y2-dict",label:"课前默写",skill:"默写"}},
+  {t:"poemHide",upto:4}
+ ]},
+ {title:"他盼着的那一天",mood:"memory",bg:"img/yy-xichuang.webp",steps:[
+  {t:"say",who:"hy",text:"昨天，他在巴山的雨夜里，盼着一个日子。今天，我们走进他想象中的那一天。"},
+  {t:"lines",tap:"🕯 推开长安家里的西窗",items:["长安。家里的西窗下。","一支蜡烛，两个人。","烛芯又烧长了，剪了，又亮了。"]},
+  {t:"say",who:"lsy",text:"（这是我心里想的。）我跟她说起巴山那一夜：雨下个不停，池子都涨满了……"},
+  {t:"say",who:"zhou",text:"巴山那么冷清的雨，到了这里，说起来怎么像在讲一个故事？"},
+  {t:"bins",q:"把下面的样子放到两幅画里：巴山的此刻，还是西窗的将来？",
+   cols:[{id:"b",label:"巴山 · 此刻"},{id:"x",label:"西窗 · 将来"}],
+   items:[{text:"一个人",col:"b"},{text:"两个人",col:"x"},{text:"秋雨下个不停，池水涨满",col:"b"},{text:"剪着烛，说到深夜",col:"x"},{text:"孤单、愁闷",col:"b"},{text:"团聚、温暖",col:"x"}],
+   miss:"再想想：这是在巴山的雨夜里，还是在他盼着的西窗下？",obs:{id:"y2-bins1",label:"两幅画",skill:"体会意味"}},
+  {t:"say",who:"hy",text:"一冷一暖，一孤一聚。越是把将来想得暖，越显出此刻的冷清。"}
+ ]},
+ {title:"三扇时间之门",mood:"focus",bg:"img/yy-bashan.webp",steps:[
+  {t:"say",who:"hy",text:"这首诗只有四句，却走了三个时间。我们一扇门一扇门地走。"},
+  {t:"order",ask:"按诗里写的先后，把三扇门排好。",q:"按诗里写的先后，一扇一扇点。",
+   cards:[{label:"此刻：答不出归期，巴山夜雨",img:"img/yy-pool.webp"},{label:"将来：西窗下一起剪烛",img:"img/yy-xichuang.webp"},{label:"将来回头：说起此刻的巴山夜雨",img:"img/yy-candle.webp"}],
+   miss:"再读一遍诗：先写哪里，再写哪里，最后说起什么？",obs:{id:"y2-doors",label:"三扇时间之门",skill:"结构"}},
+  {t:"mc",q:"“巴山夜雨”在诗里出现了两次。两次有什么不同？",feedbackWho:"hy",
+   options:[{text:"第一次是眼前真实的雨，让人愁；第二次是将来相聚时说起的往事，说起来是暖的",ok:true,reply:"对。同样四个字，一实一虚，一愁一暖。"},
+    {text:"两次都是眼前的雨，写两遍是为了强调雨大",ok:false,reply:"第二次前面是“却话”：那是将来再说起的时候。"},
+    {text:"第一次是想象的，第二次才是真的雨",ok:false,reply:"反了。“巴山夜雨涨秋池”里的雨，正在窗外下。"}],
+   obs:{id:"y2-liangci",label:"两次巴山夜雨",skill:"结构"}},
+  {t:"say",who:"hy",text:"写眼前真实的情景，叫实写；写不在眼前的情景，比如想象中的将来，叫虚写。这首诗虚实结合。"},
+  {t:"say",who:"hy",text:"此刻巴山 → 将来西窗 → 又说回巴山夜雨。时间、地点来回穿梭，这叫时空交错。"},
+  {t:"mc",q:"他为什么要在雨夜里，想象将来西窗剪烛的样子？",feedbackWho:"lsy",
+   options:[{text:"此刻孤单想念，盼着早日和她团聚",ok:true,reply:"是。想得越暖，越是因为此刻太冷清。"},
+    {text:"他已经知道马上就能回家了",ok:false,reply:"我开头就写了：“未有期”。"},
+    {text:"他喜欢剪蜡烛",ok:false,reply:"剪烛，是因为两个人说话说到深夜。我盼的是那个人。"}],
+   obs:{id:"y2-pan",label:"为什么想象将来",skill:"体会感情"}},
+  {t:"note",n:2,text:"把三扇门画到课本上。",mark:["巴山夜雨涨秋池","却话巴山夜雨时"],
+   how:["在课本诗句下面的空白处，照抄第一行（连同两个箭头）。","在两个“巴山夜雨”下面各画一条线，旁边写第二行。","在诗的旁边写第三、第四行。"],
+   what:["此刻·巴山（实）→ 将来·西窗（虚）→ 将来说起此刻（虚）","两次“巴山夜雨”：一实一虚，一愁一暖","写法：借景抒情，虚实结合，时空交错","情感：异乡孤寂，思念妻子，盼望团聚"]}
+ ]},
+ {title:"琦君来了",mood:"memory",bg:"img/yy-door.webp",steps:[
+  {t:"say",who:"hy",text:"一千多年以后，另一个人，也在雨里想着亲人。她是琦君。"},
+  {t:"say",who:"hy",text:"下面，琦君说的话，全是她文章里的原话。"},
+  {t:"say",who:"qj",text:"雨给我一份靠近母亲的感觉。"},
+  {t:"say",who:"qj",text:"二十年了，那笛声低沉而遥远，然而我，仍然依稀听见，在雨中……"},
+  {t:"say",who:"lsy",text:"（想象）我在巴山盼着：有一天，把今晚的雨当作往事，和她说起。"},
+  {t:"mc",q:"琦君的雨，把她带到哪里？李商隐的雨，把他的心带到哪里？",feedbackWho:"hy",
+   options:[{text:"琦君回到过去的日子；李商隐想到将来的团聚",ok:true,reply:"对。一个往回走，一个往前盼。"},
+    {text:"两个人都回到了过去",ok:false,reply:"李商隐写的是“何当”：什么时候才能。那是过去，还是将来？"},
+    {text:"两个人都想到了将来",ok:false,reply:"琦君写的是童年、母亲、父亲，二十年前的笛声。那是过去，还是将来？"}],
+   obs:{id:"y2-duidu",label:"对读：往回走，往前盼",skill:"比较阅读"}},
+  {t:"bins",q:"下面每一条，是两个人都有，还是只属于一个人？",
+   cols:[{id:"both",label:"两个人都有"},{id:"qj",label:"只有琦君"},{id:"lsy",label:"只有李商隐"}],
+   items:[{text:"写到下雨",col:"both"},{text:"想念亲人",col:"both"},{text:"让雨把不同的时间连起来",col:"both"},
+    {text:"写童年，写母亲和父亲",col:"qj"},{text:"那些人和日子都远了，只能依稀听见",col:"qj"},
+    {text:"盼着和妻子团聚，在西窗下长谈",col:"lsy"},{text:"一共二十八个字",col:"lsy"}],
+   miss:"再想想这一条：琦君的文章里有吗？李商隐的诗里有吗？",obs:{id:"y2-bins2",label:"对读分类",skill:"比较阅读"}},
+  {t:"say",who:"hy",text:"李商隐盼着：今晚的苦雨，将来会变成相聚时说起的往事。"},
+  {t:"say",who:"hy",text:"琦君写的许多雨天，正是这样的往事。当年的雨，后来想起来是暖的。她说：“啊，真好，又是个下雨天。”"},
+  {t:"say",who:"hy",text:"一个盼着把今天变成往事，一个在往事里找回亲人。雨，把不同的时间连在了一起。"},
+  {t:"note",n:3,text:"把两个人的雨，对照着抄下来。",mark:[],
+   how:["在课本《夜雨寄北》旁边空白处，照抄下面三行。"],
+   what:["琦君：现在 → 回到过去，回忆童年和亲人","李商隐：现在 → 想到将来，盼望团聚","相同：雨中思念亲人，雨把不同的时间连起来"]}
+ ]},
+ {title:"读出来，背出来",mood:"calm",bg:"img/yy-bashan.webp",steps:[
+  {t:"mc",q:"读“君问归期未有期，巴山夜雨涨秋池”，用什么语气最合适？",feedbackWho:"hy",
+   options:[{text:"低一些、慢一些，读出答不上来的无奈和雨夜的冷清",ok:true,reply:"对。“未有期”可以读得慢一点，停一停。"},
+    {text:"又快又响，读出兴奋",ok:false,reply:"答不出归期，一个人听着秋雨。会兴奋吗？"},
+    {text:"一字一顿，像在念生字",ok:false,reply:"这是一封写给亲人的信。读出心里的话。"}],
+   obs:{id:"y2-du1",label:"前两句怎么读",skill:"朗读"}},
+  {t:"mc",q:"读“何当共剪西窗烛，却话巴山夜雨时”，语气有什么变化？",feedbackWho:"hy",
+   options:[{text:"带着盼望，稍微亮一些、暖一些",ok:true,reply:"对。想到团聚的那一天，声音会不自觉地暖起来。"},
+    {text:"更低沉，像在哭",ok:false,reply:"这两句写的是盼着相聚长谈。声音该更冷，还是更暖？"},
+    {text:"和前两句完全一样",ok:false,reply:"前两句是此刻，后两句是盼望的将来。心情一样吗？"}],
+   obs:{id:"y2-du2",label:"后两句怎么读",skill:"朗读"}},
+  {t:"recite",q:"最后一次，跟着画面背。",
+   pics:["img/yy-letter.webp","img/yy-pool.webp","img/yy-candle.webp","img/yy-xichuang.webp"],
+   cues:["她问哪天回家","窗外的秋池涨满了","两个人一起剪烛","说起今晚的雨"],obs:{id:"y2-recite",label:"背诵过关",skill:"背诵"}}
+ ]},
+ {title:"留给你的问题",mood:"calm",bg:"img/yy-door.webp",steps:[
+  {t:"say",who:"hy",text:"最后，留一个问题，只给你自己。不用写，不用交。"},
+  {t:"lines",items:["你有没有一个，想回去的日子？","或者，一个盼着的日子？","那一天，下雨吗？"]},
+  {t:"say",who:"hy",text:"一千多年前的人，和一千多年后的我们，在雨里想的，原来是一样的。"}
+ ]}
+],
+ after:"<b>课后作业</b><br>1. 课后练习：点上面的“第2天练习”，做基础检测（约 8 分钟）。<br>2. 默写：不看书，在本子上默写《夜雨寄北》，写完再对照课本自己改，拍照上传。<br>3. 课本拍照交：今天的两张笔记卡抄在课本《夜雨寄北》这首诗旁边，拍照上传。",
+ end:"《夜雨寄北》读完了。作业：做第2天练习；默写拍照；把课本上的笔记拍照交上来。"}
+],
+notebook:{
+ button:"我的笔记本",
+ title:"{name|我}的雨夜笔记本",
+ note:"这里收着两天的三张笔记卡。每一张都要抄到课本上。",
+ pages:[]
+}
+};
+(function(L){var NC=["","①","②","③","④","⑤"];L.days.forEach(function(d,di){d.beats.forEach(function(b){b.steps.forEach(function(st){if(st.t!=="note")return;
+  L.notebook.pages.push({n:di+1,title:"笔记卡"+NC[st.n],get:function(D){return D.nc&&D.nc[st.n]?("怎么抄：\n"+st.how.join("\n")+"\n\n抄什么：\n"+st.what.join("\n")):"";}});});});});})(window.LESSON);
