@@ -53,10 +53,11 @@ function handle(q) {
   const a = q.action;
   const lesson = String(q.lesson || '').slice(0, 60);
   if (!lesson) fail('bad');
-  if (a === 't_all' || a === 't_hide' || a === 't_hwflag' || a === 't_roster') {
+  if (a === 't_all' || a === 't_hide' || a === 't_hwflag' || a === 't_roster' || a === 't_avclear') {
     if (String(q.pw || '') !== TEACHER_PASSWORD) fail('pw');
     if (a === 't_roster') return teacherRoster();
     if (a === 't_hwflag') return teacherHwFlag(lesson, q);
+    if (a === 't_avclear') return teacherAvClear(lesson, q.sid);
     return a === 't_all' ? teacherAll(lesson) : teacherHide(lesson, q.sid);
   }
   const cls = String(q.cls || '').replace(/\s+/g, '').toUpperCase();
@@ -216,7 +217,7 @@ function board(me) {
     let p = null;
     try { p = JSON.parse(an[i].slice(9, 14).join('')); } catch (e) {}
     seen[String(name)] = 1;
-    rows.push({ name: name, me: sid === me.sid, passes: (p && p.passes) || [] });
+    rows.push({ name: name, me: sid === me.sid, passes: (p && p.passes) || [], av: (p && p.av) || null });
   }
   const r = sheet('名单');
   if (r.getLastRow() > 1) r.getRange(2, 1, r.getLastRow() - 1, 2).getDisplayValues().forEach(x => {
@@ -224,6 +225,20 @@ function board(me) {
     if (c === me.cls && n && !seen[n]) { seen[n] = 1; rows.push({ name: n, me: false, passes: [] }); }
   });
   return { ok: true, rows: rows };
+}
+
+/* 课外阅读（11-19 加）：老师清除某个学生不合适的头像（进度数据里的 av），记下清除时间，学生那边下次打开时也会清掉 */
+function teacherAvClear(lesson, sid) {
+  const sh = sheet('作答');
+  const r = findRow(sh, String(sid || '') + '|' + lesson);
+  if (!r) fail('bad');
+  let p = {};
+  try { p = JSON.parse(sh.getRange(r, 10, 1, 5).getValues()[0].join('')) || {}; } catch (e) {}
+  p.av = null; p.avOff = Date.now();
+  const json = JSON.stringify(p), cells = [];
+  for (let i = 0; i < 5; i++) cells.push(json.slice(i * CHUNK, (i + 1) * CHUNK));
+  sh.getRange(r, 10, 1, 5).setValues([cells]);
+  return { ok: true };
 }
 
 function reply(me, q) {
