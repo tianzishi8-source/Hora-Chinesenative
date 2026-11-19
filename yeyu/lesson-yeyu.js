@@ -141,6 +141,9 @@ practice:{
   "y2-du2":{t:"mc",q:"朗读“何当共剪西窗烛，却话巴山夜雨时”，声音为什么可以暖一些？",options:[{text:"写的是盼望中的团聚",ok:true,reply:"对。"},{text:"因为雨停了",ok:false,reply:"诗里没写雨停。暖，是因为想到了团聚。"},{text:"因为已经回到了家",ok:false,reply:"还没回去。那是他盼着的将来。"}],obs:{id:"yv-du2",label:"相似题：朗读后两句",skill:"朗读"}}
  }
 },
+/* 11-20 本课外观：雨夜 · 信笺。深蓝的雨夜界面，烛光色按钮，诗句竖排在信笺上；走进想象中的西窗时整个界面转暖。 */
+theme:{name:"yeyu",css:"theme-yeyu.css?v=11201210",def:"night",byBg:{"img/yy-xichuang.webp":"warm"},
+ intro:{bg:"img/yy-bashan.webp?v=2",title:"夜雨寄北",author:"唐 · 李商隐",lines:["一千多年前，一个秋天的夜里。","巴山的雨，已经下了好些天。","有一封信，还没有回。"],btn:"走进那场雨 ▸"}},
 bg:"img/yy-bashan.webp?v=2",
 totalDays:2,
 days:[
