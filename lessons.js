@@ -26,7 +26,7 @@ window.HORA_LESSONS = [
   { id: "yuedu-g8", folder: "yuedu", grade: 8, title: "课外阅读", author: "老人与海",
     blurb: "读你自己的纸书或 Kindle。每读完一段，回来做一个小测验（随机 5 题，对 4 题算过），再写 60—100 字复述。全班进度一起看：阅读王、阅读新星。",
     open: 7, total: 7, unit: "段",
-    pic: "img/cover-indigo.webp", picAlt: "书的封面" },
+    pic: "yuedu/img/card.webp", picAlt: "示意画：清晨的海上，一位老渔夫坐在小帆船上，船边的水下有一条大鱼的影子" },
   { id: "g8-xiayutian", folder: "xiayu", grade: 8, title: "下雨天，真好", author: "琦君",
     blurb: "跟着琦君，一颗一颗数她记得的下雨天：母亲的被窝、院子里的小木船、鼓儿词的雨夜、父亲的听雨楼。边读边记“雨珠表”。",
     open: 2, total: 3,
