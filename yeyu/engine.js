@@ -260,7 +260,7 @@ function layoutFigs(){if(!FIGS)return;var work=$(".work"),cast=$("#cast"),task=$
   var free=cr.top-bottom-14,wide=innerWidth>860&&wr.width>=380,mode;
   /* 内容已经要往下滑才看得完：不放大图，只用头像圈，免得挡字 */
   if(work.scrollHeight>work.clientHeight+4)free=0;
-  if(!wide||free<280)mode="circle";else if(free<320&&FIGMODE==="circle")mode="circle";else mode=free>=470?"full":"half";
+  if(!wide||free<280||(L.theme&&L.theme.figs==="circle"))mode="circle";else if(free<320&&FIGMODE==="circle")mode="circle";else mode=free>=470?"full":"half";
   var h=Math.min(free,mode==="full"?600:420);
   /* 并排的几个人加起来不能比右栏宽，不然会伸到左边原文上 */
   var nf=0;for(var wk in SPR)nf++;nf=Math.max(1,nf);

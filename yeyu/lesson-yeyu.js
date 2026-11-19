@@ -57,9 +57,9 @@ visuals:{
 sound:{mood:"calm",vol:.4,
  notes:[392,440,493.88,587.33,659.25,783.99,880,987.77],
  moods:{calm:{music:.7,tick:0},memory:{music:.5,tick:0},focus:{music:0,tick:.3},bright:{music:1,tick:0}},
- amb:{dir:"amb/",v:1,vol:.85,duck:.4,def:"study",byBg:{
-  "img/yy-door.webp?v=2":"window","img/yy-bashan.webp?v=2":"study","img/yy-letter.webp?v=2":"study","img/yy-pool.webp?v=2":"lake",
-  "img/yy-candle.webp?v=2":"study","img/yy-xichuang.webp?v=2":"bed"}}},
+ amb:{dir:"amb/",v:2,vol:.85,duck:.4,def:"yy-night",byBg:{
+  "img/yy-door.webp?v=2":"yy-door","img/yy-bashan.webp?v=2":"yy-night","img/yy-letter.webp?v=2":"yy-night","img/yy-pool.webp?v=2":"yy-pool",
+  "img/yy-candle.webp?v=2":"yy-night","img/yy-xichuang.webp?v=2":"yy-warm"}}},
 rainfx:{byBg:{
   "img/yy-door.webp?v=2":{rain:80,angle:4,speed:820,len:20,drops:50,alpha:.42},
   "img/yy-bashan.webp?v=2":{rain:110,angle:8,speed:900,len:24,alpha:.36},
@@ -142,7 +142,7 @@ practice:{
  }
 },
 /* 11-20 本课外观：雨夜 · 信笺。深蓝的雨夜界面，烛光色按钮，诗句竖排在信笺上；走进想象中的西窗时整个界面转暖。 */
-theme:{name:"yeyu",css:"theme-yeyu.css?v=11201210",def:"night",byBg:{"img/yy-xichuang.webp":"warm"},
+theme:{name:"yeyu",css:"theme-yeyu.css?v=11201310",figs:"circle",def:"night",byBg:{"img/yy-xichuang.webp":"warm"},
  intro:{bg:"img/yy-bashan.webp?v=2",title:"夜雨寄北",author:"唐 · 李商隐",lines:["一千多年前，一个秋天的夜里。","巴山的雨，已经下了好些天。","有一封信，还没有回。"],btn:"走进那场雨 ▸"}},
 bg:"img/yy-bashan.webp?v=2",
 totalDays:2,
