@@ -713,3 +713,105 @@ body.cover-text #rbody{filter:blur(9px);pointer-events:none;user-select:none}
 body.cover-text #reader::after{content:"听写中，原文先盖住";position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:#fff1c4;border:2px solid #d9a530;color:#5a4214;padding:.6em 1.1em;border-radius:10px;font-weight:600;z-index:5}
 .tgrid th.thx{background:#fff3d6}
 .dpad.dtab{border:1.5px dashed var(--muted);grid-template-columns:auto}.dpad.dtab small{text-align:center}.dpad.dtab b{font-family:inherit;font-size:1rem;letter-spacing:2px}
+
+/* ===== 11-19 改版：新互动的样子（水彩纸＋水珠） ===== */
+@keyframes xshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.shake{animation:xshake .45s ease}
+/* 雨珠：透亮的水珠，点亮时里面映出那一幕的小画 */
+.xbeads{display:flex;flex-wrap:wrap;gap:10px 8px;align-items:flex-start;padding:14px 10px 6px;position:relative}
+.xbeads::before{content:"";position:absolute;left:8px;right:8px;top:34px;height:1px;background:linear-gradient(90deg,transparent,rgba(120,140,155,.55) 6%,rgba(120,140,155,.55) 94%,transparent)}
+.xbead{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;width:56px}
+.xbead i{position:relative;width:40px;height:40px;border-radius:50% 50% 50% 50%/56% 56% 44% 44%;background:center/cover no-repeat,rgba(220,232,240,.6);filter:grayscale(1) opacity(.28);box-shadow:inset 0 -4px 8px rgba(40,60,80,.25),0 3px 6px -2px rgba(40,60,80,.35);transition:filter .9s,transform .6s}
+.xbead i::after{content:"";position:absolute;left:22%;top:14%;width:28%;height:22%;border-radius:50%;background:rgba(255,255,255,.85);filter:blur(.5px)}
+.xbead.on i{filter:none;transform:scale(1.08);box-shadow:inset 0 -5px 9px rgba(30,50,70,.3),0 0 0 2px rgba(255,255,255,.7),0 6px 14px -4px rgba(53,96,124,.55)}
+.xbead small{font-size:.72rem;color:var(--muted);line-height:1.2;text-align:center}
+.xbead.on small{color:var(--ink)}
+.xbeads.big .xbead{width:70px}.xbeads.big .xbead i{width:52px;height:52px}
+.xspd{display:flex;align-items:center;gap:4px}.xspd small{color:var(--muted);margin-right:2px}
+.xspd .ghost{padding:2px 10px;font-size:.85rem}.xspd .ghost.on,.ghost.on{background:var(--cool);color:#fff;border-color:var(--cool)}
+/* 串雨珠 */
+.xthread{display:flex;gap:6px;justify-content:space-between;position:relative;padding:12px 4px 4px}
+.xthread::before{content:"";position:absolute;left:4%;right:4%;top:40px;height:1.5px;background:linear-gradient(90deg,rgba(150,170,185,.2),rgba(120,140,155,.7),rgba(150,170,185,.2))}
+.xslot{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.xslot i{position:relative;width:56px;height:56px;border-radius:50% 50% 50% 50%/56% 56% 44% 44%;border:2px dashed rgba(120,140,155,.6);background:center/cover no-repeat rgba(255,255,255,.45);transition:all .5s}
+.xslot.on i{border:0;box-shadow:inset 0 -6px 10px rgba(30,50,70,.3),0 0 0 2px rgba(255,255,255,.75),0 8px 16px -6px rgba(53,96,124,.6);animation:xdrop .5s ease}
+.xslot.on i::after{content:"";position:absolute;left:22%;top:14%;width:28%;height:22%;border-radius:50%;background:rgba(255,255,255,.85)}
+.xslot small{font-size:.75rem;color:var(--muted);text-align:center;line-height:1.25}
+.xslot.on small{color:var(--ink)}
+@keyframes xdrop{0%{transform:translateY(-14px) scale(.7);opacity:.3}70%{transform:translateY(2px) scale(1.04)}100%{transform:none;opacity:1}}
+.xpool{display:flex;flex-wrap:wrap;gap:10px}
+.xcard{display:flex;flex-direction:column;width:118px;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--tex-page);box-shadow:0 6px 14px -10px rgba(40,30,20,.5);cursor:pointer;transition:transform .2s,opacity .4s}
+.xcard:hover{transform:translateY(-2px)}.xcard i{height:66px;background:center/cover no-repeat}.xcard span{padding:6px 8px;font-size:.85rem;line-height:1.35;text-align:left}
+.xcard.gone{opacity:0;transform:scale(.6);pointer-events:none;width:0;margin:0 -5px;border:0;transition:all .4s}
+/* 选签 */
+.xtags{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.xtcard{border-radius:12px;background:var(--tex-page);border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column;gap:8px;padding-bottom:10px}
+.xtimg{height:92px;background:center/cover no-repeat;position:relative}.xtimg b{position:absolute;left:8px;bottom:6px;background:rgba(251,247,238,.9);padding:1px 10px;border-radius:999px;font-weight:500;font-size:.9rem}
+.xchips{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px}
+.xchip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:3px 12px;font-size:.88rem;cursor:pointer;transition:all .2s}
+.xchip.sel{background:var(--cool-soft);border-color:var(--cool);color:var(--cool)}
+.xchip.ok{background:var(--cool);color:#fff;border-color:var(--cool)}
+.xchip.also{border-style:dashed;border-color:var(--cool);color:var(--cool)}
+.xchip.soft{background:var(--warm-soft);border-color:var(--warm);color:var(--warm)}
+.xchip.no{opacity:.45;text-decoration:line-through}
+.xtcard>.ghost{align-self:flex-start;margin:0 10px}
+.xev{padding:0 12px;font-family:var(--f-text);font-size:.92rem;line-height:1.7;border-left:3px solid var(--cool-soft);margin:0 10px}
+.xev p{margin:.2em 0}.xev .xsoft{font-family:var(--f-ui);color:var(--warm);font-size:.85rem}
+/* 情感曲线 */
+.xcurve{position:relative;height:300px;border-radius:14px;background:linear-gradient(180deg,rgba(255,236,200,.55),rgba(255,255,255,.2) 45%,rgba(190,205,220,.5)),var(--tex-page);border:1px solid var(--line);margin:4px 0 28px;touch-action:none}
+.xcurve svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.xcurve polyline{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.xcurve .mine{stroke:rgba(53,96,124,.75);stroke-width:2}
+.xcurve .ref{stroke:var(--accent);stroke-width:2.5;stroke-dasharray:7 6;opacity:0;transition:opacity 1.2s}
+.xcurve.showref .ref{opacity:.85}
+.xc-top,.xc-bot{position:absolute;left:10px;font-size:.8rem;color:var(--muted);letter-spacing:.2em}.xc-top{top:6px}.xc-bot{bottom:6px}
+.xcb{position:absolute;width:42px;height:42px;margin:-21px 0 0 -21px;padding:0;border:0;background:none;cursor:grab;z-index:2}
+.xcb i{display:block;width:100%;height:100%;border-radius:50% 50% 50% 50%/56% 56% 44% 44%;background:center/cover no-repeat,rgba(220,232,240,.9);box-shadow:inset 0 -5px 9px rgba(30,50,70,.3),0 0 0 2px rgba(255,255,255,.8),0 6px 12px -4px rgba(53,96,124,.6)}
+.xcb.drag{cursor:grabbing;transform:scale(1.15)}.xcb:focus-visible i{outline:3px solid var(--accent);outline-offset:2px}
+.xcl{position:absolute;bottom:-24px;transform:translateX(-50%);font-size:.75rem;color:var(--muted);white-space:nowrap}
+.xcw{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.xcwi{background:var(--tex-page);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:6px 10px;font-size:.88rem;line-height:1.55}
+.xcwi b{display:block;font-weight:500;color:var(--accent)}.xcwi span{font-family:var(--f-text)}
+/* 两双眼睛 */
+.xsides{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.xside{min-height:90px;border-radius:12px;padding:8px 12px;background:linear-gradient(160deg,rgba(255,240,205,.7),rgba(255,255,255,.3)),var(--tex-page);border:1px solid var(--line)}
+.xside.r{background:linear-gradient(160deg,rgba(200,215,228,.7),rgba(255,255,255,.3)),var(--tex-page)}
+.xside h4{margin:0 0 4px;font-family:var(--f-disp);font-weight:400;font-size:1.15rem;letter-spacing:.1em}
+.xside p{margin:.25em 0;font-family:var(--f-text);font-size:.92rem;line-height:1.6;animation:xdrop .4s ease}
+.xspool{display:flex;flex-direction:column;gap:6px}
+.xsit{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;background:var(--tex-page);border:1px solid var(--line);border-radius:10px;padding:6px 8px}
+.xsit span{font-family:var(--f-text);font-size:.95rem;line-height:1.55;text-align:center}.xsit .ghost{font-size:.8rem;padding:2px 8px;white-space:nowrap}
+/* 声音地图 */
+.xstray{display:flex;flex-wrap:wrap;gap:8px}.xstray .xchip{font-family:var(--f-text);font-size:1rem;padding:4px 14px}
+.xsmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.xst{position:relative;height:110px;border-radius:12px;border:1px solid var(--line);background:center/cover no-repeat;overflow:hidden;cursor:pointer;padding:0;text-align:left}
+.xst::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(20,20,20,.45))}
+.xst b{position:absolute;left:8px;bottom:6px;color:#fff;font-weight:500;font-size:.9rem;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.xsg{position:absolute;right:6px;top:6px;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.xsg i{font-style:normal;background:rgba(251,247,238,.95);color:var(--cool);border-radius:999px;padding:1px 10px;font-family:var(--f-text);animation:xdrop .5s ease}
+.xst.got{box-shadow:0 0 0 2px var(--cool)}
+/* 越来越轻 */
+.xfade{display:flex;align-items:center;gap:0;margin:14px 0 6px}
+.xfs{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}
+.xfs::before{content:"";display:block;width:100%;height:var(--w);min-height:1px;border-radius:999px;background:rgba(120,130,140,.25);transition:background .8s}
+.xfs.on::before{background:linear-gradient(90deg,rgba(148,112,31,.85),rgba(148,112,31,.55))}
+.xfs span{font-family:var(--f-text);color:var(--muted);font-size:.95rem}.xfs.on span{color:var(--ink)}
+/* 拼答案 */
+.xasm{display:flex;flex-direction:column;gap:14px}
+.xarow p{margin:0 0 6px;font-family:var(--f-text);font-size:1.08rem;line-height:1.8}
+.xblank{color:var(--muted);padding:0 4px}.xblank.on{color:var(--cool);border-bottom:2px solid var(--cool);animation:xdrop .5s ease}
+/* 一件一件亮出原文 */
+.xlines{display:flex;flex-direction:column;gap:6px}
+.xli{margin:0;font-family:var(--f-text);font-size:1rem;line-height:1.7;padding:4px 12px;border-left:3px solid var(--warm);background:rgba(243,232,205,.45);border-radius:0 8px 8px 0;animation:xdrop .5s ease}
+/* 笔记卡：宣纸便笺 */
+.xnote{position:relative;border-radius:6px;padding:16px 20px 18px;background:linear-gradient(rgba(255,252,243,.82),rgba(255,252,243,.82)),url(img/paper.webp) 0 0/400px;box-shadow:0 1px 0 rgba(0,0,0,.05),0 18px 32px -20px rgba(60,40,20,.6);border-top:4px solid var(--accent);animation:xdrop .5s ease}
+.xnh{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.xnh b{font-family:var(--f-disp);font-weight:400;font-size:1.35rem;letter-spacing:.12em}
+.seal{display:inline-block;border:2px solid var(--accent);color:var(--accent);border-radius:4px;padding:1px 6px;font-size:.8rem;letter-spacing:.15em;transform:rotate(-6deg);font-family:var(--f-disp)}
+.xnote h5{margin:10px 0 4px;font-size:.82rem;color:var(--muted);letter-spacing:.2em;font-weight:500}
+.xnote ol{margin:0;padding-left:1.3em;font-size:.95rem;line-height:1.7}
+.xnw{border:1px dashed rgba(184,52,42,.35);border-radius:8px;padding:8px 14px;background:rgba(255,255,255,.55)}
+.xnw p{margin:.2em 0;font-family:var(--f-text);font-size:1.12rem;line-height:1.75;color:#2a2018}
+#bCont:disabled{opacity:.6;cursor:not-allowed}
+@media (prefers-reduced-motion:reduce){.xslot.on i,.xside p,.xsg i,.xblank.on,.xli,.xnote{animation:none}.shake{animation:none}}
+.todocard span{white-space:pre-line}

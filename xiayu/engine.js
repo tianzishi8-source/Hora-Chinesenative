@@ -313,7 +313,7 @@ var SOUND=(function(){var cfg=L.sound||{},ctx=null,master,rev,on=false,mood=cfg.
   /* 背景音（雨声等）：lesson.sound.amb = {dir, v, vol, duck, def, byBg:{背景图:名称}}；每个环节按背景图自动换，环节里写 amb 可以单独指定（写 "" 就是不要）。
      循环：同一段录音前后叠放，等功率交叉淡入淡出，不依赖 mp3 首尾是否无缝；配音时压低。 */
   var AC=cfg.amb||null,ambName="",ambG=null,AV=(AC&&AC.vol)||.8,AD=(AC&&AC.duck)||.4,ABUF={},ALOAD={},aGen=0,aVoices=[],aT=null,CIN=null,COUT=null;
-  function aLvl(){return ducked?AV*AD:AV;}
+  var AS=1;function aLvl(){return (ducked?AV*AD:AV)*AS;}
   function aCurves(){if(CIN)return;CIN=new Float32Array(64);COUT=new Float32Array(64);for(var i=0;i<64;i++){var x=i/63*Math.PI/2;CIN[i]=Math.sin(x);COUT[i]=Math.cos(x);}}
   function aLoad(n,cb){if(ABUF[n]){cb(ABUF[n]);return;}if(ALOAD[n]){ALOAD[n].push(cb);return;}ALOAD[n]=[cb];var done=function(b){var l=ALOAD[n]||[];ALOAD[n]=null;if(b){ABUF[n]=b;l.forEach(function(f){f(b);});}};
     fetch((AC.dir||"amb/")+n+".mp3"+(AC.v?"?v="+AC.v:"")).then(function(r){if(!r.ok)throw new Error(r.status);return r.arrayBuffer();}).then(function(ab){var pr=ctx.decodeAudioData(ab,function(b){done(b);},function(){done(null);});if(pr&&pr.catch)pr.catch(function(){});}).catch(function(){done(null);});}
@@ -330,6 +330,7 @@ var SOUND=(function(){var cfg=L.sound||{},ctx=null,master,rev,on=false,mood=cfg.
   if(btnS){btnS.addEventListener("click",function(){setOn(!on);});btnS.setAttribute("aria-pressed",String(!!PREF.snd));}
   if(PREF.snd){var once=function(){removeEventListener("pointerdown",once,true);removeEventListener("keydown",once,true);if(!on)setOn(true);};addEventListener("pointerdown",once,true);addEventListener("keydown",once,true);}
   return{duck:function(v){ducked=!!v;if(on&&ctx){master.gain.setTargetAtTime(lvl(),ctx.currentTime,v?.08:.6);ambG.gain.setTargetAtTime(aLvl(),ctx.currentTime,v?.25:.9);}},
+    isOn:function(){return on;},ambScale:function(v){AS=v==null?1:v;if(on&&ctx&&ambG)ambG.gain.setTargetAtTime(aLvl(),ctx.currentTime,.5);},
     amb:function(n){n=n||"";if(n===ambName)return;ambName=n;if(on&&ctx)aStart();},
     ambFor:function(bg){return (AC&&AC.byBg&&AC.byBg[bg])||(AC&&AC.def)||"";},
     mood:function(m){if(!m)return;mood=m;applyMood();},
@@ -417,7 +418,7 @@ function clearTask(){task.innerHTML="";task.classList.remove("plain","ask");}
 function btn(label){return el("button",{class:"btn",type:"button",text:label});}
 var contKey=null;
 function next(label,tok,keep){return new Promise(function(res,rej){task.classList.remove("ask");bCont.hidden=false;bCont.textContent=(label||"继续")+" ▸";bCont.focus({preventScroll:true});
-  function go(){if(tok!==RUN.token)return rej(CANCEL);SOUND.sfx("page");VOICE.stop();bCont.hidden=true;bCont.onclick=null;removeEventListener("keydown",contKey);contKey=null;if(!keep)clearTask();res();}
+  function go(){if(tok!==RUN.token)return rej(CANCEL);if(bCont.disabled)return;SOUND.sfx("page");VOICE.stop();bCont.hidden=true;bCont.onclick=null;removeEventListener("keydown",contKey);contKey=null;if(!keep)clearTask();res();}
   if(contKey)removeEventListener("keydown",contKey);
   contKey=function(e){if((e.key==="Enter"||e.key===" ")&&!/TEXTAREA|INPUT|SELECT|BUTTON/.test(document.activeElement.tagName)){e.preventDefault();go();}};
   bCont.onclick=go;addEventListener("keydown",contKey);});}
@@ -851,7 +852,116 @@ H.frame=function(s,tok){return new Promise(function(res,rej){clearTask();var VB=
     var whole=s.join==="plain"?s.parts.map(function(pt,i){return v["p"+i].trim();}).join(""):s.parts.map(function(pt,i){var t=v["p"+i].replace(/[，,。.！!？?；;]+$/,"");return fill(pt.label).replace(/[:：]\s*$/,"：")+t;}).join("。")+"。";v.text=whole;set(s.key,v);logStep(s.obs,{try:1,answer:whole});commit();res(v);});})
   .then(function(v){logMe(v.text);var rs=s.replies||[];for(var i=0;i<rs.length;i++){var r=rs[i];if(!r.re||new RegExp(r.re).test(v["p"+(r.field||0)]))return line(fill(r.text),r.who||s.who,tok);}});};
 
-function runSteps(steps,tok){return steps.reduce(function(p,s,i){return p.then(function(){if(tok!==RUN.token)throw CANCEL;if(s.when){var wv=get(s.when.key);if(s.when.is!=null?wv!==s.when.is:!wv)return;}var h=H[s.t];locStep(s);if(!h)throw new Error("未知步骤类型："+s.t);NEXT=steps[i+1]?steps[i+1].t:"end";return h(s,tok);});},Promise.resolve());}
+/* ================= 11-19 改版：《下雨天，真好》的新互动 =================
+   listenAll 整篇听读（背景画、雨声随段落换，顶上的雨珠逐颗点亮；可调速、可改默读）
+   order 串雨珠（按顺序点卡片）  tags 选签看原文  curve 情感曲线  sides 两双眼睛（句子分两边）
+   soundMap 声音地图  fade 越来越轻的声线  assemble 拼答案  note 笔记卡（写明誊抄方式和内容，锁几秒）
+   lines 一件一件亮出原文  beads 雨珠手链（纯画面） */
+function xyLay(){setTimeout(function(){try{layoutFigs();}catch(e){}},40);}
+function xyShake(b){b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");}
+function xyShuffle(a){var o=a.slice();for(var z=o.length-1;z>0;z--){var r=Math.floor(Math.random()*(z+1)),t=o[z];o[z]=o[r];o[r]=t;}return o;}
+function xyBead(b,on){var e=el("span",{class:"xbead"+(on?" on":""),title:b.label||""},[el("i",{style:b.img?'background-image:url("'+b.img+'")':""}),b.label?el("small",{text:b.label}):null]);return e;}
+H.beads=function(s){var bar=el("div",{class:"xbeads lit"+(s.big?" big":"")});(s.beads||L.beads||[]).forEach(function(b){bar.append(xyBead(b,true));});task.append(bar);return Promise.resolve();};
+H.listenAll=function(s,tok){var n=L.narration,done=!!get("read."+s.id);var beads=s.beads||L.beads||[],scenes=s.scenes||[];
+  return new Promise(function(res,rej){clearTask();if(isNarrow())openReader();rbody.scrollTop=0;
+    var bar=el("div",{class:"xbeads"});var bs=beads.map(function(b){var e=xyBead(b,false);bar.append(e);return e;});
+    var play=btn("▶ 开始听"),silent=el("button",{class:"ghost",type:"button",text:"我想自己默读"});
+    var spd=el("div",{class:"xspd"},[el("small",{text:"语速"})]);[1,1.2,1.4].forEach(function(r){var b=el("button",{type:"button",class:"ghost"+(r===(s.rate||1.2)?" on":""),text:r+"×"});b.addEventListener("click",function(){rate=r;$$("button",spd).forEach(function(x){x.classList.toggle("on",x===b);});if(a)a.playbackRate=r;});spd.append(b);});
+    var info=el("p",{class:"note",text:fill(s.note||"左边原文会跟着声音亮起来。只听、只看，不用答题。")});
+    var go=btn(fill(s.button||"听完了，往下"));
+    task.append(q(s.q||"把全文从头听到尾"),bar,el("div",{class:"row"},[play,spd,silent]),info,el("div",{class:"row"},[go]));xyLay();
+    var i=0,a=null,playing=false,rate=s.rate||1.2,mode="listen",sec=0,ended=false;
+    function sceneFor(pi){var sc=null;scenes.forEach(function(x){if(x.p<=pi)sc=x;});return sc;}
+    function light(pi){bs.forEach(function(e,k){e.classList.toggle("on",pi>=beads[k].p||ended);});}
+    function show(pi,hl){if(hl)$$("p",rbody).forEach(function(p,k){p.classList.toggle("reading",k===pi);});var sc=sceneFor(pi);if(sc){setBg(sc.bg);SOUND.amb(SOUND.ambFor(sc.bg));}light(pi);}
+    function canGo(){return done||ended||TMODE||(mode==="silent"&&sec>=(s.silentMin||420));}
+    function upd(){go.disabled=!canGo();if(mode==="silent"&&!canGo()){var left=Math.max(0,Math.ceil((s.silentMin||420)-sec));info.textContent="自己默读：左边原文滚到哪里，画面就跟到哪里。再读 "+Math.floor(left/60)+" 分 "+(left%60)+" 秒，就可以往下。";}}
+    function nx(){if(tok!==RUN.token){stop();return;}if(i>=PARAS.length){ended=true;stop();show(PARAS.length-1,false);$$("p",rbody).forEach(function(p){p.classList.remove("reading");});light(PARAS.length);info.textContent="听完了。";play.textContent="↺ 从头再听";set("read."+s.id,{sec:Math.round(sec),at:new Date().toISOString()});commit();upd();return;}
+      show(i,true);var p=$$("p",rbody)[i];if(p)p.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});
+      a=new Audio(n.prefix+i+".mp3");a.playbackRate=rate;try{a.preservesPitch=true;}catch(e){}SOUND.duck(true);a.onended=function(){i++;nx();};a.onerror=function(){i++;nx();};var pr=a.play();if(pr&&pr.catch)pr.catch(function(){stop();});}
+    function stop(){playing=false;if(a){try{a.pause();}catch(e){}}SOUND.duck(false);if(!ended)play.textContent=i>0?"▶ 接着听":"▶ 开始听";}
+    play.addEventListener("click",function(){if(tok!==RUN.token)return;if(playing){stop();return;}if(ended){ended=false;i=0;}mode="listen";silent.classList.remove("on");VOICE.stop();playing=true;play.textContent="❚❚ 暂停";nx();});
+    silent.addEventListener("click",function(){stop();mode="silent";silent.classList.add("on");$$("p",rbody).forEach(function(p){p.classList.remove("reading");});if(isNarrow())openReader();upd();});
+    function onScroll(){if(mode!=="silent")return;var ps=$$("p",rbody),r=rbody.getBoundingClientRect(),mid=r.top+r.height*.45,best=0;ps.forEach(function(p,k){if(p.getBoundingClientRect().top<mid)best=k;});show(best,false);}
+    rbody.addEventListener("scroll",onScroll,{passive:true});
+    var iv=setInterval(function(){if(tok!==RUN.token){clearInterval(iv);rbody.removeEventListener("scroll",onScroll);stop();return;}if((playing||mode==="silent")&&document.visibilityState==="visible")sec+=.5;upd();},500);
+    upd();show(0,false);
+    go.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);if(go.disabled)return;clearInterval(iv);rbody.removeEventListener("scroll",onScroll);stop();$$("p",rbody).forEach(function(p){p.classList.remove("reading");});
+      if(!get("read."+s.id))set("read."+s.id,{sec:Math.round(sec),mode:mode,at:new Date().toISOString()});logStep(s.obs,{answer:(mode==="silent"?"默读 ":"听读 ")+Math.round(sec)+" 秒"});commit();clearTask();closeReaderIfNarrow();res();});});};
+H.order=function(s,tok){var fb=s.feedbackWho||coach();return say(fill(s.ask||""),s.who,tok).then(function(){return new Promise(function(res,rej){clearTask();
+    var thread=el("div",{class:"xthread"});var slots=s.cards.map(function(c,k){var sl=el("span",{class:"xslot"},[el("i"),el("small",{text:String(k+1)})]);thread.append(sl);return sl;});
+    var pool=el("div",{class:"xpool"}),at=0,miss=0;
+    xyShuffle(s.cards.map(function(c,k){return k;})).forEach(function(k){var c=s.cards[k];var b=el("button",{type:"button",class:"xcard"},[el("i",{style:'background-image:url("'+c.img+'")'}),el("span",{text:c.label})]);
+      b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);logStep(s.obs,{try:1});
+        if(k===at){SOUND.sfx("ok");b.classList.add("gone");b.disabled=true;var sl=slots[at];sl.classList.add("on");$("i",sl).style.backgroundImage='url("'+c.img+'")';$("small",sl).textContent=c.label;at++;
+          if(at===s.cards.length){logStep(s.obs,{answer:"排好了，错 "+miss+" 次"});commit();setTimeout(res,500);}}
+        else{miss++;SOUND.sfx("no");xyShake(b);logStep(s.obs,{miss:"c"+k});if(s.miss)sayQ(fill(s.miss),fb,tok);}});pool.append(b);});
+    task.append(q(s.q),thread,pool,el("p",{class:"note",text:fill(s.note||"按课文的先后，一颗一颗点。拿不准，看左边的原文。")}));xyLay();});});};
+H.tags=function(s,tok){return new Promise(function(res,rej){clearTask();var left=s.scenes.length;var grid=el("div",{class:"xtags"});
+    s.scenes.forEach(function(sc,si){var chosen={};var card=el("div",{class:"xtcard"},[el("div",{class:"xtimg",style:'background-image:url("'+sc.img+'")'},[el("b",{text:sc.label})])]);
+      var chips=el("div",{class:"xchips"}),ev=el("div",{class:"xev",hidden:""}),see=el("button",{type:"button",class:"ghost",text:"看原文"});see.disabled=true;
+      s.tags.forEach(function(t){var c=el("button",{type:"button",class:"xchip",text:t});c.addEventListener("click",function(){if(card.classList.contains("done"))return;chosen[t]=!chosen[t];c.classList.toggle("sel",!!chosen[t]);see.disabled=!Object.keys(chosen).some(function(k){return chosen[k];});});chips.append(c);});
+      see.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);card.classList.add("done");see.hidden=true;var soft=false;
+        $$(".xchip",chips).forEach(function(c){var t=c.textContent,ok=sc.ok.indexOf(t)>=0;if(chosen[t]&&ok)c.classList.add("ok");else if(chosen[t]){c.classList.add("soft");soft=true;}else if(ok)c.classList.add("also");});
+        ev.hidden=false;sc.ev.forEach(function(e){ev.append(el("p",{text:e}));});if(soft)ev.append(el("p",{class:"xsoft",text:fill(s.soft||"这一样，在这一幕的原文里写得不明显，再看看原文。")}));
+        SOUND.sfx("ok");logStep(s.obs,{answer:sc.label+"："+Object.keys(chosen).filter(function(k){return chosen[k];}).join("、")});left--;if(!left){commit();setTimeout(res,400);}});
+      card.append(chips,see,ev);grid.append(card);});
+    task.append(q(s.q),el("p",{class:"note",text:fill(s.note||"每一幕选一两样，再点“看原文”。")}),grid);xyLay();});};
+H.curve=function(s,tok){return new Promise(function(res,rej){clearTask();var N=s.points.length,vals=(get(s.key)||[]).slice();for(var k=0;k<N;k++)if(vals[k]==null)vals[k]=50;
+    var box=el("div",{class:"xcurve"});var svgNS="http://www.w3.org/2000/svg";var svg=document.createElementNS(svgNS,"svg");svg.setAttribute("viewBox","0 0 1000 300");svg.setAttribute("preserveAspectRatio","none");
+    var refL=document.createElementNS(svgNS,"polyline");refL.setAttribute("class","ref");var myL=document.createElementNS(svgNS,"polyline");myL.setAttribute("class","mine");svg.append(refL,myL);box.append(svg,el("span",{class:"xc-top",text:s.top||"欢乐"}),el("span",{class:"xc-bot",text:s.bottom||"凄凉"}));
+    function X(k){return (k+.5)/N*1000;}function Y(v){return 280-v/100*260;}
+    var beadsE=s.points.map(function(p,k){var b=el("button",{type:"button",class:"xcb","aria-label":p.label+"：上下拖动，或用方向键"},[el("i",{style:p.img?'background-image:url("'+p.img+'")':""})]);var lab=el("small",{class:"xcl",text:p.label});box.append(b,lab);
+      function place(){b.style.left=(X(k)/10)+"%";b.style.top=(Y(vals[k])/3)+"%";lab.style.left=(X(k)/10)+"%";}place();b.__place=place;
+      b.addEventListener("pointerdown",function(e){e.preventDefault();b.setPointerCapture(e.pointerId);b.classList.add("drag");function mv(ev){var r=box.getBoundingClientRect();var y=(ev.clientY-r.top)/r.height*300;vals[k]=Math.max(0,Math.min(100,Math.round((280-y)/260*100)));place();draw();}
+        function up(){b.classList.remove("drag");b.removeEventListener("pointermove",mv);b.removeEventListener("pointerup",up);b.removeEventListener("pointercancel",up);moved=true;}b.addEventListener("pointermove",mv);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);});
+      b.addEventListener("keydown",function(e){if(e.key==="ArrowUp"||e.key==="ArrowDown"){e.preventDefault();vals[k]=Math.max(0,Math.min(100,vals[k]+(e.key==="ArrowUp"?8:-8)));place();draw();moved=true;}});return b;});
+    function draw(){myL.setAttribute("points",vals.map(function(v,k){return X(k)+","+Y(v);}).join(" "));}draw();var moved=false;
+    var ok=btn("我放好了"),words=el("div",{class:"xcw",hidden:""});
+    task.append(q(s.q),el("p",{class:"note",text:fill(s.note||"把每颗雨珠往上或往下拖，放到你读到的心情高度。")}),box,words,el("div",{class:"row"},[ok]));xyLay();
+    ok.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);ok.disabled=true;set(s.key,vals);logStep(s.obs,{answer:s.points.map(function(p,k){return p.label+" "+vals[k];}).join("；")});commit();
+      if(s.ref){refL.setAttribute("points",s.ref.map(function(v,k){return X(k)+","+Y(v);}).join(" "));box.classList.add("showref");}
+      if(s.words){words.hidden=false;s.words.forEach(function(w,k){words.append(el("div",{class:"xcwi"},[el("b",{text:s.points[k].label}),el("span",{text:w})]));});if(s.refLabel)words.append(el("p",{class:"note",text:s.refLabel}));}
+      SOUND.sfx("page");res();});});};
+H.sides=function(s,tok){var fb=s.feedbackWho||lead();return new Promise(function(res,rej){clearTask();var left=s.items.length;
+    var colL=el("div",{class:"xside"},[el("h4",{text:s.left})]),colR=el("div",{class:"xside r"},[el("h4",{text:s.right})]),pool=el("div",{class:"xspool"});
+    xyShuffle(s.items).forEach(function(it){var lb=el("button",{type:"button",class:"ghost",text:"← "+s.left}),rb=el("button",{type:"button",class:"ghost",text:s.right+" →"});var row=el("div",{class:"xsit"},[lb,el("span",{text:it.text}),rb]);
+      function pickSide(side){if(tok!==RUN.token)return rej(CANCEL);logStep(s.obs,{try:1});if(side===it.side){SOUND.sfx("ok");row.remove();(side==="L"?colL:colR).append(el("p",{text:it.text}));left--;if(!left){logStep(s.obs,{answer:"分好了"});commit();setTimeout(res,400);}}
+        else{SOUND.sfx("no");xyShake(row);logStep(s.obs,{miss:it.text.slice(0,8)});if(s.miss)sayQ(fill(s.miss),fb,tok);}}
+      lb.addEventListener("click",function(){pickSide("L");});rb.addEventListener("click",function(){pickSide("R");});pool.append(row);});
+    task.append(q(s.q),el("div",{class:"xsides"},[colL,colR]),pool);xyLay();});};
+H.soundMap=function(s,tok){return new Promise(function(res,rej){clearTask();var sel=null,left=s.chips.length;var map=el("div",{class:"xsmap"}),tray=el("div",{class:"xstray"});
+    var tiles={};s.scenes.forEach(function(sc){var t=el("button",{type:"button",class:"xst",style:'background-image:url("'+sc.img+'")'},[el("b",{text:sc.label}),el("span",{class:"xsg"})]);tiles[sc.id]=t;
+      t.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);if(!sel)return;var c=sel.c,b=sel.b;logStep(s.obs,{try:1});
+        if(c.scene===sc.id){b.remove();sel=null;$(".xsg",t).append(el("i",{text:c.text}));t.classList.add("got");left--;xyPlay(c.amb);if(!left){logStep(s.obs,{answer:"放好了"});commit();setTimeout(res,700);}}
+        else{SOUND.sfx("no");xyShake(t);logStep(s.obs,{miss:c.text});}});map.append(t);});
+    xyShuffle(s.chips).forEach(function(c){var b=el("button",{type:"button",class:"xchip",text:c.text});b.addEventListener("click",function(){$$(".xchip",tray).forEach(function(x){x.classList.remove("sel");});b.classList.add("sel");sel={c:c,b:b};});tray.append(b);});
+    task.append(q(s.q),el("p",{class:"note",text:fill(s.note||"先点一个声音，再点它所在的那一幕。")}),tray,map);xyLay();});};
+function xyPlay(name){if(!name||!SOUND.isOn()){SOUND.sfx("ok");return;}try{var a=new Audio("amb/"+name+".mp3");a.volume=.75;a.currentTime=0;var p=a.play();a.addEventListener("loadedmetadata",function(){try{a.currentTime=Math.min(6,a.duration/3);}catch(e){}});setTimeout(function(){var v=.75,iv=setInterval(function(){v-=.08;if(v<=0){clearInterval(iv);a.pause();}else a.volume=v;},60);},2200);if(p&&p.catch)p.catch(function(){});}catch(e){SOUND.sfx("ok");}}
+H.fade=function(s,tok){return new Promise(function(res,rej){clearTask();var at=0;var line=el("div",{class:"xfade"});var segs=s.items.map(function(t,k){var g=el("div",{class:"xfs",style:"--w:"+(10-k*3.4)+"px"},[el("span",{text:"……"})]);line.append(g);return g;});var pool=el("div",{class:"xpool"});
+    xyShuffle(s.items.map(function(t,k){return k;})).forEach(function(k){var b=el("button",{type:"button",class:"xchip",text:s.items[k]});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
+      if(k===at){b.remove();segs[at].classList.add("on");$("span",segs[at]).textContent=s.items[k];at++;SOUND.ambScale([1,.6,.3,.08][at]);SOUND.sfx("page");if(at===s.items.length){logStep(s.obs,{answer:"排好了"});commit();setTimeout(function(){SOUND.ambScale(1);res();},1800);}}
+      else{SOUND.sfx("no");xyShake(b);}});pool.append(b);});
+    task.append(q(s.q),line,pool);xyLay();});};
+H.assemble=function(s,tok){return new Promise(function(res,rej){clearTask();var left=s.slots.length,box=el("div",{class:"xasm"});
+    s.slots.forEach(function(sl,si){var blank=el("span",{class:"xblank",text:"＿＿＿＿＿＿"});var row=el("div",{class:"xarow"},[el("p",{},[sl.pre,blank,sl.post||"。"])]);var chips=el("div",{class:"xchips"});
+      xyShuffle(sl.options).forEach(function(o){var b=el("button",{type:"button",class:"xchip",text:o.text});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);logStep(s.obs,{try:1});
+        if(o.ok){SOUND.sfx("ok");blank.textContent=o.text;blank.classList.add("on");chips.remove();left--;if(!left){logStep(s.obs,{answer:s.slots.map(function(x){return x.pre+"…";}).join(" ")});commit();setTimeout(res,600);}}
+        else{SOUND.sfx("no");b.classList.add("no");b.disabled=true;logStep(s.obs,{miss:o.text.slice(0,8)});if(o.reply)sayQ(fill(o.reply),o.who||lead(),tok);}});chips.append(b);});row.append(chips);box.append(row);});
+    task.append(q(s.q),box);xyLay();});};
+H.lines=function(s,tok){return new Promise(function(res,rej){clearTask();var list=el("div",{class:"xlines"});var go=s.tap?btn(s.tap):null;
+    function run(){if(go)go.remove();s.items.forEach(function(t,k){setTimeout(function(){if(tok!==RUN.token)return;list.append(el("p",{class:"xli",text:t}));SOUND.sfx("page");if(k===s.items.length-1)setTimeout(res,600);},reduce?0:k*900);});}
+    [s.q?q(s.q):null,list,go].forEach(function(x){if(x)task.append(x);});xyLay();if(go)go.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);run();});else run();});};
+H.note=function(s,tok){var NCm=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"];clearTask();
+  var card=el("div",{class:"xnote"},[el("div",{class:"xnh"},[el("b",{text:"笔记卡"+(NCm[s.n]||s.n)}),el("span",{class:"seal",text:"抄到课本"})]),
+    el("h5",{text:"怎么抄"}),el("ol",{},s.how.map(function(h){return el("li",{text:h});})),el("h5",{text:"抄什么"}),el("div",{class:"xnw"},s.what.map(function(w){return el("p",{text:w});}))]);
+  task.append(card);xyLay();if(s.mark&&s.mark.length){R.keys={};var first=null;SENT.forEach(function(x){if(s.mark.some(function(m){return x.t.indexOf(m)>=0;})){R.keys[x.id]=1;if(first==null)first=x.id;}});paintMarks();if(first!=null){var se=$('.s[data-id="'+first+'"]',rbody);if(se)try{se.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}}
+  set("nc."+s.n,{at:new Date().toISOString()});commit();logStep(s.obs||{id:"nc"+s.n,label:"笔记卡"+s.n,skill:"笔记"},{answer:"看到笔记卡"});
+  try{card.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}
+  var lock=TMODE?0:(s.lock||8);var p=s.text?say(fill(s.text),s.who,tok):Promise.resolve();
+  return p.then(function(){var pr=next("我抄好了",tok,false);if(lock>0){var t=lock;bCont.disabled=true;var lab=function(){bCont.textContent="先抄到课本上……"+t;};lab();var iv=setInterval(function(){if(tok!==RUN.token){clearInterval(iv);bCont.disabled=false;return;}t--;if(t<=0){clearInterval(iv);bCont.disabled=false;bCont.textContent="我抄好了 ▸";}else lab();},1000);}return pr;});};
+
+function runSteps(steps,tok){return steps.reduce(function(p,s,i){return p.then(function(){if(tok!==RUN.token)throw CANCEL;if(s.when){var wv=get(s.when.key);if(s.when.is!=null?wv!==s.when.is:!wv)return;}var h=H[s.t];locStep(s);if(s.bg){setBg(s.bg);SOUND.amb(SOUND.ambFor(s.bg));}if(!h)throw new Error("未知步骤类型："+s.t);NEXT=steps[i+1]?steps[i+1].t:"end";return h(s,tok);});},Promise.resolve());}
 
 /* ================= 天、环节、老师模式 ================= */
 var DAYS=L.days;
