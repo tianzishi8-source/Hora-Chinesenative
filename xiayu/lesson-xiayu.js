@@ -77,6 +77,16 @@ sound:{mood:"calm",vol:.45,
  amb:{dir:"amb/",v:1,vol:.8,duck:.4,def:"window",byBg:{
   "img/xy-window.webp":"window","img/xy-bed.webp":"bed","img/xy-yard.webp":"yard","img/xy-hall.webp":"hall",
   "img/xy-grain.webp":"grain","img/xy-umbrella.webp":"umbrella","img/xy-study.webp":"study","img/xy-lake.webp":"lake"}}},
+/* 画面上的雨：每个场景不一样（窗前有玻璃水珠；台风斜雨；西湖、院子有涟漪） */
+rainfx:{byBg:{
+  "img/xy-window.webp":{rain:70,angle:4,speed:820,len:20,drops:56,alpha:.42},
+  "img/xy-bed.webp":{rain:120,angle:6,speed:950,len:26,alpha:.34},
+  "img/xy-yard.webp":{rain:170,angle:8,speed:1050,len:30,ripples:7,alpha:.44},
+  "img/xy-hall.webp":{rain:90,angle:5,speed:950,len:26,alpha:.30},
+  "img/xy-grain.webp":{rain:260,angle:24,speed:1350,len:38,alpha:.48},
+  "img/xy-umbrella.webp":{rain:80,angle:3,speed:780,len:20,drops:14,alpha:.38},
+  "img/xy-study.webp":{rain:70,angle:14,speed:880,len:22,alpha:.32},
+  "img/xy-lake.webp":{rain:60,angle:2,speed:700,len:18,ripples:5,alpha:.40}}},
 totalDays:3,
 
 days:[
