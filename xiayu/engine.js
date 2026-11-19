@@ -301,7 +301,7 @@ function savePref(){try{localStorage.setItem("hora-prefs",JSON.stringify(PREF));
 var SOUND=(function(){var cfg=L.sound||{},ctx=null,master,rev,on=false,mood=cfg.mood||"calm",timer=null,tickT=null,ducked=false,tickOn=0,musicOn=1,tk=0;var VOL=cfg.vol||.5,DUCK=.16;var btnS=document.getElementById("bSnd");
   var NOTES=cfg.notes||[523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.5];
   function init(){ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=0;master.connect(ctx.destination);
-    rev=ctx.createConvolver();var sr=ctx.sampleRate,ir=ctx.createBuffer(2,sr*2.4,sr);for(var c2=0;c2<2;c2++){var d=ir.getChannelData(c2);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);}rev.buffer=ir;var rg=ctx.createGain();rg.gain.value=.45;rev.connect(rg);rg.connect(master);}
+    rev=ctx.createConvolver();var sr=ctx.sampleRate,ir=ctx.createBuffer(2,sr*2.4,sr);for(var c2=0;c2<2;c2++){var d=ir.getChannelData(c2);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);}rev.buffer=ir;var rg=ctx.createGain();rg.gain.value=.45;rev.connect(rg);rg.connect(master);ambG=ctx.createGain();ambG.gain.value=0;ambG.connect(ctx.destination);}
   function bell(f,when,vel,len){len=len||2.2;[[1,1],[2.01,.28],[3.98,.08]].forEach(function(p){var o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=f*p[0];g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(vel*p[1],when+.006);g.gain.exponentialRampToValueAtTime(.0001,when+len/p[0]);o.connect(g);g.connect(master);g.connect(rev);o.start(when);o.stop(when+len+.1);});}
   function click(when,f,vel){var sr=ctx.sampleRate,b=ctx.createBuffer(1,Math.floor(sr*.03),sr),d=b.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,6);var s2=ctx.createBufferSource();s2.buffer=b;var bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=f;bp.Q.value=6;var g=ctx.createGain();g.gain.value=vel;s2.connect(bp);bp.connect(g);g.connect(master);s2.start(when);}
   function rustle(when,len,vel){var sr=ctx.sampleRate,b=ctx.createBuffer(1,Math.floor(sr*len),sr),d=b.getChannelData(0);for(var i=0;i<d.length;i++){var e=Math.sin(Math.PI*i/d.length);d[i]=(Math.random()*2-1)*e*(.6+.4*Math.random());}var s2=ctx.createBufferSource();s2.buffer=b;var bp=ctx.createBiquadFilter();bp.type="bandpass";bp.Q.value=.9;bp.frequency.setValueAtTime(1800,when);bp.frequency.linearRampToValueAtTime(4200,when+len);var g=ctx.createGain();g.gain.value=vel;s2.connect(bp);bp.connect(g);g.connect(master);s2.start(when);}
@@ -310,12 +310,28 @@ var SOUND=(function(){var cfg=L.sound||{},ctx=null,master,rev,on=false,mood=cfg.
   function tick(){if(!on||!ctx)return;if(tickOn>0){click(ctx.currentTime+.02,tk%2?2300:1700,.05*tickOn);tk++;}tickT=setTimeout(tick,1000);}
   function applyMood(){var m=(cfg.moods||{})[mood]||{music:1,tick:.5};musicOn=m.music;tickOn=m.tick;}
   function lvl(){return ducked?DUCK:VOL;}
+  /* 背景音（雨声等）：lesson.sound.amb = {dir, v, vol, duck, def, byBg:{背景图:名称}}；每个环节按背景图自动换，环节里写 amb 可以单独指定（写 "" 就是不要）。
+     循环：同一段录音前后叠放，等功率交叉淡入淡出，不依赖 mp3 首尾是否无缝；配音时压低。 */
+  var AC=cfg.amb||null,ambName="",ambG=null,AV=(AC&&AC.vol)||.8,AD=(AC&&AC.duck)||.4,ABUF={},ALOAD={},aGen=0,aVoices=[],aT=null,CIN=null,COUT=null;
+  function aLvl(){return ducked?AV*AD:AV;}
+  function aCurves(){if(CIN)return;CIN=new Float32Array(64);COUT=new Float32Array(64);for(var i=0;i<64;i++){var x=i/63*Math.PI/2;CIN[i]=Math.sin(x);COUT[i]=Math.cos(x);}}
+  function aLoad(n,cb){if(ABUF[n]){cb(ABUF[n]);return;}if(ALOAD[n]){ALOAD[n].push(cb);return;}ALOAD[n]=[cb];var done=function(b){var l=ALOAD[n]||[];ALOAD[n]=null;if(b){ABUF[n]=b;l.forEach(function(f){f(b);});}};
+    fetch((AC.dir||"amb/")+n+".mp3"+(AC.v?"?v="+AC.v:"")).then(function(r){if(!r.ok)throw new Error(r.status);return r.arrayBuffer();}).then(function(ab){var pr=ctx.decodeAudioData(ab,function(b){done(b);},function(){done(null);});if(pr&&pr.catch)pr.catch(function(){});}).catch(function(){done(null);});}
+  function aStop(fade){clearTimeout(aT);if(!ctx)return;var t=ctx.currentTime;aVoices.forEach(function(v){try{v.h.gain.setValueAtTime(1,t);v.h.gain.linearRampToValueAtTime(0,t+fade);}catch(e){}try{v.s.stop(t+fade+.05);}catch(e){}});aVoices=[];}
+  function aStart(){if(!AC||!ctx||!on)return;aGen++;var my=aGen,n=ambName;aStop(1.6);if(!n)return;aCurves();
+    aLoad(n,function(b){if(my!==aGen||!on)return;var TR=.15,seg=b.duration-2*TR,XF=Math.min(3,seg/4);
+      (function spawn(when){if(my!==aGen||!on)return;when=Math.max(when,ctx.currentTime+.05);var s=ctx.createBufferSource(),g=ctx.createGain(),h=ctx.createGain();s.buffer=b;s.connect(g);g.connect(h);h.connect(ambG);
+        g.gain.setValueCurveAtTime(CIN,when,XF);g.gain.setValueCurveAtTime(COUT,when+seg-XF,XF);s.start(when,TR,seg);
+        var v={s:s,g:g,h:h};aVoices.push(v);s.onended=function(){var k=aVoices.indexOf(v);if(k>=0)aVoices.splice(k,1);try{s.disconnect();g.disconnect();h.disconnect();}catch(e){}};
+        var next=when+seg-XF;aT=setTimeout(function(){spawn(next);},Math.max(0,(next-ctx.currentTime-1.5)*1000));})(ctx.currentTime+.05);});}
   function setOn(v){on=v;PREF.snd=v;savePref();if(btnS)btnS.setAttribute("aria-pressed",String(v));
-    if(v){if(!ctx)init();ctx.resume();master.gain.setTargetAtTime(lvl(),ctx.currentTime,.5);applyMood();clearTimeout(timer);clearTimeout(tickT);phrase();tick();}
-    else if(ctx){master.gain.setTargetAtTime(0,ctx.currentTime,.3);clearTimeout(timer);clearTimeout(tickT);}}
+    if(v){if(!ctx)init();ctx.resume();master.gain.setTargetAtTime(lvl(),ctx.currentTime,.5);ambG.gain.setTargetAtTime(aLvl(),ctx.currentTime,.5);applyMood();clearTimeout(timer);clearTimeout(tickT);phrase();tick();aStart();}
+    else if(ctx){master.gain.setTargetAtTime(0,ctx.currentTime,.3);ambG.gain.setTargetAtTime(0,ctx.currentTime,.3);aGen++;aStop(.6);clearTimeout(timer);clearTimeout(tickT);}}
   if(btnS){btnS.addEventListener("click",function(){setOn(!on);});btnS.setAttribute("aria-pressed",String(!!PREF.snd));}
   if(PREF.snd){var once=function(){removeEventListener("pointerdown",once,true);removeEventListener("keydown",once,true);if(!on)setOn(true);};addEventListener("pointerdown",once,true);addEventListener("keydown",once,true);}
-  return{duck:function(v){ducked=!!v;if(on&&ctx)master.gain.setTargetAtTime(lvl(),ctx.currentTime,v?.08:.6);},
+  return{duck:function(v){ducked=!!v;if(on&&ctx){master.gain.setTargetAtTime(lvl(),ctx.currentTime,v?.08:.6);ambG.gain.setTargetAtTime(aLvl(),ctx.currentTime,v?.25:.9);}},
+    amb:function(n){n=n||"";if(n===ambName)return;ambName=n;if(on&&ctx)aStart();},
+    ambFor:function(bg){return (AC&&AC.byBg&&AC.byBg[bg])||(AC&&AC.def)||"";},
     mood:function(m){if(!m)return;mood=m;applyMood();},
     sfx:function(type){if(!on||!ctx)return;var t=ctx.currentTime+.01;
       if(type==="page")rustle(t,.28,.22);
@@ -889,7 +905,7 @@ function resetUI(){KEEPQ=null;unstrike();unmaskParas();var c5=$("#cal5");if(c5)c
 /* 背景画：lesson 写 bg（默认），某天 / 某个环节也可以写 bg；淡淡铺在整个页面后面，换环节时渐变 */
 function setBg(src){var d=$("#scenebg");if(!d){d=el("div",{id:"scenebg","aria-hidden":"true"});document.body.prepend(d);}if(!src){d.classList.remove("on");d.dataset.src="";return;}if(d.dataset.src===src)return;d.dataset.src=src;var im=new Image();im.onload=function(){if(d.dataset.src!==src)return;d.classList.remove("on");setTimeout(function(){d.style.backgroundImage='url("'+src+'")';d.classList.add("on");},d.style.backgroundImage?450:0);};im.src=src;}
 function runFrom(n,b){var dP=DAYS[n-1];if(dP&&dP.practice&&!dP._built){if(!pgOpen(dP.pg)&&!TMODE){n=Math.min(S.retDay||1,NVIS);b=S.beat[n]||0;S.day=n;dP=null;}else{dP.beats=buildPractice(dP.pg);dP._built=1;if(b>=dP.beats.length)b=0;}}RUN.token++;var tok=RUN.token;resetUI();GUEST.who="";if(!S.data.name&&BK.tpw&&!BK.me)S.data.name="老师";var wantT=DAYS[n-1].text||"main";if(wantT!==CURTEXT)useText(wantT);
-  var beats=DAYS[n-1].beats;(function loop(i){if(tok!==RUN.token)return;if(i>=beats.length){S.done[n]=1;setTimeout(paintHw,0);S.beat[n]=beats.length;commit();paintDays();paintStages(n,beats.length);endOfDay(n,tok);return;}S.beat[n]=i;S.reach=S.reach||{};if(!(S.reach[n]>=i))S.reach[n]=i;save();paintStages(n,i);clearTask();bCont.hidden=true;unmaskParas();var bt=beats[i];GUEST.who="";setBg(bt.bg||DAYS[n-1].bg||L.bg);try{var strs=[];JSON.stringify(bt.steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});if(beats[i+1])JSON.stringify(beats[i+1].steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});VOICE.warm(strs);}catch(e){}SOUND.mood(bt.mood||(L.sound&&L.sound.mood)||"calm");
+  var beats=DAYS[n-1].beats;(function loop(i){if(tok!==RUN.token)return;if(i>=beats.length){S.done[n]=1;setTimeout(paintHw,0);S.beat[n]=beats.length;commit();paintDays();paintStages(n,beats.length);endOfDay(n,tok);return;}S.beat[n]=i;S.reach=S.reach||{};if(!(S.reach[n]>=i))S.reach[n]=i;save();paintStages(n,i);clearTask();bCont.hidden=true;unmaskParas();var bt=beats[i];GUEST.who="";setBg(bt.bg||DAYS[n-1].bg||L.bg);try{var strs=[];JSON.stringify(bt.steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});if(beats[i+1])JSON.stringify(beats[i+1].steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});VOICE.warm(strs);}catch(e){}SOUND.mood(bt.mood||(L.sound&&L.sound.mood)||"calm");SOUND.amb(bt.amb!=null?bt.amb:SOUND.ambFor(bt.bg||DAYS[n-1].bg||L.bg));
     if(bt.skipIf&&get(bt.skipIf)&&!TMODE){loop(i+1);return;}
     runSteps(bt.steps,tok).then(function(){loop(i+1);}).catch(function(e){if(e!==CANCEL)console.error(e);});})(b);}
 function endOfDay(n,tok){clearTask();var d=DAYS[n-1],last=n===NVIS;
