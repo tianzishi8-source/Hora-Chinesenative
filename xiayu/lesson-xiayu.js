@@ -75,7 +75,7 @@ sound:{mood:"calm",vol:.45,
  notes:[392,440,493.88,587.33,659.25,783.99,880,987.77],
  moods:{calm:{music:1,tick:.3},memory:{music:.55,tick:.2},focus:{music:0,tick:.5},bright:{music:1.1,tick:.25}},
  /* 背景音：按背景图自动换。amb/*.mp3 现为程序合成版，找到更好的录音后同名替换、把 v 加一 */
- amb:{dir:"amb/",v:1,vol:.8,duck:.4,def:"window",byBg:{
+ amb:{dir:"amb/",v:2,vol:.8,duck:.4,def:"window",byBg:{
   "img/xy-window.webp":"window","img/xy-bed.webp":"bed","img/xy-yard.webp":"yard","img/xy-hall.webp":"hall",
   "img/xy-grain.webp":"grain","img/xy-umbrella.webp":"umbrella","img/xy-study.webp":"study","img/xy-lake.webp":"lake",
   "img/xy-hemp.webp?v=2":"bed","img/xy-garden.webp?v=2":"umbrella"}}},

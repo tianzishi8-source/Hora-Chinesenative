@@ -57,7 +57,7 @@ visuals:{
 sound:{mood:"calm",vol:.4,
  notes:[392,440,493.88,587.33,659.25,783.99,880,987.77],
  moods:{calm:{music:.7,tick:0},memory:{music:.5,tick:0},focus:{music:0,tick:.3},bright:{music:1,tick:0}},
- amb:{dir:"amb/",v:2,vol:.85,duck:.4,def:"yy-night",byBg:{
+ amb:{dir:"amb/",v:3,vol:.85,duck:.4,def:"yy-night",byBg:{
   "img/yy-door.webp?v=2":"yy-door","img/yy-bashan.webp?v=2":"yy-night","img/yy-letter.webp?v=2":"yy-night","img/yy-pool.webp?v=2":"yy-pool",
   "img/yy-candle.webp?v=2":"yy-night","img/yy-xichuang.webp?v=2":"yy-warm"}}},
 rainfx:{byBg:{
