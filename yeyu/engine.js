@@ -182,7 +182,7 @@ function hexA(h,a){h=String(h).replace("#","");if(h.length===3)h=h.split("").map
 var TORN=null;function tornShape(){if(TORN)return TORN;var r=[],x=0;while(x<1){r.push([x,.02+Math.random()*.05]);x+=.03+Math.random()*.05;}r.push([1,.03]);TORN=r;return r;}
 function drawActor(cv,who){var c=cv.getContext("2d"),W=cv.width,H=cv.height,P=PEOPLE[who],t=performance.now()/1000,ink=inkOf(who);c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,W,H);
   var talking=SPEAKER===who&&TALK&&!reduce,nod=NOD[who]||-9,bump=reduce?0:Math.max(0,1-(t-nod)*1.8)*Math.sin((t-nod)*10)*5,br=reduce?0:Math.sin(t*1.6+who.length)*1.4;
-  if(P.img){var im=imgOf(P.img);if(im){c.save();c.translate(W/2,H/2+bump);c.rotate(-.05+(talking?Math.sin(t*4.5)*.03:0));var sc=Math.min(W/im.naturalWidth,H/im.naturalHeight)*.86;var iw=im.naturalWidth*sc,ih=im.naturalHeight*sc;c.drawImage(im,-iw/2,-ih/2,iw,ih);
+  if(P.img){var im=imgOf(P.img);if(im){c.save();c.translate(W/2,H/2+bump);if(!P.round)c.rotate(-.05+(talking?Math.sin(t*4.5)*.03:0));var sc=Math.min(W/im.naturalWidth,H/im.naturalHeight)*.86;var iw=im.naturalWidth*sc,ih=im.naturalHeight*sc;if(P.round){c.save();c.beginPath();c.arc(0,0,Math.min(iw,ih)/2+3,0,7);c.fillStyle="rgba(255,250,240,.9)";c.shadowColor="rgba(40,30,20,.3)";c.shadowBlur=8;c.fill();c.restore();c.save();c.beginPath();c.arc(0,0,Math.min(iw,ih)/2,0,7);c.clip();c.drawImage(im,-iw/2,-ih/2,iw,ih);c.restore();}else c.drawImage(im,-iw/2,-ih/2,iw,ih);
     /* 图上叠字（图本身不带字，文字由代码印上去，保证准确） */
     if(P.glyph){c.textAlign="center";c.textBaseline="middle";c.globalAlpha=.88;c.fillStyle="#1f1b17";c.font="900 "+Math.round(ih*.36)+"px 'Noto Serif SC',serif";c.fillText(P.glyph,0,ih*.05);
       if(P.top){c.fillStyle="#a8352a";c.font="700 "+Math.round(ih*.075)+"px 'Noto Serif SC',serif";c.fillText(P.top,0,-ih*.3);}c.globalAlpha=1;}
@@ -291,7 +291,9 @@ var FACEOK={},FACEING={};function loadFace(src){if(FACEING[src])return;FACEING[s
 /* 换装间在首页（所有课文共用）；没有首页（claude.ai 版）时就地提示 */
 function goWardrobe(){if(guestFig())return;if(HOME){try{sessionStorage.setItem("hora-return",location.pathname+location.search);}catch(e){}leaveTo(HOME+"#wardrobe");}}
 buildCast();
-function castLoop(){for(var w in CV){var on=SPEAKER===w;CV[w].parentElement.classList.toggle("on",on);drawActor(CV[w],w);}spriteFrame(performance.now()/1000);requestAnimationFrame(castLoop);}
+/* 11-20：场景里的人物（李商隐、琦君等 extra，没有立绘）说话时，借用主讲老师的头像位，画他的头像、换他的名字；主讲老师一开口就换回来 */
+var LEFTG="";function leftWho(w){if(w!==lead())return w;var sp=SPEAKER,P=sp&&PEOPLE[sp];if(P&&P.extra&&!P.fig&&!CV[sp])LEFTG=sp;else if(sp===w)LEFTG="";return LEFTG||w;}
+function castLoop(){for(var w in CV){var w2=leftWho(w),on=SPEAKER===w2,box=CV[w].parentElement;box.classList.toggle("on",on);var nm=$(".nm",box);if(nm&&nm.textContent!==nameOf(w2))nm.textContent=nameOf(w2);drawActor(CV[w],w2);}spriteFrame(performance.now()/1000);requestAnimationFrame(castLoop);}
 requestAnimationFrame(castLoop);
 function refreshMe(){var b=$('.actor[data-who="me"] .nm');if(b)b.textContent=nameOf("me");var f=$('.fig[data-who="me"] .fnm');if(f)f.textContent=nameOf("me");}
 

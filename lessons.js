@@ -34,7 +34,7 @@ window.HORA_LESSONS = [
   { id: "g8-yeyujibei", folder: "yeyu", grade: 8, title: "夜雨寄北", author: "李商隐",
     blurb: "穿过琦君的雨，回到一千多年前巴山的秋夜。李商隐自己讲：她问我哪天回家，我答不出……读懂、背下，再和《下雨天，真好》对读。",
     open: 2, total: 2,
-    pic: "yeyu/img/yy-bashan.webp", picAlt: "示意画：巴山秋夜，雨中一盏烛光" },
+    pic: "yeyu/img/yy-bashan.webp?v=2", picAlt: "示意画：巴山秋夜，雨中一盏烛光" },
   { id: "g8-zhizhu", folder: "zhizhu", grade: 8, title: "蜘蛛", author: "哥尔斯密",
     blurb: "墙角的蜘蛛小八不服气：两百多年前那个英国人写的，哪句是看见的，哪句是猜的？你来当核查员。最后回头看上个单元的蚂蚁。",
     open: 3, total: 3,

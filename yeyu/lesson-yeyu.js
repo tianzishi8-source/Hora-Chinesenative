@@ -28,7 +28,7 @@ cast:{
       voicesBy:{
         qingxian:[{id:"q1",name:"清亮",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-4%",pitch:"+14Hz"},{id:"q2",name:"温柔",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-10%",pitch:"+6Hz"},{id:"q3",name:"活泼",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-2%",pitch:"+10Hz"}],
         changge:[{id:"c1",name:"沉稳",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-10%",pitch:"-18Hz"},{id:"c2",name:"低沉",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-8%",pitch:"-12Hz"},{id:"c3",name:"温和",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-6%",pitch:"-8Hz"}]}},
-  lsy:{name:"李商隐",short:"李商隐",extra:true,img:"img/yy-lsy.webp",shape:"seal",glyph:"商",ink:"#5b4a7a",voice:{gender:"male",pitch:.9,rate:.95},
+  lsy:{name:"李商隐",short:"李商隐",extra:true,img:"img/yy-lsy.webp?v=3",round:true,shape:"seal",ch:"商",ink:"#5b4a7a",voice:{gender:"male",pitch:.9,rate:.95},
       voices:[{id:"a",name:"李商隐",gender:"male",tts:"zh-CN-YunyangNeural",rate:"-12%",pitch:"-8Hz"}]},
   qj:{name:"琦君",short:"琦君",extra:true,shape:"seal",glyph:"琦",ink:"#8a5a3a",voice:{gender:"female",pitch:.95,rate:.95},
       voices:[{id:"a",name:"琦君",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-14%",pitch:"-16Hz"}]},
@@ -58,15 +58,15 @@ sound:{mood:"calm",vol:.4,
  notes:[392,440,493.88,587.33,659.25,783.99,880,987.77],
  moods:{calm:{music:.7,tick:0},memory:{music:.5,tick:0},focus:{music:0,tick:.3},bright:{music:1,tick:0}},
  amb:{dir:"amb/",v:1,vol:.85,duck:.4,def:"study",byBg:{
-  "img/yy-door.webp":"window","img/yy-bashan.webp":"study","img/yy-letter.webp":"study","img/yy-pool.webp":"lake",
-  "img/yy-candle.webp":"study","img/yy-xichuang.webp":"bed"}}},
+  "img/yy-door.webp?v=2":"window","img/yy-bashan.webp?v=2":"study","img/yy-letter.webp?v=2":"study","img/yy-pool.webp?v=2":"lake",
+  "img/yy-candle.webp?v=2":"study","img/yy-xichuang.webp?v=2":"bed"}}},
 rainfx:{byBg:{
-  "img/yy-door.webp":{rain:80,angle:4,speed:820,len:20,drops:50,alpha:.42},
-  "img/yy-bashan.webp":{rain:110,angle:8,speed:900,len:24,alpha:.36},
-  "img/yy-letter.webp":{rain:70,angle:8,speed:880,len:22,alpha:.26},
-  "img/yy-pool.webp":{rain:130,angle:5,speed:900,len:24,ripples:9,alpha:.44},
-  "img/yy-candle.webp":{rain:50,angle:8,speed:880,len:20,alpha:.22},
-  "img/yy-xichuang.webp":{rain:0,drops:0}}},
+  "img/yy-door.webp?v=2":{rain:80,angle:4,speed:820,len:20,drops:50,alpha:.42},
+  "img/yy-bashan.webp?v=2":{rain:110,angle:8,speed:900,len:24,alpha:.36},
+  "img/yy-letter.webp?v=2":{rain:70,angle:8,speed:880,len:22,alpha:.26},
+  "img/yy-pool.webp?v=2":{rain:130,angle:5,speed:900,len:24,ripples:9,alpha:.44},
+  "img/yy-candle.webp?v=2":{rain:50,angle:8,speed:880,len:20,alpha:.22},
+  "img/yy-xichuang.webp?v=2":{rain:0,drops:0}}},
 practiceOpen:true,
 /* 课后练习：每天一组。core 人人做；variants 键＝课上那道题的 obs id，课上错了的学生先重做原题，再做这道相似的新题。
    只考课上讲过的：字词（君、涨、何当、剪烛、却话、巴山、北）、两句实两句虚、两次巴山夜雨、借景抒情、七言绝句、和琦君对读。 */
@@ -141,12 +141,12 @@ practice:{
   "y2-du2":{t:"mc",q:"朗读“何当共剪西窗烛，却话巴山夜雨时”，声音为什么可以暖一些？",options:[{text:"写的是盼望中的团聚",ok:true,reply:"对。"},{text:"因为雨停了",ok:false,reply:"诗里没写雨停。暖，是因为想到了团聚。"},{text:"因为已经回到了家",ok:false,reply:"还没回去。那是他盼着的将来。"}],obs:{id:"yv-du2",label:"相似题：朗读后两句",skill:"朗读"}}
  }
 },
-bg:"img/yy-bashan.webp",
+bg:"img/yy-bashan.webp?v=2",
 totalDays:2,
 days:[
 /* ===================== 第 1 天：回到那场雨 ===================== */
-{title:"走进那场雨",bg:"img/yy-door.webp",short:"那场雨",beats:[
- {title:"穿过雨幕",mood:"memory",bg:"img/yy-door.webp",steps:[
+{title:"走进那场雨",bg:"img/yy-door.webp?v=2",short:"那场雨",beats:[
+ {title:"穿过雨幕",mood:"memory",bg:"img/yy-door.webp?v=2",steps:[
   {t:"poemHide",upto:0},
   {t:"say",who:"hy",text:"前三天，我们读了琦君的雨。雨把她带回亲人身边的日子。"},
   {t:"say",who:"hy",text:"今天，换我们跟着雨走一回。这一次，走得更远：一千多年以前。"},
@@ -154,7 +154,7 @@ days:[
   {t:"say",who:"hy",text:"下面的场景，是根据这首诗和课本注释想象出来的。诗人的话，也是想象的。"},
   {t:"say",who:"hy",text:"听，窗外的雨声。闭上眼睛，让它把你带过去。"},
   {t:"lines",tap:"🌧 推开这扇雨中的窗",items:["唐代。一个秋天的夜里。","巴山，在今天的重庆一带。","雨，已经下了好些天。"]},
-  {t:"say",who:"hy",text:"屋里只点着一支蜡烛。一个人坐在桌前，桌上摆着一封信。",bg:"img/yy-bashan.webp"},
+  {t:"say",who:"hy",text:"屋里只点着一支蜡烛。一个人坐在桌前，桌上摆着一封信。",bg:"img/yy-bashan.webp?v=2"},
   {t:"say",who:"hy",text:"他叫李商隐，唐代诗人。这时候，他滞留在巴蜀，回不了家。"},
   {t:"vis",name:"map"},
   {t:"say",who:"hy",text:"他的家在北边的长安，就是今天的陕西西安。妻子在那里等他。"},
@@ -164,7 +164,7 @@ days:[
     {text:"“先生，您在给谁写信？”",reply:"给家里。给她。"},
     {text:"（不说话，坐到烛光旁边。）",reply:"坐吧。听听这雨。"}],key:"y1.first",obs:{id:"y1-first",label:"进屋先说什么",skill:"进入情境"},feedbackWho:"lsy"}
  ]},
- {title:"她问我归期",mood:"memory",bg:"img/yy-letter.webp",steps:[
+ {title:"她问我归期",mood:"memory",bg:"img/yy-letter.webp?v=2",steps:[
   {t:"poemHide",upto:0},
   {t:"say",who:"lsy",text:"这封信，是长安寄来的。她在信里问我：你什么时候回来？"},
   {t:"say",who:"lsy",text:"我想了一晚上。哪一天能回去？我说不出。我自己也不知道。"},
@@ -178,7 +178,7 @@ days:[
   {t:"say",who:"zhou",text:"一句话里有两个“期”。一个是她问的，一个是他答的。"},
   {t:"say",who:"hy",text:"对。“君问归期”是她问；“未有期”是他答。一问一答，就把两个人隔着千里的牵挂，放进了一句里。"}
  ]},
- {title:"窗外的秋池",mood:"memory",bg:"img/yy-pool.webp",steps:[
+ {title:"窗外的秋池",mood:"memory",bg:"img/yy-pool.webp?v=2",steps:[
   {t:"poemHide",upto:1},
   {t:"say",who:"lsy",text:"你听，雨还没停。这雨，下了好些天了。"},
   {t:"say",who:"lsy",text:"院子里那个池子，前几天水还浅，现在都满了，快漫出来了。"},
@@ -198,7 +198,7 @@ days:[
   {t:"say",who:"hy",text:"他不写“我很愁”，只写眼前的雨和池水。这叫借景抒情：景里藏着情。"},
   {t:"say",who:"hy",text:"“涨”字，写雨下得久、下得大；也有人读出：他的愁思，像池水一样涨满了。"}
  ]},
- {title:"剪烛",mood:"memory",bg:"img/yy-candle.webp",steps:[
+ {title:"剪烛",mood:"memory",bg:"img/yy-candle.webp?v=2",steps:[
   {t:"poemHide",upto:2},
   {t:"say",who:"zhou",text:"咦，屋里怎么越来越暗了？"},
   {t:"say",who:"lsy",text:"蜡烛点久了，烛芯烧得又长又焦，光就暗了。得剪一剪。"},
@@ -224,7 +224,7 @@ days:[
     {text:"过去发生过，他在回忆",ok:false,reply:"“何当”，是“什么时候才能”，问的是还没来的日子。"}],
    obs:{id:"y1-jianglai",label:"西窗剪烛：什么时候",skill:"结构"}}
  ]},
- {title:"却话巴山夜雨时",mood:"memory",bg:"img/yy-candle.webp",steps:[
+ {title:"却话巴山夜雨时",mood:"memory",bg:"img/yy-candle.webp?v=2",steps:[
   {t:"poemHide",upto:3},
   {t:"say",who:"lsy",text:"到了那一天，我们剪着烛，说些什么呢？"},
   {t:"say",who:"lsy",text:"我要跟她说说今天晚上：巴山的秋夜，雨下个不停，池子涨满了，我一个人坐在这里想她。"},
@@ -237,7 +237,7 @@ days:[
   {t:"say",who:"hy",text:"“却话”，就是重提、再说。课本注释：却，还，再。"},
   {t:"say",who:"hy",text:"这两句，课本注释写得很清楚：什么时候能够相聚在西窗下剪烛长谈，再来回忆诉说今天巴山夜雨的情景呢？"}
  ]},
- {title:"问李商隐",mood:"calm",bg:"img/yy-bashan.webp",steps:[
+ {title:"问李商隐",mood:"calm",bg:"img/yy-bashan.webp?v=2",steps:[
   {t:"poemHide",upto:4},
   {t:"say",who:"hy",text:"四句写完了。你可以问李商隐几个问题，至少问一个。他的回答，是根据诗和课本注释想象的。"},
   {t:"askAuthor",who:"lsy",min:1,q:"想问他什么？点一个问题。",
@@ -248,7 +248,7 @@ days:[
   {t:"say",who:"lsy",text:"天快亮了。这首诗，我寄回北边去。"},
   {t:"say",who:"hy",text:"题目就叫《夜雨寄北》：在雨夜里写，寄给北边长安的妻子。"}
  ]},
- {title:"认一认字词",mood:"focus",bg:"img/yy-bashan.webp",steps:[
+ {title:"认一认字词",mood:"focus",bg:"img/yy-bashan.webp?v=2",steps:[
   {t:"poemHide",upto:4},
   {t:"say",who:"hy",text:"意思懂了，再来认字词。刚才他用大白话说过的，现在对上诗里的字。"},
   {t:"mc",q:"“君问归期未有期”的“君”，指谁？",
@@ -271,18 +271,18 @@ days:[
    how:["在课本《夜雨寄北》“涨”字旁边注拼音 zhǎng，“当”字旁边注 dāng。","在诗句旁边的空白处，照抄下面四行。"],
    what:["君：你，指妻子　涨：水位升高","何当：何时能够","剪烛：剪去烧焦的烛芯，指长谈到深夜","却话：重提，再说（却：还，再）"]}
  ]},
- {title:"跟着画面背",mood:"calm",bg:"img/yy-bashan.webp",steps:[
+ {title:"跟着画面背",mood:"calm",bg:"img/yy-bashan.webp?v=2",steps:[
   {t:"poemHide",upto:4},
   {t:"say",who:"hy",text:"现在背下来。不靠死记，靠刚才的画面：信、池子、蜡烛、将来的西窗。"},
   {t:"listenAll",id:"y1listen",q:"先听一遍，跟着在心里念",rate:1,silentMin:20,button:"听完了，开始背",
-   scenes:[{p:0,bg:"img/yy-letter.webp"},{p:1,bg:"img/yy-pool.webp"},{p:2,bg:"img/yy-candle.webp"},{p:3,bg:"img/yy-xichuang.webp"}],beads:[],
+   scenes:[{p:0,bg:"img/yy-letter.webp?v=2"},{p:1,bg:"img/yy-pool.webp?v=2"},{p:2,bg:"img/yy-candle.webp?v=2"},{p:3,bg:"img/yy-xichuang.webp?v=2"}],beads:[],
    note:"四句诗，每句配着刚才的画面。",obs:{id:"y1-listen",label:"听读全诗",skill:"朗读"}},
   {t:"recite",q:"跟着画面背。每一轮，先小声读出来，再点“我背出来了”。",
-   pics:["img/yy-letter.webp","img/yy-pool.webp","img/yy-candle.webp","img/yy-xichuang.webp"],
+   pics:["img/yy-letter.webp?v=2","img/yy-pool.webp?v=2","img/yy-candle.webp?v=2","img/yy-xichuang.webp?v=2"],
    cues:["她问哪天回家","窗外的秋池涨满了","两个人一起剪烛","说起今晚的雨"],obs:{id:"y1-recite",label:"当堂背诵",skill:"背诵"}},
   {t:"dictate",key:"y1.dict",q:"不看课本，把全诗默写下来（一句一行，标点可以不写）。",obs:{id:"y1-dict",label:"当堂默写",skill:"默写"}}
  ]},
- {title:"今天的雨",mood:"calm",bg:"img/yy-bashan.webp",steps:[
+ {title:"今天的雨",mood:"calm",bg:"img/yy-bashan.webp?v=2",steps:[
   {t:"poemHide",upto:4},
   {t:"say",who:"hy",text:"今天，我们回到了那场雨。他答不出归期，听着秋雨涨满池塘，盼着有一天，和她在西窗下说起今晚。"},
   {t:"say",who:"hy",text:"明天，我们再走进他盼着的那一天。琦君，也会来。"}
@@ -293,14 +293,14 @@ days:[
  end:"第1天读完了。作业：做第1天练习；背诵录音；把课本上的笔记拍照交上来。"},
 
 /* ===================== 第 2 天：雨把时间连起来 ===================== */
-{title:"雨把时间连起来",bg:"img/yy-xichuang.webp",short:"连起时间",beats:[
- {title:"先背一遍",mood:"focus",bg:"img/yy-bashan.webp",steps:[
+{title:"雨把时间连起来",bg:"img/yy-xichuang.webp?v=2",short:"连起时间",beats:[
+ {title:"先背一遍",mood:"focus",bg:"img/yy-bashan.webp?v=2",steps:[
   {t:"poemHide",upto:0},
   {t:"say",who:"hy",text:"先不看课本，把昨天背的诗默写下来。"},
   {t:"dictate",key:"y2.dict",q:"不看课本，默写全诗（一句一行，标点可以不写）。",obs:{id:"y2-dict",label:"课前默写",skill:"默写"}},
   {t:"poemHide",upto:4}
  ]},
- {title:"他盼着的那一天",mood:"memory",bg:"img/yy-xichuang.webp",steps:[
+ {title:"他盼着的那一天",mood:"memory",bg:"img/yy-xichuang.webp?v=2",steps:[
   {t:"say",who:"hy",text:"昨天，他在巴山的雨夜里，盼着一个日子。今天，我们走进他想象中的那一天。"},
   {t:"lines",tap:"🕯 推开长安家里的西窗",items:["长安。家里的西窗下。","一支蜡烛，两个人。","烛芯又烧长了，剪了，又亮了。"]},
   {t:"say",who:"lsy",text:"（这是我心里想的。）我跟她说起巴山那一夜：雨下个不停，池子都涨满了……"},
@@ -311,10 +311,10 @@ days:[
    miss:"再想想：这是在巴山的雨夜里，还是在他盼着的西窗下？",obs:{id:"y2-bins1",label:"两幅画",skill:"体会意味"}},
   {t:"say",who:"hy",text:"一冷一暖，一孤一聚。越是把将来想得暖，越显出此刻的冷清。"}
  ]},
- {title:"三扇时间之门",mood:"focus",bg:"img/yy-bashan.webp",steps:[
+ {title:"三扇时间之门",mood:"focus",bg:"img/yy-bashan.webp?v=2",steps:[
   {t:"say",who:"hy",text:"这首诗只有四句，却走了三个时间。我们一扇门一扇门地走。"},
   {t:"order",ask:"按诗里写的先后，把三扇门排好。",q:"按诗里写的先后，一扇一扇点。",
-   cards:[{label:"此刻：答不出归期，巴山夜雨",img:"img/yy-pool.webp"},{label:"将来：西窗下一起剪烛",img:"img/yy-xichuang.webp"},{label:"将来回头：说起此刻的巴山夜雨",img:"img/yy-candle.webp"}],
+   cards:[{label:"此刻：答不出归期，巴山夜雨",img:"img/yy-pool.webp?v=2"},{label:"将来：西窗下一起剪烛",img:"img/yy-xichuang.webp?v=2"},{label:"将来回头：说起此刻的巴山夜雨",img:"img/yy-candle.webp?v=2"}],
    miss:"再读一遍诗：先写哪里，再写哪里，最后说起什么？",obs:{id:"y2-doors",label:"三扇时间之门",skill:"结构"}},
   {t:"mc",q:"“巴山夜雨”在诗里出现了两次。两次有什么不同？",feedbackWho:"hy",
    options:[{text:"第一次是眼前真实的雨，让人愁；第二次是将来相聚时说起的往事，说起来是暖的",ok:true,reply:"对。同样四个字，一实一虚，一愁一暖。"},
@@ -332,7 +332,7 @@ days:[
    how:["在课本诗句下面的空白处，照抄第一行（连同两个箭头）。","在两个“巴山夜雨”下面各画一条线，旁边写第二行。","在诗的旁边写第三、第四行。"],
    what:["此刻·巴山（实）→ 将来·西窗（虚）→ 将来说起此刻（虚）","两次“巴山夜雨”：一实一虚，一愁一暖","写法：借景抒情，虚实结合，时空交错","情感：异乡孤寂，思念妻子，盼望团聚"]}
  ]},
- {title:"琦君来了",mood:"memory",bg:"img/yy-door.webp",steps:[
+ {title:"琦君来了",mood:"memory",bg:"img/yy-door.webp?v=2",steps:[
   {t:"say",who:"hy",text:"一千多年以后，另一个人，也在雨里想着亲人。她是琦君。"},
   {t:"say",who:"hy",text:"下面，琦君说的话，全是她文章里的原话。"},
   {t:"say",who:"qj",text:"雨给我一份靠近母亲的感觉。"},
@@ -356,7 +356,7 @@ days:[
    how:["在课本《夜雨寄北》旁边空白处，照抄下面三行。"],
    what:["琦君：现在 → 回到过去，回忆童年和亲人","李商隐：现在 → 想到将来，盼望团聚","相同：雨中思念亲人，雨把不同的时间连起来"]}
  ]},
- {title:"读出来，背出来",mood:"calm",bg:"img/yy-bashan.webp",steps:[
+ {title:"读出来，背出来",mood:"calm",bg:"img/yy-bashan.webp?v=2",steps:[
   {t:"mc",q:"读“君问归期未有期，巴山夜雨涨秋池”，用什么语气最合适？",feedbackWho:"hy",
    options:[{text:"低一些、慢一些，读出答不上来的无奈和雨夜的冷清",ok:true,reply:"对。“未有期”可以读得慢一点，停一停。"},
     {text:"又快又响，读出兴奋",ok:false,reply:"答不出归期，一个人听着秋雨。会兴奋吗？"},
@@ -368,10 +368,10 @@ days:[
     {text:"和前两句完全一样",ok:false,reply:"前两句是此刻，后两句是盼望的将来。心情一样吗？"}],
    obs:{id:"y2-du2",label:"后两句怎么读",skill:"朗读"}},
   {t:"recite",q:"最后一次，跟着画面背。",
-   pics:["img/yy-letter.webp","img/yy-pool.webp","img/yy-candle.webp","img/yy-xichuang.webp"],
+   pics:["img/yy-letter.webp?v=2","img/yy-pool.webp?v=2","img/yy-candle.webp?v=2","img/yy-xichuang.webp?v=2"],
    cues:["她问哪天回家","窗外的秋池涨满了","两个人一起剪烛","说起今晚的雨"],obs:{id:"y2-recite",label:"背诵过关",skill:"背诵"}}
  ]},
- {title:"留给你的问题",mood:"calm",bg:"img/yy-door.webp",steps:[
+ {title:"留给你的问题",mood:"calm",bg:"img/yy-door.webp?v=2",steps:[
   {t:"say",who:"hy",text:"最后，留一个问题，只给你自己。不用写，不用交。"},
   {t:"lines",items:["你有没有一个，想回去的日子？","或者，一个盼着的日子？","那一天，下雨吗？"]},
   {t:"say",who:"hy",text:"一千多年前的人，和一千多年后的我们，在雨里想的，原来是一样的。"}
