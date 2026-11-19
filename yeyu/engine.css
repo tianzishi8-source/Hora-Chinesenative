@@ -874,5 +874,5 @@ body.cover-text #reader::after{content:"听写中，原文先盖住";position:ab
 .yybit{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between;background:var(--tex-page);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
 .yybit span{font-family:var(--f-text);font-size:.98rem}.yybbs{display:flex;gap:4px;flex-wrap:wrap}.yybbs .ghost{font-size:.8rem;padding:2px 8px}
 .yymap svg{width:100%;max-width:460px;height:auto;display:block;border-radius:14px;box-shadow:0 10px 24px -16px rgba(0,0,0,.5)}
-#rbody p{text-align:center;font-size:1.5rem;letter-spacing:.14em;line-height:2.2}
+#rbody p:not(.src){text-align:center;font-size:1.5rem;letter-spacing:.14em;line-height:2.2}
 @media (prefers-reduced-motion:reduce){.yyc,.yycandle .yyc-flame,#rbody p.yynew{animation:none}.yyp-water{transition:none}}
