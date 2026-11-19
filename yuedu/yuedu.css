@@ -32,3 +32,33 @@ textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);borde
 .brd.t td.ok{background:#eaf4ea}.brd.t td.half{background:#fff4d6}.brd.t td.no{background:#fbe7e3}
 .warn{color:var(--red)}
 @media (max-width:600px){.honor{grid-template-columns:1fr}body{font-size:16px}.brd{font-size:13px}}
+/* 头像 */
+.hav{display:inline-block;border-radius:50%;overflow:hidden;position:relative;flex:none;vertical-align:middle;background:#eee;box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.2)}
+.hav svg,.hav img{width:100%;height:100%;display:block;object-fit:cover}
+.av-crown{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-size:60%}
+.who{display:inline-flex;align-items:center;gap:6px}
+.avnudge{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.avnudge div{flex:1;min-width:180px}.avnudge p{margin:2px 0}
+.avm{display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:start}
+.avm-side{display:flex;flex-direction:column;align-items:center;gap:10px;position:sticky;top:70px}
+.avm-mode{display:flex;border:1px solid var(--line);border-radius:20px;overflow:hidden}.avm-mode button{font:inherit;font-size:14px;border:0;background:var(--card);padding:6px 14px;cursor:pointer}.avm-mode .on{background:var(--ink);color:#fff}
+.avm-opts{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.avm-row{padding:8px 0;border-bottom:1px dashed var(--line)}.avm-row:last-child{border:0}.avm-row>b{display:block;font-size:14px;color:var(--mute);margin-bottom:4px}
+.avm-ch{display:flex;flex-wrap:wrap;gap:6px}
+.avm-ch .pv{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid transparent;background:none;border-radius:10px;padding:4px;cursor:pointer;font:inherit}.avm-ch .pv small{font-size:12px;color:var(--mute)}
+.avm-ch .pv.on{border-color:var(--red);background:#fff4ef}
+.avm-ch .sw{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}.avm-ch .sw.on{box-shadow:0 0 0 3px var(--red)}
+.avm-act{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+/* 荣誉与跑道 */
+.hps{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:8px 0}.hp{display:flex;flex-direction:column;align-items:center;gap:4px}.hp i{font-style:normal;font-size:16px}.hon .none{font-size:18px;color:var(--mute)}
+.lanes h3{margin:0 0 8px;font-size:18px}.lanes h3 small{font-size:13px;color:var(--mute);font-weight:normal}
+.lane{display:grid;grid-template-columns:130px 1fr 92px;align-items:center;gap:10px;padding:7px 4px;border-radius:8px}
+.lane.me{background:#fff3d9}
+.ln{display:flex;align-items:center;gap:6px;min-width:0}.ln span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr{position:relative;height:14px;background:#ece2cf;border-radius:7px;margin:0 18px 0 4px}
+.tr i{position:absolute;top:0;bottom:0;width:2px;background:#fffdf8}
+.tr em{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#8fbf8a,var(--green));border-radius:7px}
+.tr .rn{position:absolute;top:50%;transform:translate(-50%,-50%);z-index:1}
+.tr .fl{position:absolute;right:-20px;top:-6px;font-size:16px}
+.nm{font-size:14px;color:var(--mute)}.nm small{color:var(--green)}
+.brd td.tn{display:flex;align-items:center;gap:6px}
+@media (max-width:600px){.avm{grid-template-columns:1fr}.avm-side{position:static}.lane{grid-template-columns:96px 1fr 48px;gap:6px}.nm small{display:none}.ln .hav{display:none}}

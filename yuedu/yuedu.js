@@ -50,13 +50,14 @@
   function start() {
     $("#ydHome").addEventListener("click", function () { location.href = HOME; });
     $("#ydT").addEventListener("click", teacherLogin);
+    $("#ydAv").addEventListener("click", function () { if (me) showAvatar(); });
     if (location.hash === "#teacher") { teacherLogin(); return; }
     var ss = getSess();
     if (!ss) { location.replace(HOME + "#login"); return; }
     me = { cls: String(ss.cls).replace(/\s+/g, "").toUpperCase(), name: String(ss.name).trim(), pin: String(ss.pin) };
     KEY = "hora-" + L.id + "-" + me.cls + "|" + me.name;
     try { var raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
-    $("#ydWho").textContent = me.cls + " · " + me.name;
+    paintWho();
     status("正在连接……");
     api("login", cred()).then(function (j) { if (j.state) merge(j.state); status("已连上"); save(); showShelf(); })
       .catch(function (e) { if (e.code === "pin" || e.code === "roster" || e.code === "bad") { try { sessionStorage.removeItem("hora-session"); } catch (x) {} location.replace(HOME + "#login"); return; } status("没连上表格，先存在这台设备上", true); showShelf(); });
@@ -67,6 +68,8 @@
     for (var k in r.tests) { var a = S.tests[k], b = r.tests[k]; if (!a || (b.tries || []).length > (a.tries || []).length || (b.pass && !a.pass)) S.tests[k] = b; }
     for (var k2 in r.retell) if (!S.retell[k2] || (r.retell[k2].t || 0) > (S.retell[k2].t || 0)) S.retell[k2] = r.retell[k2];
     for (var k3 in r.final) if (!S.final[k3] || r.final[k3].pass) S.final[k3] = r.final[k3];
+    if ((r.av && r.av.t || 0) > (S.av && S.av.t || 0)) S.av = r.av;
+    if (r.avOff && r.avOff > (S.avOff || 0)) { S.avOff = r.avOff; if (S.av && (S.av.t || 0) < r.avOff) S.av = null; }
     var seen = {}; S.passes = S.passes.concat(r.passes || []).filter(function (p) { var id = p.b + "-" + p.s; if (seen[id]) return false; seen[id] = 1; return true; });
   }
   function view(node) { var m = $("#ydMain"); m.innerHTML = ""; m.append(node); window.scrollTo(0, 0); }
@@ -74,6 +77,7 @@
   /* ---------- 我的书 ---------- */
   function showShelf() {
     var wrap = el("div", {}, [tabs("shelf")]);
+    if (!S.av) { var nb = el("section", { class: "card avnudge" }); nb.innerHTML = window.HoraAvatar.render(null, 56) + '<div><b>先给自己装扮一个头像吧</b><p class="meta">全班进度上，你的头像会跟着你读的进度往前走。</p></div>'; var bb = el("button", { class: "btn", type: "button", text: "装扮头像" }); bb.addEventListener("click", showAvatar); nb.append(bb); wrap.append(nb); }
     BOOKS.forEach(function (b) {
       var d = b.open ? doneCount(b.id) : 0, tot = (b.segs || []).length;
       var card = el("section", { class: "card book" + (b.open ? "" : " shut") });
@@ -199,6 +203,15 @@
     view(wrap); upd(); ta.focus();
   }
 
+  /* ---------- 头像 ---------- */
+  function paintWho() { var w = $("#ydWho"); w.innerHTML = window.HoraAvatar.render(S.av, 30) + "<span>" + esc(me.cls + " · " + me.name) + "</span>"; $("#ydAv").hidden = false; }
+  function showAvatar() {
+    var wrap = el("div"), box = el("div");
+    wrap.append(el("h2", { class: "bt", text: "装扮我的头像" }), el("p", { class: "meta", text: "全班同学在“全班进度”里会看到你的头像。可以自己捏一个，也可以上传一张卡通头像（不要用真人照片）。" }), box);
+    view(wrap);
+    window.HoraAvatar.maker(box, S.av, function (av) { S.av = av; save(); paintWho(); showShelf(); }, showShelf);
+  }
+
   /* ---------- 全班进度 ---------- */
   function showBoard() {
     var wrap = el("div", {}, [tabs("board"), el("p", { class: "meta", text: "正在读取全班进度……" })]);
@@ -206,20 +219,28 @@
     api("board", cred()).then(function (j) { paintBoard(wrap, j.rows || []); }).catch(function () { wrap.lastChild.textContent = "暂时读不到全班进度，稍后再试。"; });
   }
   function paintBoard(wrap, rows) {
-    var week = Date.now() - 7 * 864e5, openB = BOOKS.filter(function (b) { return b.open; });
-    rows.forEach(function (r) { var ps = (r.passes || []).filter(function (p) { return p.s !== "f"; }); r.total = ps.length; r.week = ps.filter(function (p) { return p.t >= week; }).length; r.byBook = {}; openB.forEach(function (b) { r.byBook[b.id] = ps.filter(function (p) { return p.b === b.id; }).length; }); r.fin = (r.passes || []).filter(function (p) { return p.s === "f"; }).length; });
+    var week = Date.now() - 7 * 864e5, openB = BOOKS.filter(function (b) { return b.open; }), A = window.HoraAvatar;
+    rows.forEach(function (r) { if (r.me) { r.passes = S.passes; r.av = S.av; } var ps = (r.passes || []).filter(function (p) { return p.s !== "f"; }); r.total = ps.length; r.week = ps.filter(function (p) { return p.t >= week; }).length; r.byBook = {}; openB.forEach(function (b) { r.byBook[b.id] = ps.filter(function (p) { return p.b === b.id; }).length; }); r.fin = (r.passes || []).filter(function (p) { return p.s === "f"; }).length; });
     rows.sort(function (a, b) { return b.total - a.total || b.week - a.week || String(a.name).localeCompare(String(b.name)); });
     var maxT = Math.max.apply(null, [0].concat(rows.map(function (r) { return r.total; }))), maxW = Math.max.apply(null, [0].concat(rows.map(function (r) { return r.week; })));
-    var kings = rows.filter(function (r) { return maxT > 0 && r.total === maxT; }).map(function (r) { return r.name; });
-    var stars = rows.filter(function (r) { return maxW > 0 && r.week === maxW; }).map(function (r) { return r.name; });
+    var kings = rows.filter(function (r) { return maxT > 0 && r.total === maxT; }), stars = rows.filter(function (r) { return maxW > 0 && r.week === maxW; });
+    function people(list, crown) { return list.length ? list.map(function (r) { return '<span class="hp">' + A.render(r.av, 64, crown) + '<i>' + esc(r.name) + '</i></span>'; }).join("") : '<span class="none">还没有人</span>'; }
     wrap.lastChild.remove();
-    wrap.append(el("div", { class: "honor" }, [
-      el("div", { class: "card hon" }, [el("b", { text: "阅读王" }), el("span", { text: kings.length ? kings.join("、") : "还没有人" }), el("small", { text: maxT ? "读完 " + maxT + " 段" : "读完一段就上榜" })]),
-      el("div", { class: "card hon" }, [el("b", { text: "阅读新星" }), el("span", { text: stars.length ? stars.join("、") : "还没有人" }), el("small", { text: maxW ? "最近 7 天读完 " + maxW + " 段" : "最近 7 天读得最多的人" })])
-    ]));
-    var tb = el("table", { class: "brd" }), head = "<tr><th>同学</th>" + openB.map(function (b) { return "<th>《" + esc(b.title) + "》</th>"; }).join("") + "<th>7 天</th></tr>";
-    tb.innerHTML = head + rows.map(function (r) { return "<tr" + (r.me ? ' class="me"' : "") + "><td>" + esc(r.name) + "</td>" + openB.map(function (b) { var d = r.byBook[b.id] || 0, n = b.segs.length, dots = ""; for (var i = 0; i < n; i++) dots += i < d ? "●" : "○"; return '<td class="dots">' + dots + (r.fin ? " ✓" : "") + "</td>"; }).join("") + "<td>" + (r.week || "") + "</td></tr>"; }).join("");
-    wrap.append(tb, el("p", { class: "note", text: "● 是读完的段（测验过了，也交了复述）。同分的一起上榜。" }));
+    var hon = el("div", { class: "honor" });
+    hon.innerHTML = '<div class="card hon"><b>阅读王</b><div class="hps">' + people(kings, true) + '</div><small>' + (maxT ? "读完 " + maxT + " 段" : "读完一段就上榜") + '</small></div>' +
+      '<div class="card hon"><b>阅读新星</b><div class="hps">' + people(stars, false) + '</div><small>' + (maxW ? "最近 7 天读完 " + maxW + " 段" : "最近 7 天读得最多的人") + '</small></div>';
+    wrap.append(hon);
+    openB.forEach(function (b) {
+      var n = b.segs.length, lanes = el("section", { class: "card lanes" });
+      var h = '<h3>《' + esc(b.title) + '》跑道 <small>一格是一段，共 ' + n + ' 段</small></h3>';
+      rows.forEach(function (r) {
+        var d = r.byBook[b.id] || 0, pct = d / n * 100, ticks = "";
+        for (var i = 1; i < n; i++) ticks += '<i style="left:' + (i / n * 100) + '%"></i>';
+        h += '<div class="lane' + (r.me ? " me" : "") + '"><span class="ln">' + A.render(r.av, 30, kings.indexOf(r) >= 0) + '<span>' + esc(r.name) + '</span></span><span class="tr">' + ticks + '<em style="width:' + pct + '%"></em><span class="rn" style="left:' + pct + '%">' + A.render(r.av, 34) + '</span>' + (r.fin ? '<b class="fl">🏁</b>' : '') + '</span><span class="nm">' + d + '/' + n + (r.week ? ' <small>本周 +' + r.week + '</small>' : '') + '</span></div>';
+      });
+      lanes.innerHTML = h; wrap.append(lanes);
+    });
+    wrap.append(el("p", { class: "note", text: "读完一段（测验过了，也交了复述），头像就往前走一格。🏁 是全书测验也过了。同分的一起上榜。" }));
   }
 
   /* ---------- 老师 ---------- */
@@ -232,14 +253,14 @@
     if (saved) tryIt(saved);
   }
   function teacherView(rows) {
-    $("#ydWho").textContent = "老师";
+    $("#ydWho").textContent = "老师"; $("#ydAv").hidden = true;
     var b = BOOKS.filter(function (x) { return x.open; })[0], wrap = el("div");
     var classes = {}; rows.forEach(function (r) { classes[r.cls] = 1; });
     wrap.append(el("h2", { class: "bt", text: "课外阅读 · 老师页：《" + b.title + "》" }), el("p", { class: "meta", text: "每格：测验最好成绩 / 测了几次；✓＝这一段完成（测验过＋复述交了）；纸＝复述交纸质。点名字看复述原文。用时短、字数一下子跳很多的复述，值得当面问问。" }));
     Object.keys(classes).sort().forEach(function (c) {
       var list = rows.filter(function (r) { return r.cls === c; }).sort(function (x, y) { return String(x.name).localeCompare(String(y.name)); });
       var tb = el("table", { class: "brd t" }); var h = "<tr><th>" + esc(c) + "</th>"; b.segs.forEach(function (s) { h += "<th>" + s.n + "</th>"; }); h += "<th>全书</th></tr>";
-      tb.innerHTML = h + list.map(function (r, ri) { var p = Object.assign(blank(), r.payload || {}); return "<tr><td><a href='#' data-r='" + esc(c) + "|" + ri + "'>" + esc(r.name) + "</a></td>" + b.segs.map(function (s) { var t = p.tests[sk(b.id, s.n)], rt = p.retell[sk(b.id, s.n)]; if (!t) return "<td></td>"; var best = Math.max.apply(null, [0].concat((t.tries || []).map(function (x) { return x.score; }))); var done = t.pass && rt && (rt.text || rt.paper); return "<td class='" + (done ? "ok" : t.pass ? "half" : "no") + "'>" + best + "/" + (t.tries || []).length + (done ? (rt.paper ? " 纸" : " ✓") : "") + "</td>"; }).join("") + "<td>" + (p.final[b.id] ? (p.final[b.id].pass ? "✓ " : "") + (p.final[b.id].best || 0) + "/" + b.finalDraw : "") + "</td></tr>"; }).join("");
+      tb.innerHTML = h + list.map(function (r, ri) { var p = Object.assign(blank(), r.payload || {}); return "<tr><td class='tn'>" + window.HoraAvatar.render(p.av, 26) + "<a href='#' data-r='" + esc(c) + "|" + ri + "'>" + esc(r.name) + "</a></td>" + b.segs.map(function (s) { var t = p.tests[sk(b.id, s.n)], rt = p.retell[sk(b.id, s.n)]; if (!t) return "<td></td>"; var best = Math.max.apply(null, [0].concat((t.tries || []).map(function (x) { return x.score; }))); var done = t.pass && rt && (rt.text || rt.paper); return "<td class='" + (done ? "ok" : t.pass ? "half" : "no") + "'>" + best + "/" + (t.tries || []).length + (done ? (rt.paper ? " 纸" : " ✓") : "") + "</td>"; }).join("") + "<td>" + (p.final[b.id] ? (p.final[b.id].pass ? "✓ " : "") + (p.final[b.id].best || 0) + "/" + b.finalDraw : "") + "</td></tr>"; }).join("");
       tb.addEventListener("click", function (e) { var a = e.target.closest("a[data-r]"); if (!a) return; e.preventDefault(); var ri = +a.getAttribute("data-r").split("|")[1]; detail(list[ri], b); });
       wrap.append(tb);
     });
@@ -250,7 +271,9 @@
   function detail(r, b) {
     var p = Object.assign(blank(), r.payload || {}), w = el("div"), back = el("button", { class: "ghost", type: "button", text: "← 全班" });
     back.addEventListener("click", function () { api("t_all", { pw: tpw }).then(function (j) { teacherView(j.rows || []); }); });
-    w.append(back, el("h2", { class: "bt", text: r.cls + " · " + r.name }));
+    var hd = el("div", { class: "row" }); hd.innerHTML = window.HoraAvatar.render(p.av, 56); hd.append(el("h2", { class: "bt", text: r.cls + " · " + r.name }));
+    if (p.av) { var clr = el("button", { class: "ghost", type: "button", text: "清除这个头像" }); clr.addEventListener("click", function () { clr.disabled = true; api("t_avclear", { pw: tpw, sid: r.sid }).then(function () { r.payload.av = null; clr.textContent = "已清除（学生下次打开时会看到默认头像，可以重新装扮）"; hd.firstChild.outerHTML = window.HoraAvatar.render(null, 56); }).catch(function () { clr.disabled = false; clr.textContent = "没清除成功，再点一次"; }); }); hd.append(clr); }
+    w.append(back, hd);
     b.segs.forEach(function (s) {
       var t = p.tests[sk(b.id, s.n)], rt = p.retell[sk(b.id, s.n)]; if (!t && !rt) return;
       var c = el("section", { class: "card seg" });
