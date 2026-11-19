@@ -876,3 +876,10 @@ body.cover-text #reader::after{content:"听写中，原文先盖住";position:ab
 .yymap svg{width:100%;max-width:460px;height:auto;display:block;border-radius:14px;box-shadow:0 10px 24px -16px rgba(0,0,0,.5)}
 #rbody p:not(.src){text-align:center;font-size:1.5rem;letter-spacing:.14em;line-height:2.2}
 @media (prefers-reduced-motion:reduce){.yyc,.yycandle .yyc-flame,#rbody p.yynew{animation:none}.yyp-water{transition:none}}
+
+/* 讲解栏底部的“往下滑，还有” */
+.work{position:relative}
+.moretip{position:sticky;bottom:6px;align-self:center;margin-top:-34px;z-index:5;border:0;border-radius:999px;padding:5px 14px;font-size:.85rem;background:rgba(31,27,23,.78);color:#fff8ea;box-shadow:0 6px 16px -6px rgba(0,0,0,.5);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s}
+.moretip.on{opacity:1;pointer-events:auto;animation:mtBob 1.8s ease-in-out infinite}
+@keyframes mtBob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+body.th-yeyu .moretip{background:#d9a04f;color:#1d1710}

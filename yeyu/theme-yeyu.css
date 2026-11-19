@@ -72,7 +72,7 @@ body.th-yeyu #rbody .s.hl-pick{box-shadow:inset -2px 0 0 var(--warm)}
 
 /* 11-20 老师：信笺不用占满一栏。宽屏时信笺只有内容那么宽、那么高，右边讲解卡也收窄，中间露出背景画面。 */
 @media (min-width:53.8rem){
- body.th-yeyu .main{grid-template-columns:minmax(330px,max-content) minmax(0,1fr);max-width:84rem;align-items:start}
+ body.th-yeyu .main{grid-template-columns:minmax(330px,max-content) minmax(0,1fr);max-width:84rem;align-items:stretch}
  body.th-yeyu #reader{width:clamp(330px,30vw,430px);align-self:start;max-height:100%}
  body.th-yeyu #rbody{flex:none}
  body.th-yeyu #rbody p:not(.src){min-height:0}
