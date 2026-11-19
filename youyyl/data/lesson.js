@@ -1,6 +1,7 @@
 /* 《游岳阳楼记》自学版 · 课时与环节（window.ZX；块的写法见 ../../zx/zx.js 开头）
  * 四课时：① 读通全文，第1段：水与山 ② 第2段：一日三景与“真可哭也” ③ 比较《岳阳楼记》（课本练习三、四）④ 单元写作：有生命体温的感悟（体验·颖悟） */
 window.ZX = {
+  theme: { name: "youyyl", bg: "scene-lakeview.webp", acc: "#cf5a43", accInk: "#fff4ec", glass: "rgba(28,32,36,.46)", bgc: "#1c2024" },  // 11-20 专属外观：水墨（青灰玻璃、朱红）
   id: "g9-youyyl", title: "游岳阳楼记", author: "袁中道", ver: "11121210",
   sceneDir: "../youyyl-ke/img/",   // 画面先用课堂版的场景真图
   guide: { name: "袁中道", kind: "yuan", vkey: "yuan" },

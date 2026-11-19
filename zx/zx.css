@@ -133,3 +133,5 @@ textarea{width:100%;font:inherit;font-family:var(--f-text);font-size:1.02rem;lin
 .sheet .x{position:absolute;right:10px;top:6px;border:0;background:none;font-size:1.6rem;color:var(--muted)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:8px;z-index:30;font-size:.92rem}
 .done-badge{display:inline-block;background:var(--qing);color:#fff;border-radius:999px;padding:0 10px;font-size:.78rem}
+
+/* 专属外观的样式在 ../theme-page.css（和《岳阳楼记》共用） */

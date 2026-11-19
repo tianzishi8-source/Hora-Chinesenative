@@ -162,6 +162,17 @@ function fullText() {
   $$(".k", o).forEach(function (k) { k.addEventListener("click", function (e) { e.stopPropagation(); $("#fnb", o).textContent = k.getAttribute("data-n"); }); });
 }
 
+/* ---------- 专属外观（11-20，老师：每篇课文要有自己的风格）----------
+   Z.theme={name,bg:"scene-xxx.webp",acc,accInk,glass,ink}：页面底色换成本课的场景画（虚化、压暗），
+   上栏是半透明毛玻璃；每出现一张场景画，底色就换成那一张。 */
+var ZBG = null;
+function zxBg(src) { if (!Z.theme || !src) return; if (!ZBG) { ZBG = document.createElement("div"); ZBG.id = "zxbg"; ZBG.setAttribute("aria-hidden", "true"); ZBG.innerHTML = "<i></i><i></i>"; document.body.prepend(ZBG); }
+  var ls = ZBG.querySelectorAll("i"), cur = ZBG.dataset.cur === "1" ? 1 : 0, nx = 1 - cur; if (ZBG.dataset.src === src) return; ZBG.dataset.src = src;
+  var im = new Image(); im.onload = function () { if (ZBG.dataset.src !== src) return; ls[nx].style.backgroundImage = 'url("' + src + '")'; ls[nx].classList.add("on"); ls[cur].classList.remove("on"); ZBG.dataset.cur = String(nx); }; im.src = src; }
+(function () { var t = Z.theme; if (!t) return; document.body.classList.add("thz", "thz-" + t.name); var st = document.body.style;
+  if (t.acc) st.setProperty("--thz-acc", t.acc); if (t.accInk) st.setProperty("--thz-acc-ink", t.accInk); if (t.glass) st.setProperty("--thz-glass", t.glass); if (t.bgc) st.setProperty("--thz-bgc", t.bgc);
+  zxBg((t.bg && t.bg.indexOf("/") < 0 ? (Z.sceneDir || "") : "") + t.bg); })();
+
 /* ---------- 块 ---------- */
 var BLOCK = {};
 function gate(id, el) { var r = { gate: true, ok: function () { return TEACH || S.ok[id] != null; }, onok: null }; r.done = function (v) { if (S.ok[id] == null) { S.ok[id] = v; save(); } if (r.onok) r.onok(); }; return r; }
@@ -169,7 +180,7 @@ BLOCK.pic = function (el, b) {
   /* 有课堂版的场景真图（Z.sceneDir，如 "../zuiweng-ke/img/"）时先试 scene-键-色调.webp，再试 scene-键.webp，都没有才用画的 */
   if (!b.img && Z.sceneDir && b.scene) {
     var cands = (b.tone ? [Z.sceneDir + "scene-" + b.scene + "-" + b.tone + ".webp"] : []).concat([Z.sceneDir + "scene-" + b.scene + ".webp"]);
-    (function tryOne(i) { if (i >= cands.length) return; var im = new Image(); im.onload = function () { var pic = el.querySelector(".pic"); if (pic && im.naturalWidth) { var sv = pic.querySelector("svg"); var ni = document.createElement("img"); ni.src = cands[i]; ni.alt = b.alt || ""; if (sv) sv.replaceWith(ni); } }; im.onerror = function () { tryOne(i + 1); }; im.src = cands[i]; })(0);
+    (function tryOne(i) { if (i >= cands.length) return; var im = new Image(); im.onload = function () { if (im.naturalWidth) zxBg(cands[i]); var pic = el.querySelector(".pic"); if (pic && im.naturalWidth) { var sv = pic.querySelector("svg"); var ni = document.createElement("img"); ni.src = cands[i]; ni.alt = b.alt || ""; if (sv) sv.replaceWith(ni); } }; im.onerror = function () { tryOne(i + 1); }; im.src = cands[i]; })(0);
   }
   var inner = b.img ? '<img src="' + esc(b.img) + '" alt="' + esc(b.alt || "") + '">' : window.YK_SCENE ? YK_SCENE.svg(b.scene || "mount", b.tone || "day").replace("<svg ", '<svg role="img" aria-label="' + esc(b.alt || "") + '" ') : "";
   el.innerHTML = '<div class="pic">' + inner + (b.vt ? '<div class="vt">' + esc(b.vt) + (b.sub ? "<small>" + esc(b.sub) + "</small>" : "") + "</div>" : "") + (b.cap ? '<span class="cap">' + esc(b.cap) + "</span>" : "") + "</div>";
