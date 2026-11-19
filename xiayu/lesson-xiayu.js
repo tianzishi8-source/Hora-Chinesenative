@@ -78,7 +78,7 @@ sound:{mood:"calm",vol:.45,
  amb:{dir:"amb/",v:1,vol:.8,duck:.4,def:"window",byBg:{
   "img/xy-window.webp":"window","img/xy-bed.webp":"bed","img/xy-yard.webp":"yard","img/xy-hall.webp":"hall",
   "img/xy-grain.webp":"grain","img/xy-umbrella.webp":"umbrella","img/xy-study.webp":"study","img/xy-lake.webp":"lake",
-  "img/xy-hemp.webp":"bed","img/xy-garden.webp":"umbrella"}}},
+  "img/xy-hemp.webp?v=2":"bed","img/xy-garden.webp?v=2":"umbrella"}}},
 /* 画面上的雨：每个场景不一样（窗前有玻璃水珠；台风斜雨；西湖、院子有涟漪） */
 rainfx:{byBg:{
   "img/xy-window.webp":{rain:70,angle:4,speed:820,len:20,drops:56,alpha:.42},
@@ -89,15 +89,15 @@ rainfx:{byBg:{
   "img/xy-umbrella.webp":{rain:80,angle:3,speed:780,len:20,drops:14,alpha:.38},
   "img/xy-study.webp":{rain:70,angle:14,speed:880,len:22,alpha:.32},
   "img/xy-lake.webp":{rain:60,angle:2,speed:700,len:18,ripples:5,alpha:.40},
-  "img/xy-hemp.webp":{rain:90,angle:5,speed:900,len:24,alpha:.30},
-  "img/xy-garden.webp":{rain:70,angle:4,speed:760,len:18,drops:10,alpha:.36}}},
+  "img/xy-hemp.webp?v=2":{rain:90,angle:5,speed:900,len:24,alpha:.30},
+  "img/xy-garden.webp?v=2":{rain:70,angle:4,speed:760,len:18,drops:10,alpha:.36}}},
 totalDays:3,
 
 /* 11-19 改版（老师第二次反馈后）：先整篇，后细节；老师多讲，学生不自己总结；十张笔记卡写明誊抄方式和内容。
    剧本：项目 claude/下雨天真好_三天剧本_两轮审核后_20261119.md（两轮独立审核）。指位置只用“第几页＋原句”或“‘开头几个字’那一段”，不说第几段。 */
 beads:[
- {p:3,label:"被窝",img:"img/xy-bed.webp"},{p:4,label:"院子",img:"img/xy-yard.webp"},{p:6,label:"打麻线",img:"img/xy-hemp.webp"},
- {p:7,label:"黄梅天",img:"img/xy-garden.webp"},{p:8,label:"鼓儿词",img:"img/xy-hall.webp"},{p:9,label:"台风",img:"img/xy-grain.webp"},
+ {p:3,label:"被窝",img:"img/xy-bed.webp"},{p:4,label:"院子",img:"img/xy-yard.webp"},{p:6,label:"打麻线",img:"img/xy-hemp.webp?v=2"},
+ {p:7,label:"黄梅天",img:"img/xy-garden.webp?v=2"},{p:8,label:"鼓儿词",img:"img/xy-hall.webp"},{p:9,label:"台风",img:"img/xy-grain.webp"},
  {p:10,label:"梧桐树下",img:"img/xy-umbrella.webp"},{p:11,label:"打牌天",img:"img/xy-window.webp"},{p:12,label:"听雨楼",img:"img/xy-study.webp"},{p:13,label:"西湖",img:"img/xy-lake.webp"}],
 days:[
 /* ===================== 第 1 天：整篇读，读出一条线 ===================== */
@@ -115,7 +115,7 @@ days:[
  {title:"整篇听读",mood:"memory",steps:[
   {t:"say",who:"hy",text:"先什么都不用做。跟着她的声音，把这一场一场的雨，从头听到尾。"},
   {t:"listenAll",id:"x1all",q:"把全文从头听到尾",rate:1.2,silentMin:420,button:"听完了，往下",
-   scenes:[{p:0,bg:"img/xy-window.webp"},{p:3,bg:"img/xy-bed.webp"},{p:4,bg:"img/xy-yard.webp"},{p:6,bg:"img/xy-hemp.webp"},{p:7,bg:"img/xy-garden.webp"},{p:8,bg:"img/xy-hall.webp"},{p:9,bg:"img/xy-grain.webp"},{p:10,bg:"img/xy-umbrella.webp"},{p:11,bg:"img/xy-window.webp"},{p:12,bg:"img/xy-study.webp"},{p:13,bg:"img/xy-lake.webp"},{p:15,bg:"img/xy-window.webp"}],
+   scenes:[{p:0,bg:"img/xy-window.webp"},{p:3,bg:"img/xy-bed.webp"},{p:4,bg:"img/xy-yard.webp"},{p:6,bg:"img/xy-hemp.webp?v=2"},{p:7,bg:"img/xy-garden.webp?v=2"},{p:8,bg:"img/xy-hall.webp"},{p:9,bg:"img/xy-grain.webp"},{p:10,bg:"img/xy-umbrella.webp"},{p:11,bg:"img/xy-window.webp"},{p:12,bg:"img/xy-study.webp"},{p:13,bg:"img/xy-lake.webp"},{p:15,bg:"img/xy-window.webp"}],
    note:"左边原文会跟着声音亮起来，画面和雨声也跟着换。只听、只看，不用答题。也可以点“我想自己默读”。",obs:{id:"x1-all",label:"整篇听读",skill:"整体感知"}}
  ]},
  {title:"大问题",mood:"calm",steps:[
@@ -242,7 +242,7 @@ days:[
   {t:"say",who:"hy",text:"再连起来看：被窝里，她讲伞主把伞让给穷瞎子，说“伞主是个好心人”；"},
   {t:"say",who:"hy",text:"雨天里，她自己给唱鼓儿词的瞎子先生盛饭、给米。她教孩子的，正是她自己做的。"}
  ]},
- {title:"雨天的活计",mood:"focus",bg:"img/xy-hemp.webp",steps:[
+ {title:"雨天的活计",mood:"focus",bg:"img/xy-hemp.webp?v=2",steps:[
   {t:"read",id:"x2c",paras:[7,10],min:30,q:"重读“潮湿的下雨天”那一段开头几句，再看第147页台风那一段里母亲的样子",button:"读完了",againLabel:"读过了",note:"读满 30 秒才能往下。看下雨天，母亲在忙什么。",obs:{id:"x2-r3",label:"重读打麻线和台风",skill:"细读"}},
   {t:"lines",tap:"点一下，看看母亲",items:["“母亲熟练的双手搓着细细的麻丝”","“母亲皱紧了眉头对着走廊下堆积如山的谷子发愁”","“点上香念太阳经，保佑天快快放晴”"]},
   {t:"mc",q:"搓麻丝、看天色、对着谷子发愁、点香念太阳经。把这几件事放在一起看，母亲在这个家里是什么样的角色？",
@@ -293,11 +293,11 @@ days:[
    options:[{text:"我巴不得他摔个大筋斗掉在水田里，就不会来逼我认方块字了。",ok:true,reply:"这是原句，在第146页。"},{text:"我希望老师那天不要来上课。",ok:false,reply:"这一句太规矩了，像大人写的。"}],
    obs:{id:"x2-p1",label:"原句改句：摔个大筋斗",skill:"语言"}},
   {t:"say",who:"hy",text:"原句又夸张又调皮，把孩子心里那点小坏全说了出来，大人读了只会笑。"},
-  {t:"mc",q:"再比一比，哪一句更像小孩子说的？",bg:"img/xy-hemp.webp",
+  {t:"mc",q:"再比一比，哪一句更像小孩子说的？",bg:"img/xy-hemp.webp?v=2",
    options:[{text:"五叔婆和我帮着剪线头，她是老花眼，母亲是近视眼，只有我一双亮晶晶的眼睛最管事。",ok:true,reply:"这是原句，在“潮湿的下雨天”那一段。"},{text:"我眼睛好，帮了不少忙。",ok:false,reply:"这一句平平的，听不出她的得意。"}],
    obs:{id:"x2-p2",label:"原句改句：亮晶晶",skill:"语言"}},
   {t:"say",who:"hy",text:"“亮晶晶”“最管事”，听得出她有多得意。"},
-  {t:"mc",q:"最后一组，哪一句更像小孩子说的？",bg:"img/xy-garden.webp",
+  {t:"mc",q:"最后一组，哪一句更像小孩子说的？",bg:"img/xy-garden.webp?v=2",
    options:[{text:"玉兰树叶上的水珠都是香的，洒了我满头满身。",ok:true,reply:"这是原句，在第147页。"},{text:"玉兰花很香，树叶上有很多水珠。",ok:false,reply:"这一句说得对，可是没有她的欢喜。"}],
    obs:{id:"x2-p3",label:"原句改句：水珠都是香的",skill:"语言"}},
   {t:"say",who:"hy",text:"水珠本身没有香味，是满树玉兰的香，让她觉得连水珠都是香的。"},
@@ -332,7 +332,7 @@ days:[
  ]},
  {title:"声音地图",mood:"bright",bg:"img/xy-yard.webp",steps:[
   {t:"soundMap",q:"每一个声音，在哪一幕里？",
-   scenes:[{id:"bed",label:"被窝",img:"img/xy-bed.webp"},{id:"yard",label:"院子",img:"img/xy-yard.webp"},{id:"hemp",label:"打麻线",img:"img/xy-hemp.webp"},{id:"hall",label:"鼓儿词",img:"img/xy-hall.webp"},{id:"hz",label:"杭州",img:"img/xy-umbrella.webp"},{id:"pai",label:"打牌天",img:"img/xy-window.webp"},{id:"study",label:"听雨楼",img:"img/xy-study.webp"}],
+   scenes:[{id:"bed",label:"被窝",img:"img/xy-bed.webp"},{id:"yard",label:"院子",img:"img/xy-yard.webp"},{id:"hemp",label:"打麻线",img:"img/xy-hemp.webp?v=2"},{id:"hall",label:"鼓儿词",img:"img/xy-hall.webp"},{id:"hz",label:"杭州",img:"img/xy-umbrella.webp"},{id:"pai",label:"打牌天",img:"img/xy-window.webp"},{id:"study",label:"听雨楼",img:"img/xy-study.webp"}],
    chips:[{text:"哗哗哗",scene:"bed",amb:"bed"},{text:"叮叮",scene:"yard",amb:"yard"},{text:"呼呼",scene:"hemp"},{text:"咚咚咚",scene:"hall",amb:"hall"},{text:"叮叮咚咚",scene:"hz"},{text:"稀里哗啦",scene:"pai"},{text:"砰砰",scene:"study",amb:"study"}],
    note:"先点一个声音，再点它所在的那一幕。拿不准，在左边原文里找一找。",obs:{id:"x3-map",label:"声音地图",skill:"语言"}},
   {t:"say",who:"hy",text:"哗哗哗、叮叮、咚咚咚、稀里哗啦，这些是模仿声音的词，叫拟声词；"},
@@ -344,7 +344,7 @@ days:[
    how:["在第145页“哗哗哗”、第146页“叮叮”、第147页“咚咚咚”、第148页“稀里哗啦”上各画一个圈。","在第145页页边写一行。"],
    what:["拟声词、叠词：让雨天有了声音，热闹、亲切。"]}
  ]},
- {title:"父亲的声音",mood:"memory",bg:"img/xy-garden.webp",steps:[
+ {title:"父亲的声音",mood:"memory",bg:"img/xy-garden.webp?v=2",steps:[
   {t:"say",who:"hy",text:"先认识一下父亲。五月黄梅天，“母亲走进走出地抱怨，父亲却端着宜兴茶壶，坐在廊下赏雨”，"},
   {t:"say",who:"hy",text:"还用旱烟管点着花，告诉女儿这是丁香花，那是一丈红。"},
   {t:"mc",q:"同一个黄梅天，母亲抱怨，父亲赏雨。从这里看，父亲是一个怎样的人？",
