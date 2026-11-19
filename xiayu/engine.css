@@ -815,3 +815,4 @@ body.cover-text #reader::after{content:"听写中，原文先盖住";position:ab
 #bCont:disabled{opacity:.6;cursor:not-allowed}
 @media (prefers-reduced-motion:reduce){.xslot.on i,.xside p,.xsg i,.xblank.on,.xli,.xnote{animation:none}.shake{animation:none}}
 .todocard span{white-space:pre-line}
+.xnfoot{margin:10px 0 0;font-size:.82rem;color:var(--muted)}

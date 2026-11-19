@@ -954,7 +954,7 @@ H.lines=function(s,tok){return new Promise(function(res,rej){clearTask();var lis
     [s.q?q(s.q):null,list,go].forEach(function(x){if(x)task.append(x);});xyLay();if(go)go.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);run();});else run();});};
 H.note=function(s,tok){var NCm=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"];clearTask();
   var card=el("div",{class:"xnote"},[el("div",{class:"xnh"},[el("b",{text:"笔记卡"+(NCm[s.n]||s.n)}),el("span",{class:"seal",text:"抄到课本"})]),
-    el("h5",{text:"怎么抄"}),el("ol",{},s.how.map(function(h){return el("li",{text:h});})),el("h5",{text:"抄什么"}),el("div",{class:"xnw"},s.what.map(function(w){return el("p",{text:w});}))]);
+    el("h5",{text:"怎么抄"}),el("ol",{},s.how.map(function(h){return el("li",{text:h});})),el("h5",{text:"抄什么"}),el("div",{class:"xnw"},s.what.map(function(w){return el("p",{text:w});})),el("p",{class:"xnfoot",text:"慢慢抄，抄好了自己点“我抄好了”。以后在“我的笔记本”里还能再看到这张卡。"})]);
   task.append(card);xyLay();if(s.mark&&s.mark.length){R.keys={};var first=null;SENT.forEach(function(x){if(s.mark.some(function(m){return x.t.indexOf(m)>=0;})){R.keys[x.id]=1;if(first==null)first=x.id;}});paintMarks();if(first!=null){var se=$('.s[data-id="'+first+'"]',rbody);if(se)try{se.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}}
   set("nc."+s.n,{at:new Date().toISOString()});commit();logStep(s.obs||{id:"nc"+s.n,label:"笔记卡"+s.n,skill:"笔记"},{answer:"看到笔记卡"});
   try{card.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}
@@ -994,7 +994,7 @@ function buildPractice(gi){var P=L.practice||{},g=PG[gi]||{days:[]},inG=function
 function openPractice(gi){if(typeof gi!=="number")gi=pgCur();var n=practiceIdx(gi);if(!n||!pgOpen(gi))return;closeOv();if(S.day<=NVIS)S.retDay=S.day;DAYS[n-1].beats=buildPractice(gi);DAYS[n-1]._built=1;S.done[n]=0;startDay(n,false);}
 /* 练习目录：每一组一行，开放的可以点 */
 function pxStat(gi){var n=practiceIdx(gi),ok=0,g=0;OBSORDER.forEach(function(id){var o=OBS[id],r=S.log[id];if(o.day!==n||!r||r.answer==null)return;g++;if(!tMiss(r))ok++;});return {done:!!S.done[n],ok:ok,g:g};}
-function openPxMenu(){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);sh.append(x,el("h3",{text:"练习"}),el("p",{class:"hwnote",text:"每两天一组。读完这一组的最后一天，这组练习就开放：基础检测人人都做，再加你自己错过的旧题和相似的新题。"}));
+function openPxMenu(){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);sh.append(x,el("h3",{text:"练习"}),el("p",{class:"hwnote",text:(PG.length&&PG.every(function(g){return g.days.length===1;}))?"每天一组。读完这一天，这一天的练习就开放：基础检测人人都做，再加你课上错过的题和相似的新题。":"每两天一组。读完这一组的最后一天，这组练习就开放：基础检测人人都做，再加你自己错过的旧题和相似的新题。"}));
   var cur=pgCur(),ul=el("div",{class:"pxlist"});PG.forEach(function(g,gi){var open=pgOpen(gi),st=pxStat(gi),last=g.days[g.days.length-1];var b=el("button",{class:"pxrow"+(open?"":" lock")+(gi===cur?" cur":""),type:"button"},[el("b",{text:pgTitle(gi)}),el("span",{text:!open?"读完第"+last+"天后开放":st.done?"做完了 · 对 "+st.ok+"/"+st.g+" · 可以再练":st.g?"做了一半":"可以做了"})]);if(open)b.addEventListener("click",function(){openPractice(gi);});else b.disabled=true;ul.append(b);});sh.append(ul);o.hidden=false;}
 function reviewIdx(day){for(var i=0;i<DAYS.length;i++)if(DAYS[i].reviewOf===day)return i+1;return 0;}
 function openReview(day){var n=reviewIdx(day);if(!n)return;if(!hwOf(day)){openHw(day);return;}closeOv();S.retDay=S.day>NVIS?(S.retDay||1):S.day;startDay(n,false);}
@@ -1143,7 +1143,7 @@ function openHw(focusDay){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el
             rec.start(1000);bRec.classList.add("on");bGo.disabled=true;msg.textContent="正在录音……读完了，按“停止”。（最长 4 分钟）";
           }).catch(function(){msg.textContent="打不开麦克风。请在浏览器里允许这个网页用麦克风；或者用手机录好，按“选录音文件”交。";});});}
     }
-    card.append(ta,el("div",{class:"row"},[bRec,bAud,bPic,bGo].filter(Boolean)),thumbs,fi,fa,msg);paintThumbs();sh.append(card);});
+    [ta,el("div",{class:"row"},[bRec,bAud,bPic,bGo].filter(Boolean)),thumbs,fi,fa,msg].forEach(function(x){if(x)card.append(x);});paintThumbs();sh.append(card);});
   if(!list.length)sh.append(el("p",{text:"这篇课文没有布置课后作业。"}));
   o.hidden=false;var fc=focusDay&&cards[focusDay];if(fc)setTimeout(function(){fc.scrollIntoView({block:"start",behavior:"smooth"});},50);else x.focus();}
 /* 作业里的录音（朗读）：网址末尾带 #audio 作记号 */
