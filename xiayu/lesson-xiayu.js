@@ -13,6 +13,9 @@
  */
 window.LESSON={
 id:"g8-xiayutian",
+/* 11-20 本课专属外观（公用部分见 ../theme-base.css） */
+theme:{name:"xiayu",css:"theme-xiayu.css?v=11201500",figs:"circle",def:"",byBg:{"img/xy-bed.webp":"warm","img/xy-hall.webp":"warm","img/xy-study.webp":"warm","img/xy-hemp.webp":"warm"},
+ intro:{bg:"img/xy-window.webp",title:"下雨天，真好",author:"琦君",lines:["我问你，","你喜欢下雨吗？","啊，真好，又是个下雨天。"],btn:"听雨 ▸"}},
 title:"读《下雨天，真好》",sub:"八年级 · 琦君",
 textTitle:"下雨天，真好",author:"琦君",
 source:"选自《琦君散文》，浙江文艺出版社1994年版。有删节，略有改动。琦君，女，1917年生，当代作家。课本第145—149页。虚线下面的词，点一下看意思。",

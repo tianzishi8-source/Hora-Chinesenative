@@ -1,0 +1,63 @@
+/* 课文专属外观 · 公用部分（11-20 起，老师：每篇课文要有自己的风格）
+   引擎在 body 上加 class "th" 和 "th-课名"，再按背景图设 data-tint。
+   这里只放各课共用的做法：半透明毛玻璃的顶栏和对话框、圆形头像、开场画面、信笺按内容收高。
+   颜色全用变量，每课在自己的 theme-xxx.css 里给变量赋值，并画自己的“原文区物件”。
+   原则：要读的字（题目、选项、对话）始终高对比；氛围只放在边框、底色和原文区上。 */
+body.th{--th-glass:rgba(22,24,30,.42);--th-glass2:rgba(22,24,30,.66);--th-line:rgba(255,255,255,.12);--th-ink:#efe8da;--th-dim:rgba(239,232,218,.72);
+  --th-acc:#d9a04f;--th-acc-ink:#1d1710;--th-vig:rgba(10,10,14,.35);--th-bg:#1c1f26}
+body.th{background:var(--th-bg)!important}
+body.th .app::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(125% 95% at 60% 45%,transparent 52%,var(--th-vig) 100%);transition:background 1.6s}
+/* 顶栏 */
+body.th .bar{background:var(--th-glass)!important;-webkit-backdrop-filter:blur(10px) saturate(1.1);backdrop-filter:blur(10px) saturate(1.1);border-bottom:1px solid var(--th-line)!important;box-shadow:0 10px 26px -18px rgba(0,0,0,.6);transition:background 1.6s}
+body.th .bar::before,body.th .bar::after{display:none!important}
+body.th .brand{color:var(--th-ink)!important}body.th .brand small{color:var(--th-dim)!important}
+body.th .dpad{background:rgba(255,255,255,.08)!important;color:var(--th-dim)!important;border-color:var(--th-line)!important;box-shadow:none!important}
+body.th .dpad *{color:inherit!important}
+body.th .dpad[aria-current=true]{background:var(--th-acc)!important;color:var(--th-acc-ink)!important}
+body.th .tbtn{background:rgba(255,255,255,.09)!important;color:var(--th-ink)!important;border-color:var(--th-line)!important}
+body.th .tbtn[aria-pressed=true]{background:var(--th-acc)!important;color:var(--th-acc-ink)!important}
+body.th .stages .st{color:var(--th-dim)!important}
+body.th .stages .st[aria-current=true]{color:var(--th-acc)!important}
+body.th .stages .st i{border-color:var(--th-dim)!important}
+body.th .stages .st.done i,body.th .stages .st[aria-current=true] i{border-color:var(--th-acc)!important;background-color:var(--th-acc)!important}
+body.th .stages::before,body.th .stages::after{background:var(--th-line)!important}
+body.th .brand,body.th .stages .st,body.th .tbtn,body.th .dpad,body.th .work>.head h2,body.th .work>.head .when{text-shadow:0 1px 3px rgba(0,0,0,.55)}
+body.th .tbtn[aria-pressed=true],body.th .dpad[aria-current=true],body.th .dlg .cont{text-shadow:none}
+/* 环节标题 */
+body.th .work>.head{background:var(--th-glass)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--th-line)!important;transition:background 1.6s}
+body.th .work>.head h2{color:var(--th-ink)!important}body.th .work>.head .when{color:var(--th-dim)!important}
+/* 对话框 */
+body.th .dlg{background:var(--th-glass2)!important;-webkit-backdrop-filter:blur(12px) saturate(1.1);backdrop-filter:blur(12px) saturate(1.1);border:1px solid var(--th-line)!important;box-shadow:0 22px 44px -22px rgba(0,0,0,.7)!important;transition:background 1.6s}
+body.th .dlg-txt{color:var(--th-ink)!important;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+body.th .dlg .dbtn{background:rgba(255,255,255,.1)!important;color:var(--th-ink)!important;border-color:var(--th-line)!important}
+body.th .dlg .tskip{color:var(--th-acc)!important}
+body.th .dlg .cont{background:var(--th-acc)!important;color:var(--th-acc-ink)!important}
+body.th .th-cast .nm{color:var(--th-ink)!important;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+body.th .moretip{background:var(--th-acc);color:var(--th-acc-ink)}
+/* 原文区：高度随内容（放不下时在里面滚动），不再拉满一栏，让出背景 */
+@media (min-width:53.8rem){
+ body.th .main{align-items:stretch}
+ body.th #reader{align-self:start;max-height:100%;overflow:hidden;display:flex;flex-direction:column}
+ body.th #rbody{flex:0 1 auto;min-height:0;overflow-y:auto}
+}
+body.th #reader{box-shadow:0 30px 60px -30px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.08)!important}
+/* 开场画面 */
+#thIntro{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#0d131c;transition:opacity 1.2s ease}
+#thIntro.out{opacity:0;pointer-events:none}
+#thIntro .thi-bg{position:absolute;inset:-4%;background:center/cover no-repeat;filter:brightness(.6) saturate(.95);animation:thiZoom 16s ease-out both}
+@keyframes thiZoom{from{transform:scale(1.08)}to{transform:scale(1)}}
+#thIntro::after{content:"";position:absolute;inset:0;background:radial-gradient(90% 80% at 50% 50%,transparent 30%,rgba(6,9,15,.72));pointer-events:none}
+#thIntro .thi-in{position:relative;z-index:1;display:flex;flex-direction:row-reverse;align-items:flex-start;gap:34px;color:#f3ead6;text-shadow:0 2px 12px rgba(0,0,0,.6);max-height:86vh}
+#thIntro .thi-t{writing-mode:vertical-rl;margin:0;font-family:var(--f-disp);font-weight:400;font-size:clamp(3rem,6.6vw,5.2rem);letter-spacing:.3em;animation:thiIn 1.6s ease both}
+#thIntro .thi-a{writing-mode:vertical-rl;margin:0;padding-top:2.2em;font-size:1.05rem;letter-spacing:.4em;color:var(--thi-acc,#e7c88f);animation:thiIn 1.6s .5s ease both}
+#thIntro .thi-lines{display:flex;flex-direction:row-reverse;gap:10px;padding-top:4.2em}
+#thIntro .thi-lines p{writing-mode:vertical-rl;margin:0;font-family:var(--f-text);font-size:1.12rem;letter-spacing:.3em;line-height:1.6;animation:thiIn 1.4s ease both}
+#thIntro .thi-go{align-self:flex-end;writing-mode:vertical-rl;margin-right:10px;background:var(--thi-acc,#d9a04f);color:#1d1710;border:0;border-radius:999px;padding:18px 10px;font-size:1rem;letter-spacing:.2em;cursor:pointer;animation:thiIn 1.2s ease both;box-shadow:0 8px 24px -8px rgba(0,0,0,.6)}
+@keyframes thiIn{from{opacity:0;transform:translateY(-10px);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+@media (max-width:700px){#thIntro .thi-in{gap:16px}#thIntro .thi-lines p{font-size:.98rem}#thIntro .thi-t{font-size:2.8rem}}
+@media (prefers-reduced-motion:reduce){#thIntro .thi-bg,#thIntro .thi-t,#thIntro .thi-a,#thIntro .thi-lines p,#thIntro .thi-go{animation:none}}
+/* 讲解栏底部的“往下滑，还有” */
+.work{position:relative}
+.moretip{position:sticky;bottom:6px;align-self:center;margin-top:-34px;z-index:5;border:0;border-radius:999px;padding:5px 14px;font-size:.85rem;background:rgba(31,27,23,.78);color:#fff8ea;box-shadow:0 6px 16px -6px rgba(0,0,0,.5);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s}
+.moretip.on{opacity:1;pointer-events:auto;animation:mtBob 1.8s ease-in-out infinite}
+@keyframes mtBob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}

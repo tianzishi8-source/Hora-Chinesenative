@@ -16,6 +16,9 @@ function C3(ans,why,wrong){/* ans: "s"看见 / "g"推想 / "f"感情；可以是
 
 window.LESSON={
 id:"g8-zhizhu",
+/* 11-20 本课专属外观（公用部分见 ../theme-base.css） */
+theme:{name:"zhizhu",css:"theme-zhizhu.css?v=11201500",figs:"circle",def:"",byBg:{"img/bg-2.webp":"dusk"},
+ intro:{bg:"img/bg-1.webp",title:"蜘蛛",author:"英国 · 哥尔斯密",lines:["在我观察过的独居的昆虫中，","蜘蛛最聪明。"],btn:"开始观察 ▸"}},
 title:"读《蜘蛛》",sub:"G8 · 哥尔斯密",
 textTitle:"蜘蛛",author:"哥尔斯密",
 source:"选自《英国十八世纪散文选·蜘蛛的智慧》，湖南人民出版社1986年版，黄绍鑫译。哥尔斯密（1728—1774），英国作家，出生在爱尔兰。虚线下面的词，点一下看意思。",

@@ -1,0 +1,13 @@
+/* 《下雨天，真好》专属外观：旧时光 · 雨（11-20）
+   下雨的场景是灰绿的雨天玻璃；回忆母亲、父亲、一屋子人的暖场景（被窝、大厅、书斋、纺麻）转成昏黄的灯光色。
+   原文区：一本旧稿纸日记本——泛黄的纸、淡蓝横线、左边一条红色页边线。 */
+body.th-xiayu{--th-glass:rgba(48,60,58,.40);--th-glass2:rgba(40,50,49,.66);--th-line:rgba(230,240,235,.16);--th-ink:#f1ece0;--th-dim:rgba(241,236,224,.74);
+  --th-acc:#e0b56a;--th-acc-ink:#21190f;--th-vig:rgba(20,28,28,.32);--th-bg:#2a3331;--thi-acc:#e0b56a}
+body.th-xiayu[data-tint=warm]{--th-glass:rgba(84,58,32,.40);--th-glass2:rgba(72,50,30,.66);--th-line:rgba(255,226,180,.18);--th-ink:#fbefdc;--th-vig:rgba(70,40,12,.30)}
+body.th-xiayu #reader{background:
+  linear-gradient(90deg,transparent 52px,rgba(196,72,60,.45) 52px,rgba(196,72,60,.45) 53.5px,transparent 53.5px),
+  repeating-linear-gradient(180deg,transparent 0 37px,rgba(90,130,170,.16) 37px 38px),
+  radial-gradient(120% 90% at 100% 100%,rgba(150,110,50,.16),transparent 60%),
+  url(img/paper.webp) 0 0/512px,#f6efdf!important;border-radius:6px!important}
+body.th-xiayu #reader::before{content:"";position:absolute;left:14px;top:18px;bottom:18px;width:10px;background:radial-gradient(circle,rgba(70,60,50,.35) 3px,transparent 4px) 0 0/10px 46px repeat-y;pointer-events:none}
+body.th-xiayu #rbody{padding-left:68px!important}

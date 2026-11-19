@@ -250,6 +250,9 @@ var BZ_EXTRAS=[
 
 window.LESSON={
 id:"g78-xinzhuang",
+/* 11-20 本课专属外观（公用部分见 ../theme-base.css） */
+theme:{name:"xinzhuang",css:"theme-xinzhuang.css?v=11201500",figs:"circle",def:"",byBg:{},
+ intro:{bg:"img/cover.webp",title:"皇帝的新装",author:"丹麦 · 安徒生",lines:["许多年以前，有一位皇帝，","他非常喜欢好看的新衣服。","童话，为什么能说出真话？"],btn:"翻开童话 ▸"}},
 title:"读《皇帝的新装》《黑信》",sub:"G7·G8 · 安徒生 · 哈谢克",
 textTitle:"皇帝的新装",author:"安徒生",
 source:"选自《安徒生童话和故事选》，人民文学出版社1956年版，叶君健译。安徒生（1805—1875），丹麦童话作家。每段开头的小号数字是段落号；虚线下面的词，点一下看意思。",

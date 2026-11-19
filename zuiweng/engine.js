@@ -278,7 +278,7 @@ function layoutFigs(){if(!FIGS)return;var work=$(".work"),cast=$("#cast"),task=$
   var free=cr.top-bottom-14,wide=innerWidth>860&&wr.width>=380,mode;
   /* 内容已经要往下滑才看得完：不放大图，只用头像圈，免得挡字 */
   if(work.scrollHeight>work.clientHeight+4)free=0;
-  if(!wide||free<280)mode="circle";else if(free<320&&FIGMODE==="circle")mode="circle";else mode=free>=470?"full":"half";
+  if(!wide||free<280||(L.theme&&L.theme.figs==="circle"))mode="circle";else if(free<320&&FIGMODE==="circle")mode="circle";else mode=free>=470?"full":"half";
   var h=Math.min(free,mode==="full"?600:420);
   /* 并排的几个人加起来不能比右栏宽，不然会伸到左边原文上 */
   var nf=0;for(var wk in SPR)nf++;nf=Math.max(1,nf);
@@ -930,7 +930,19 @@ bSkip.addEventListener("click",function(){var n=S.day,i=(S.beat[n]||0)+1;runFrom
 function startDay(n,resume){var dd=DAYS[n-1];if(dd&&dd.reviewOf&&!hwOf(dd.reviewOf)&&!TMODE){openHw(dd.reviewOf);return;}S.day=n;if(!resume)S.beat[n]=0;save();paintDays();runFrom(n,S.beat[n]||0);}
 function resetUI(){KEEPQ=null;unstrike();unmaskParas();var c5=$("#cal5");if(c5)c5.remove();VOICE.stop();stopNarr();R.onPick=null;R.onMark=null;R.onCut=null;R.picks={};R.keys={};R.marks={};R.cuts={};setMode("none");clearTask();closePop();paintMarks();bCont.hidden=true;app.classList.remove("hush");bChat.disabled=false;TALK=false;}
 /* 背景画：lesson 写 bg（默认），某天 / 某个环节也可以写 bg；淡淡铺在整个页面后面，换环节时渐变 */
-function setBg(src){var d=$("#scenebg");if(!d){d=el("div",{id:"scenebg","aria-hidden":"true"});document.body.prepend(d);}if(!src){d.classList.remove("on");d.dataset.src="";return;}if(d.dataset.src===src)return;d.dataset.src=src;var im=new Image();im.onload=function(){if(d.dataset.src!==src)return;d.classList.remove("on");setTimeout(function(){d.style.backgroundImage='url("'+src+'")';d.classList.add("on");},d.style.backgroundImage?450:0);};im.src=src;}
+/* ===== 外观设置（11-20，老师：每篇课文要有自己的风格；公用样式在 ../theme-base.css）=====
+   L.theme={name,css,figs:"circle",def,byBg:{图:"色调"},intro:{bg,title,author,lines:[],btn}} */
+var THEME=L.theme||null;
+function themeTint(src){if(!THEME)return;var k=String(src||"").split("?")[0],m=THEME.byBg||{},t=THEME.def||"";for(var x in m){if(x.split("?")[0]===k)t=m[x];}if(document.body.dataset.tint!==t)document.body.dataset.tint=t;}
+function themeIntro(){var I=THEME.intro;if(!I)return;if((function(){try{return sessionStorage.getItem("thIntro:"+L.id);}catch(e){return null;}})())return;
+  var ov=el("div",{id:"thIntro",role:"dialog","aria-label":L.title},[el("div",{class:"thi-bg",style:'background-image:url("'+(I.bg||L.bg)+'")'}),el("div",{class:"thi-in"},[el("h1",{class:"thi-t",text:I.title||L.textTitle}),el("p",{class:"thi-a",text:I.author||L.author||""}),el("div",{class:"thi-lines"},(I.lines||[]).map(function(t,k){return el("p",{text:t,style:"animation-delay:"+(1.2+k*.9)+"s"});})),el("button",{type:"button",class:"thi-go",text:I.btn||"进入 ▸",style:"animation-delay:"+(1.6+(I.lines||[]).length*.9)+"s"})])]);
+  document.body.append(ov);var gone=false;function go(){if(gone)return;gone=true;try{sessionStorage.setItem("thIntro:"+L.id,"1");}catch(e){}ov.classList.add("out");setTimeout(function(){ov.remove();},1300);}
+  ov.addEventListener("click",go);setTimeout(go,(I.auto||14)*1000);}
+(function(){if(!THEME)return;document.body.classList.add("th","th-"+THEME.name);[THEME.base||"../theme-base.css?v=11201500",THEME.css].forEach(function(h){if(!h)return;var lk=document.createElement("link");lk.rel="stylesheet";lk.href=h;document.head.append(lk);});setTimeout(themeIntro,0);})();
+/* 讲解栏内容放不下时，底部提示“往下滑，还有”（滑到底就消失） */
+(function(){var w=$(".work");if(!w)return;var tip=el("button",{type:"button",class:"moretip","aria-hidden":"true",text:"往下滑，还有 ▾"});tip.addEventListener("click",function(){w.scrollBy({top:w.clientHeight*.7,behavior:"smooth"});});w.append(tip);
+  function chk(){var more=w.scrollHeight-w.clientHeight-w.scrollTop>24;tip.classList.toggle("on",more);}w.addEventListener("scroll",chk,{passive:true});setInterval(chk,600);})();
+function setBg(src){themeTint(src);var d=$("#scenebg");if(!d){d=el("div",{id:"scenebg","aria-hidden":"true"});document.body.prepend(d);}if(!src){d.classList.remove("on");d.dataset.src="";return;}if(d.dataset.src===src)return;d.dataset.src=src;var im=new Image();im.onload=function(){if(d.dataset.src!==src)return;d.classList.remove("on");setTimeout(function(){d.style.backgroundImage='url("'+src+'")';d.classList.add("on");},d.style.backgroundImage?450:0);};im.src=src;}
 function runFrom(n,b){var dP=DAYS[n-1];if(dP&&dP.practice&&!dP._built){if(!pgOpen(dP.pg)&&!TMODE){n=Math.min(S.retDay||1,NVIS);b=S.beat[n]||0;S.day=n;dP=null;}else{dP.beats=buildPractice(dP.pg);dP._built=1;if(b>=dP.beats.length)b=0;}}RUN.token++;var tok=RUN.token;resetUI();GUEST.who="";if(!S.data.name&&BK.tpw&&!BK.me)S.data.name="老师";var wantT=DAYS[n-1].text||"main";if(wantT!==CURTEXT)useText(wantT);
   var beats=DAYS[n-1].beats;(function loop(i){if(tok!==RUN.token)return;if(i>=beats.length){S.done[n]=1;setTimeout(paintHw,0);S.beat[n]=beats.length;commit();paintDays();paintStages(n,beats.length);endOfDay(n,tok);return;}S.beat[n]=i;S.reach=S.reach||{};if(!(S.reach[n]>=i))S.reach[n]=i;save();paintStages(n,i);clearTask();bCont.hidden=true;unmaskParas();var bt=beats[i];GUEST.who="";setBg(bt.bg||DAYS[n-1].bg||L.bg);try{var strs=[];JSON.stringify(bt.steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});if(beats[i+1])JSON.stringify(beats[i+1].steps,function(k,v){if(typeof v==="string")strs.push(v);return v;});VOICE.warm(strs);}catch(e){}SOUND.mood(bt.mood||(L.sound&&L.sound.mood)||"calm");
     if(bt.skipIf&&get(bt.skipIf)&&!TMODE){loop(i+1);return;}

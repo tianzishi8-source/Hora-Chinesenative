@@ -1,0 +1,10 @@
+/* 《蜘蛛》专属外观：观察日记（11-20）
+   苔绿与泥土色的玻璃，按钮琥珀色；黄昏的房间转成暮蓝。
+   原文区：一本自然观察笔记——米色方格纸。 */
+body.th-zhizhu{--th-glass:rgba(46,54,36,.40);--th-glass2:rgba(40,46,30,.66);--th-line:rgba(235,240,215,.16);--th-ink:#f3f1e4;--th-dim:rgba(243,241,228,.75);
+  --th-acc:#d6a64e;--th-acc-ink:#1f1708;--th-vig:rgba(24,28,14,.30);--th-bg:#2b2f22;--thi-acc:#dcb15e}
+body.th-zhizhu[data-tint=dusk]{--th-glass:rgba(30,40,70,.42);--th-glass2:rgba(26,34,60,.68);--th-line:rgba(210,225,255,.16);--th-ink:#eef2fb;--th-vig:rgba(10,16,36,.35)}
+body.th-zhizhu #reader{background:
+  repeating-linear-gradient(0deg,transparent 0 23px,rgba(90,120,80,.14) 23px 24px),
+  repeating-linear-gradient(90deg,transparent 0 23px,rgba(90,120,80,.14) 23px 24px),
+  url(img/paper.webp) 0 0/512px,#f7f3e6!important;border-radius:6px!important}
