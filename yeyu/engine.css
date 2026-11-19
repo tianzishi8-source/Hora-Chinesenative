@@ -818,7 +818,12 @@ body.cover-text #reader::after{content:"听写中，原文先盖住";position:ab
 .xnfoot{margin:10px 0 0;font-size:.82rem;color:var(--muted)}
 
 /* ===== 11-19《夜雨寄北》 ===== */
-#rbody p.yyhid{visibility:hidden}
+/* 还没写下的诗句：显示成空的方格，告诉学生一共四句、每句七字，等诗人写下 */
+#rbody p.yyhid{font-size:0!important;line-height:0;padding:1.05rem 0;margin:.35rem 0}
+#rbody p.yyhid *{display:none}
+#rbody p.yyhid::after{content:attr(data-ph);font-size:1.5rem;line-height:1;letter-spacing:.14em;color:rgba(110,92,70,.32);font-family:var(--f-text)}
+#rbody.yypend::before{content:"诗还没有写下来。跟着诗人，一句一句写在这里。";display:block;text-align:center;color:var(--muted);font-size:.92rem;letter-spacing:.06em;margin:.4rem 0 1rem}
+#rbody.yynone::before{content:"今夜，诗人要写一首诗。四句，每句七个字。等一会儿，它会一句一句出现在这里。"}
 #rbody p.yynew{animation:yyink 1.6s ease}
 @keyframes yyink{0%{color:transparent;text-shadow:0 0 12px rgba(31,27,23,.5)}100%{color:inherit;text-shadow:none}}
 .yywrite{border-radius:10px;padding:22px 20px;background:linear-gradient(rgba(255,252,243,.88),rgba(255,252,243,.88)),url(img/paper.webp) 0 0/400px;box-shadow:0 18px 32px -20px rgba(60,40,20,.6);text-align:center}

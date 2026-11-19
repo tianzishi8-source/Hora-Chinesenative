@@ -967,10 +967,11 @@ H.note=function(s,tok){var NCm=["","①","②","③","④","⑤","⑥","⑦","�
    poemHide 诗句先藏起来，写到哪句亮哪句　write 诗人一字一字写下一句（配他的声音）
    pond 秋池涨满　candle 剪烛（屋里变暗，点了才亮）　askAuthor 问作者（选问题，听回答）
    recite 跟着画面背（三轮遮字）　dictate 默写，逐字核对　bins 分到几栏 */
-function yyShowUpto(n){$$("p",rbody).forEach(function(p,k){p.classList.toggle("yyhid",k>=n);p.classList.toggle("yynew",false);});}
+function yyShowUpto(n){var ps=$$("p",rbody).slice(0,PARAS.length);$$("p",rbody).slice(PARAS.length).forEach(function(p){p.classList.remove("yyhid");});ps.forEach(function(p,k){if(!p.dataset.ph){var t=(PARAS[k]||p.textContent||"");p.dataset.ph=t.replace(/[^，。、！？]/g,"□");}p.classList.toggle("yyhid",k>=n);p.classList.toggle("yynew",false);});
+  rbody.classList.toggle("yypend",n<ps.length);rbody.classList.toggle("yynone",n<=0);}
 H.poemHide=function(s){yyShowUpto(s.upto==null?4:s.upto);return Promise.resolve();};
 H.write=function(s,tok){var t=PARAS[s.line]||"";clearTask();var card=el("div",{class:"yywrite"});var row=el("div",{class:"yyw-line"});card.append(row);task.append(card);xyLay();
-  var chars=t.split(""),i=0;return new Promise(function(res,rej){function step(){if(tok!==RUN.token)return rej(CANCEL);if(i>=chars.length){var p=$$("p",rbody)[s.line];if(p){p.classList.remove("yyhid");p.classList.add("yynew");try{p.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}SOUND.sfx("page");res();return;}
+  var chars=t.split(""),i=0;return new Promise(function(res,rej){function step(){if(tok!==RUN.token)return rej(CANCEL);if(i>=chars.length){var p=$$("p",rbody)[s.line];if(p){p.classList.remove("yyhid");p.classList.add("yynew");var left=$$("p.yyhid",rbody).length;rbody.classList.toggle("yypend",left>0);rbody.classList.remove("yynone");try{p.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}SOUND.sfx("page");res();return;}
       row.append(el("span",{class:"yyc",text:chars[i]}));i++;setTimeout(step,reduce?0:(/[，。]/.test(chars[i-1])?120:260));}step();})
    .then(function(){return say(t,s.who||"lsy",tok);}).then(function(){return next("继续",tok,true);});};
 H.pond=function(s,tok){clearTask();var box=el("div",{class:"yypond"},[el("div",{class:"yyp-water"}),el("div",{class:"yyp-mark",text:"前几天的水位"}),el("div",{class:"yyp-label",text:"秋池"})]);
