@@ -26,6 +26,8 @@
   function byGrade(g) { return LESSONS.filter(function (l) { return l.grade === g; }); }
   function guessGrade(cls) { var m = /(?:G|GRADE|Y)(\d{1,2})/.exec(cls || "") || /^(\d{1,2})/.exec(cls || ""); var g = m ? +m[1] : 0; return g >= 1 && g <= 12 ? g : 0; }
   function doneDays(l) { if (!me) return 0; var s = get("hora-" + l.id + "-" + me.cls + "|" + me.name); return s && s.done ? Object.keys(s.done).length : 0; }
+  /* 册页上显示的“读完了几天”：只数第 1—total 天里真读完的（练习、错题本、假期作业等也记在 done 里，不算；八年级《皇帝的新装》total 只有 3） */
+  function readDays(l) { if (!me) return 0; var s = get("hora-" + l.id + "-" + me.cls + "|" + me.name), t = l.total || 99; return s && s.done ? Object.keys(s.done).filter(function (k) { return +k >= 1 && +k <= t && s.done[k]; }).length : 0; }
   /* 课文页记下的“作业还没交几份”（读完的天里没交的） */
   function hwDue(l) { if (!me) return 0; var h = get("hora-hwdue-" + l.id + "-" + me.cls + "|" + me.name); return h && h.due ? h.due : 0; }
   function hwNote() { var due = LESSONS.filter(function (l) { return hwDue(l); }); if (!due.length) return ""; return '<div class="hwnote">' + due.map(function (l) { return '<button type="button" data-hw="' + esc(l.id) + '">《' + esc(l.title) + '》还有 ' + hwDue(l) + ' 份作业没交 →</button>'; }).join("") + '</div>'; }
@@ -454,7 +456,7 @@
     var h = top("十二册") + '<div class="page"><h1 class="h1">' + NUM[g] + '年级 · 册页</h1><p class="lead">左右翻页，一页一篇课文。</p><div class="album" id="album">';
     h += '<section class="leaf front"><div class="leaf-in"><div class="row2"><div class="big">' + NUM[g] + '年级</div><div class="yin"><div>一句话说得合宜，<br>就如金苹果<br>在银网子里。<small>箴言 25:11</small></div><div>愿我口中的言语、<br>心里的意念<br>在你面前蒙悦纳。<small>诗篇 19:14</small></div></div></div></div></section>';
     list.forEach(function (l, i) {
-      var dd = teacher ? 0 : doneDays(l), pt = l.picText, pic = l.pic ? '<figure class="photo"><img src="' + esc(l.pic) + '" alt="' + esc(l.picAlt || "《" + l.title + "》") + '" loading="lazy">' +
+      var dd = teacher ? 0 : readDays(l), pt = l.picText, pic = l.pic ? '<figure class="photo"><img src="' + esc(l.pic) + '" alt="' + esc(l.picAlt || "《" + l.title + "》") + '" loading="lazy">' +
         (pt ? '<div class="pp-top">' + esc(pt.top) + '</div><div class="pp-day">' + esc(pt.day) + '</div><div class="pp-lunar">' + esc(pt.lunar) + '</div><div class="pp-week">' + esc(pt.week) + '</div>' : "") + '</figure>' : '<span style="font-family:var(--f-brush);font-size:3rem">' + esc(l.title) + '</span>';
       h += '<section class="leaf" data-i="' + i + '"><div class="leaf-in"><div class="pic"><div class="wash"></div>' + pic + '</div>' +
         '<div class="colo"><h3>' + esc(l.title) + '</h3><span class="au">' + esc(l.author) + '</span><p>' + esc(l.blurb || "") + '</p>' + (dd ? '<span class="seal">' + (l.unit === "课时" ? "第" + NUM[Math.min(dd, 12)] + "课时" : "已读" + NUM[Math.min(dd, 12)] + "日") + '</span>' : "") + '</div></div>' +
