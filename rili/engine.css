@@ -482,3 +482,6 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 /* 11-08：全屏时整体放大（版面用 rem，跟着根字号一起变大） */
 html:fullscreen{font-size:clamp(16px,min(1.3vw,2.3vh),24px)}
 html:-webkit-full-screen{font-size:clamp(16px,min(1.3vw,2.3vh),24px)}
+
+/* 11-20 老师页：表格上方的图例 */
+.tlegend{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .9rem;margin:.2rem 0 .6rem;font-size:.86rem;color:var(--ink-2,#5b5246)}.tlegend .tl-t,.tlegend .tl-c{font-weight:700;color:var(--ink,#222)}.tlegend .tl-k{padding:.12em .6em;border-radius:6px;color:var(--ink,#222)}

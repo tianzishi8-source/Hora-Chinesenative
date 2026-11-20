@@ -883,3 +883,6 @@ body.cover-text #reader::after{content:"听写中，原文先盖住";position:ab
 .moretip.on{opacity:1;pointer-events:auto;animation:mtBob 1.8s ease-in-out infinite}
 @keyframes mtBob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
 body.th-yeyu .moretip{background:#d9a04f;color:#1d1710}
+
+/* 11-20 老师页：表格上方的图例 */
+.tlegend{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .9rem;margin:.2rem 0 .6rem;font-size:.86rem;color:var(--ink-2,#5b5246)}.tlegend .tl-t,.tlegend .tl-c{font-weight:700;color:var(--ink,#222)}.tlegend .tl-k{padding:.12em .6em;border-radius:6px;color:var(--ink,#222)}
