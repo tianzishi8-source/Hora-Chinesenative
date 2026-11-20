@@ -24,6 +24,19 @@
   var standalone = (window.matchMedia && matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches) || navigator.standalone;
   function goFs() { try { var p = (R.requestFullscreen || R.webkitRequestFullscreen).call(R); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
   function want(v) { try { if (v === undefined) return sessionStorage.getItem("xg-fs") === "1"; sessionStorage.setItem("xg-fs", v ? "1" : "0"); } catch (e) {} }
+  /* 11-20：有的平板浏览器（如 iPad 上的 Chrome、微信里打开）不支持网页全屏，原来这时“全屏”签干脆不出现。
+     现在照样出现，点了进入“专注”：收起顶栏，课文和题目占满屏幕；第一次点时提示真正全屏的办法。 */
+  if (!canFs() && !standalone) {
+    css.textContent += "body.xg-focus header.bar{height:0!important;min-height:0!important;padding:0!important;border:0!important;overflow:hidden!important;box-shadow:none!important}body.xg-focus header.bar::after{display:none}";
+    var fb = D.createElement("button"); fb.type = "button"; fb.className = "xg-fs"; fb.textContent = "全屏";
+    function fpaint(on) { D.body.classList.toggle("xg-focus", on); fb.textContent = on ? "退出全屏" : "全屏"; try { dispatchEvent(new Event("resize")); } catch (e) {} }
+    fb.addEventListener("click", function (e) {
+      e.stopPropagation(); var on = !D.body.classList.contains("xg-focus"); want(on); fpaint(on);
+      if (on && !want.tipped) { want.tipped = 1; var t = D.createElement("div"); t.style.cssText = "position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:200;max-width:86vw;padding:10px 16px;border-radius:12px;background:rgba(21,35,42,.92);color:#f3ecdc;font:14px/1.6 'Noto Sans SC',system-ui,sans-serif;box-shadow:0 8px 24px -10px rgba(0,0,0,.5)";
+        t.textContent = "已收起顶栏。这个浏览器不支持网页全屏；想要真正全屏：用 Safari 打开弦歌，点“分享 → 添加到主屏幕”，以后从主屏幕图标打开。"; D.body.appendChild(t); setTimeout(function () { t.remove(); }, 6000); }
+    });
+    (D.body ? Promise.resolve() : new Promise(function (r) { D.addEventListener("DOMContentLoaded", r); })).then(function () { D.body.appendChild(fb); if (want()) fpaint(true); });
+  }
   if (canFs() && !standalone) {
     var b = D.createElement("button"); b.type = "button"; b.className = "xg-fs"; b.textContent = "全屏";
     b.addEventListener("click", function (e) { e.stopPropagation(); if (fsEl()) { want(false); (D.exitFullscreen || D.webkitExitFullscreen).call(D); } else { want(true); goFs(); } });
