@@ -1,0 +1,57 @@
+/* 《小石潭记》专属外观：竹林 · 清潭（11-20）
+   只改界面的颜色和质感；要读的字（题目、选项、对话）始终保持高对比。
+   body.th-xst 下生效；data-tint 默认是清潭的青绿；"cold" 是第4段坐潭上的凄清。 */
+body.th-xst{--th-glass:rgba(14,40,34,.40);--th-glass2:rgba(16,44,38,.66);--th-line:rgba(220,255,240,.12);--th-ink:#eef3ea;--th-dim:rgba(232,242,234,.66);--th-gold:#c9d98a;--th-gold-ink:#16251b;--th-vig:rgba(6,20,16,.5)}
+body.th-xst[data-tint=cold]{--th-glass:rgba(24,34,44,.48);--th-glass2:rgba(26,36,48,.70);--th-line:rgba(210,225,240,.12);--th-ink:#e6edf3;--th-dim:rgba(220,232,242,.62);--th-gold:#a9c3d6;--th-gold-ink:#141c24;--th-vig:rgba(8,14,22,.62)}
+body.th-xst{background:#16271f!important}
+body.th-xst .app::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(125% 95% at 60% 45%,transparent 50%,var(--th-vig) 100%);transition:background 1.6s}
+/* 顶栏 */
+body.th-xst .bar{background:var(--th-glass)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--th-line)!important;box-shadow:0 10px 26px -18px #000;transition:background 1.6s}
+body.th-xst .bar::before,body.th-xst .bar::after{display:none!important}
+body.th-xst .brand{color:var(--th-ink)!important}body.th-xst .brand small{color:var(--th-dim)!important}
+body.th-xst .dpad{background:rgba(255,255,255,.06)!important;color:var(--th-dim)!important;border-color:var(--th-line)!important;box-shadow:none!important}
+body.th-xst .dpad *{color:inherit!important}
+body.th-xst .dpad[aria-current=true]{background:var(--th-gold)!important;color:var(--th-gold-ink)!important}
+body.th-xst .tbtn{background:rgba(255,255,255,.07)!important;color:var(--th-ink)!important;border-color:var(--th-line)!important}
+body.th-xst .tbtn[aria-pressed=true]{background:var(--th-gold)!important;color:var(--th-gold-ink)!important}
+body.th-xst .stages .st{color:var(--th-dim)!important}
+body.th-xst .stages .st[aria-current=true]{color:var(--th-gold)!important}
+body.th-xst .stages .st i{border-color:var(--th-dim)!important}
+body.th-xst .stages .st.done i,body.th-xst .stages .st[aria-current=true] i{border-color:var(--th-gold)!important;background-color:var(--th-gold)!important}
+body.th-xst .stages::before,body.th-xst .stages::after{background:var(--th-line)!important}
+/* 环节标题 */
+body.th-xst .work>.head{background:var(--th-glass)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--th-line)!important;transition:background 1.6s}
+body.th-xst .work>.head h2{color:var(--th-ink)!important}body.th-xst .work>.head .when{color:var(--th-dim)!important}
+/* 对话框：竹影里的一块青石 */
+body.th-xst .dlg{background:var(--th-glass2)!important;-webkit-backdrop-filter:blur(12px) saturate(1.1);backdrop-filter:blur(12px) saturate(1.1);border:1px solid rgba(200,240,210,.18)!important;box-shadow:0 22px 44px -22px #000,inset 0 1px 0 rgba(220,255,230,.12)!important;transition:background 1.6s}
+body.th-xst .dlg-txt{color:var(--th-ink)!important;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+body.th-xst .dlg .dbtn{background:rgba(255,255,255,.08)!important;color:var(--th-ink)!important;border-color:var(--th-line)!important}
+body.th-xst .dlg .tskip{color:var(--th-gold)!important}
+body.th-xst .dlg .cont{background:var(--th-gold)!important;color:var(--th-gold-ink)!important;box-shadow:0 6px 18px -6px rgba(170,200,110,.6)!important}
+body.th-xst .th-cast .nm{color:var(--th-ink)!important;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+/* 原文区：一张旧纸，横排；还没走到的段落先用 □ 占位（字号小一点，散文段落长） */
+body.th-xst #reader{background:radial-gradient(70% 50% at 90% 4%,rgba(210,235,200,.45),transparent 70%),linear-gradient(rgba(244,240,226,.6),rgba(244,240,226,.6)),url(img/paper.webp) 0 0/512px,#ece6d2!important;
+  box-shadow:0 30px 60px -30px rgba(0,0,0,.8),0 0 0 1px rgba(60,90,70,.25)!important;border-radius:5px!important}
+body.th-xst #rbody p.yyhid::after{font-size:1rem;letter-spacing:.06em;line-height:1.9;color:rgba(70,100,80,.32)}
+body.th-xst #rbody p.yyhid{padding:.35rem 0;line-height:1.9}
+body.th-xst #rbody.yypend::before{content:"文章还没有写下来。跟着柳先生走，走到哪里，文字就出现在哪里。"}
+body.th-xst #rbody p.yynew{animation:thInk 2s ease}
+@keyframes thInk{0%{color:transparent;text-shadow:0 0 14px rgba(30,50,40,.55)}100%{color:inherit;text-shadow:none}}
+/* 开场画面（竖排题目） */
+#thIntro{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#0f1d17;transition:opacity 1.2s ease}
+#thIntro.out{opacity:0;pointer-events:none}
+#thIntro .thi-bg{position:absolute;inset:-4%;background:center/cover no-repeat;filter:brightness(.7) saturate(.95);animation:thiZoom 16s ease-out both}
+@keyframes thiZoom{from{transform:scale(1.08)}to{transform:scale(1)}}
+#thIntro::after{content:"";position:absolute;inset:0;background:radial-gradient(90% 80% at 50% 50%,transparent 30%,rgba(5,14,10,.72));pointer-events:none}
+#thIntro .thi-in{position:relative;z-index:1;display:flex;flex-direction:row-reverse;align-items:flex-start;gap:34px;color:#f1f3e8;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+#thIntro .thi-t{writing-mode:vertical-rl;margin:0;font-family:var(--f-disp);font-weight:400;font-size:clamp(3.2rem,7vw,5.4rem);letter-spacing:.32em;animation:thiIn 1.6s ease both}
+#thIntro .thi-a{writing-mode:vertical-rl;margin:0;padding-top:2.2em;font-size:1.05rem;letter-spacing:.4em;color:#cfe0a0;animation:thiIn 1.6s .5s ease both}
+#thIntro .thi-lines{display:flex;flex-direction:row-reverse;gap:10px;padding-top:4.2em}
+#thIntro .thi-lines p{writing-mode:vertical-rl;margin:0;font-family:var(--f-text);font-size:1.12rem;letter-spacing:.3em;line-height:1.6;animation:thiIn 1.4s ease both}
+#thIntro .thi-go{align-self:flex-end;writing-mode:vertical-rl;margin-right:10px;background:#c9d98a;color:#16251b;border:0;border-radius:999px;padding:18px 10px;font-size:1rem;letter-spacing:.2em;cursor:pointer;animation:thiIn 1.2s ease both;box-shadow:0 8px 24px -8px rgba(170,200,110,.8)}
+@keyframes thiIn{from{opacity:0;transform:translateY(-10px);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+@media (max-width:700px){#thIntro .thi-in{gap:18px}#thIntro .thi-lines p{font-size:.98rem}}
+@media (prefers-reduced-motion:reduce){#thIntro .thi-bg,#thIntro .thi-t,#thIntro .thi-a,#thIntro .thi-lines p,#thIntro .thi-go,body.th-xst #rbody p.yynew{animation:none}}
+body.th-xst .brand,body.th-xst .stages .st,body.th-xst .tbtn,body.th-xst .dpad,body.th-xst .work>.head h2,body.th-xst .work>.head .when{text-shadow:0 1px 3px rgba(0,0,0,.55)}
+body.th-xst .tbtn[aria-pressed=true],body.th-xst .dpad[aria-current=true],body.th-xst .dlg .cont{text-shadow:none}
+body.th-xst .stages .st{color:rgba(236,242,232,.84)!important}
