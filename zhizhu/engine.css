@@ -489,3 +489,12 @@ html:-webkit-full-screen{font-size:clamp(16px,min(1.3vw,2.3vh),24px)}
 
 /* 11-20 老师页：表格上方的图例 */
 .tlegend{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .9rem;margin:.2rem 0 .6rem;font-size:.86rem;color:var(--ink-2,#5b5246)}.tlegend .tl-t,.tlegend .tl-c{font-weight:700;color:var(--ink,#222)}.tlegend .tl-k{padding:.12em .6em;border-radius:6px;color:var(--ink,#222)}
+/* 11-20 错题本与学完进度 */
+.mbar{position:relative;height:14px;border-radius:7px;background:rgba(0,0,0,.08);margin:10px 0 4px;overflow:visible}
+.mbar i{position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:#6aa36b}
+.mbar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:#a3382a}
+.mnum{margin:2px 0 8px;font-weight:600}
+.mchk{list-style:none;padding:0;margin:6px 0 12px}.mchk li{padding:3px 0}.mchk li.y{color:#2f6b3a}.mchk li.n{color:#8a4a2e}
+.hwok{color:#2f6b3a;margin:4px 0}
+.hwwarn.fix{background:#fff4d6;border-color:#d9b25a}
+textarea.fixnote{width:100%;margin-top:6px}
