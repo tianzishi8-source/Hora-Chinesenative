@@ -45,7 +45,7 @@ cast:{
       voicesBy:{
         qingxian:[{id:"q1",name:"清亮",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-4%",pitch:"+14Hz"},{id:"q2",name:"温柔",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-10%",pitch:"+6Hz"},{id:"q3",name:"活泼",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-2%",pitch:"+10Hz"}],
         changge:[{id:"c1",name:"沉稳",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-10%",pitch:"-18Hz"},{id:"c2",name:"低沉",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-8%",pitch:"-12Hz"},{id:"c3",name:"温和",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-6%",pitch:"-8Hz"}]}},
-  lzy:{name:"柳宗元",short:"柳先生",extra:true,shape:"seal",glyph:"柳",round:true,ink:"#3f6b52",voice:{gender:"male",pitch:.9,rate:.95},
+  lzy:{name:"柳宗元",short:"柳先生",extra:true,img:"img/xst-lzy.webp",round:true,shape:"seal",ch:"柳",ink:"#3f6b52",voice:{gender:"male",pitch:.9,rate:.95},
       voices:[{id:"a",name:"柳宗元",gender:"male",tts:"zh-CN-YunjianNeural",rate:"-14%",pitch:"-10Hz"}]},
   xiaoman:{name:"小满（同学）",short:"小满",extra:true,fig:{a:"img/xm-a.webp",b:"img/xm-b.webp",head:[505,228]},shape:"seal",glyph:"满",ink:"#b0662a",voice:{gender:"female",pitch:1.05,rate:1},voices:[{id:"a",name:"小满",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-6%",pitch:"-4Hz"}]},
   me:{name:"我",sprite:"me",shape:"seal",glyph:"我",seal:"同学",ink:"--warm",
@@ -77,8 +77,8 @@ sound:{mood:"calm",vol:.4,
  notes:[392,440,493.88,587.33,659.25,783.99,880,987.77],
  moods:{calm:{music:.7,tick:0},memory:{music:.5,tick:0},focus:{music:0,tick:.3},bright:{music:1,tick:0}},
  amb:{dir:"amb/",v:1,vol:.8,duck:.4,def:"xst-brook",byBg:{
-  "img/xst-path.webp":"xst-wind","img/xst-bamboo.webp":"xst-wind","img/xst-pond.webp":"xst-brook","img/xst-fish.webp":"xst-brook","img/xst-vines.webp":"xst-brook",
-  "img/xst-stream.webp":"xst-brook","img/xst-cold.webp":"xst-cold","img/xst-leave.webp":"xst-wind"}}},
+  "img/xst-path.webp?v=2":"xst-wind","img/xst-bamboo.webp?v=2":"xst-wind","img/xst-pond.webp?v=2":"xst-brook","img/xst-fish.webp?v=2":"xst-brook","img/xst-vines.webp?v=2":"xst-brook",
+  "img/xst-stream.webp?v=2":"xst-brook","img/xst-cold.webp?v=2":"xst-cold","img/xst-leave.webp?v=2":"xst-wind"}}},
 rainfx:{byBg:{}},
 practiceOpen:true,
 /* 课后练习：每天一组。core 人人做；variants 键＝课上那道题的 obs id：课上做错的学生，先重做原题，再做这道相似的新题。
@@ -139,14 +139,14 @@ practice:{
  }
 },
 /* 本课外观：竹林 · 清潭。青绿的玻璃面板，原文横排在旧纸上；坐潭上时整个界面变冷。 */
-theme:{name:"xst",css:"theme-xst.css?v=11202300",figs:"circle",def:"",byBg:{"img/xst-cold.webp":"cold"},
- intro:{bg:"img/xst-pond.webp",title:"小石潭记",author:"唐 · 柳宗元",lines:["一千二百多年前，永州。","竹林那边，","传来一阵水声。"],btn:"跟上柳先生 ▸"}},
-bg:"img/xst-path.webp",
+theme:{name:"xst",css:"theme-xst.css?v=11202300",figs:"circle",def:"",byBg:{"img/xst-cold.webp?v=2":"cold"},
+ intro:{bg:"img/xst-pond.webp?v=2",title:"小石潭记",author:"唐 · 柳宗元",lines:["一千二百多年前，永州。","竹林那边，","传来一阵水声。"],btn:"跟上柳先生 ▸"}},
+bg:"img/xst-path.webp?v=2",
 totalDays:3,
 days:[
 /* ===================== 第 1 天：隔着竹林听见水声（第1、2段） ===================== */
-{title:"隔着竹林听见水声",bg:"img/xst-bamboo.webp",short:"听见水声",beats:[
- {title:"跟着柳先生",mood:"calm",bg:"img/xst-path.webp",steps:[
+{title:"隔着竹林听见水声",bg:"img/xst-bamboo.webp?v=2",short:"听见水声",beats:[
+ {title:"跟着柳先生",mood:"calm",bg:"img/xst-path.webp?v=2",steps:[
   {t:"poemHide",upto:0},
   {t:"say",who:"hy",text:"今天读一篇一千二百多年前的游记。先不读书，先跟着写它的人，去走一走。"},
   {t:"say",who:"hy",text:"下面的场景，是根据课文和课本注释想象出来的。柳先生说的话，也是想象的。"},
@@ -161,7 +161,7 @@ days:[
     {text:"（不说话，快步跟上去。）",reply:"跟紧些，前面的竹子密。"}],
    obs:{id:"x1-first",label:"出发时说什么",skill:"进入情境"}}
  ]},
- {title:"隔着竹林",mood:"memory",bg:"img/xst-bamboo.webp",steps:[
+ {title:"隔着竹林",mood:"memory",bg:"img/xst-bamboo.webp?v=2",steps:[
   {t:"poemHide",upto:0},
   {t:"say",who:"lzy",text:"走了一百多步，前面是一大片竹林，过不去了。"},
   {t:"say",who:"lzy",text:"嘘，你听。竹林那边，有声音。"},
@@ -185,11 +185,11 @@ days:[
    obs:{id:"x1-xixing",label:"西行",skill:"词义"}},
   {t:"say",who:"hy",text:"还没看见水，先听见水。他用玉佩相碰的声音写水声：水还没露面，我们已经听出它清脆好听。"}
  ]},
- {title:"伐竹取道",mood:"bright",bg:"img/xst-bamboo.webp",steps:[
+ {title:"伐竹取道",mood:"bright",bg:"img/xst-bamboo.webp?v=2",steps:[
   {t:"poemHide",upto:0},
   {t:"say",who:"lzy",text:"竹子太密了。来，帮我砍出一条路。"},
   {t:"xstCut",q:"竹子挡住了路。",btn:"🪓 砍开竹子",behind:"小潭",done:"竹子分开了。往下一看，是一个小潭。",obs:{id:"x1-cut",label:"伐竹取道",skill:"进入情境"}},
-  {t:"write",who:"lzy",speed:170,text:"伐竹取道，下见小潭，水尤清冽。",bg:"img/xst-pond.webp"},
+  {t:"write",who:"lzy",speed:170,text:"伐竹取道，下见小潭，水尤清冽。",bg:"img/xst-pond.webp?v=2"},
   {t:"lines",tap:"✋ 把手伸进潭水里",items:["好凉！","水清得一眼就看见了底。"]},
   {t:"mc",q:"“水尤清冽”的“清冽”，和你刚才看到、摸到的对一对：",feedbackWho:"hy",
    options:[{text:"清澄而寒冷",ok:true,reply:"对。课本注释：清冽，清澄而寒冷。尤，格外。"},
@@ -197,7 +197,7 @@ days:[
     {text:"又深又黑",ok:false,reply:"你一眼就看见了底。是黑的吗？"}],
    obs:{id:"x1-qinglie",label:"清冽",skill:"词义"}}
  ]},
- {title:"潭底的石头",mood:"bright",bg:"img/xst-pond.webp",steps:[
+ {title:"潭底的石头",mood:"bright",bg:"img/xst-pond.webp?v=2",steps:[
   {t:"poemHide",upto:0},
   {t:"say",who:"lzy",text:"你看，这潭底不是泥沙，是一整块石头。"},
   {t:"say",who:"lzy",text:"靠近岸边，石底翻卷着露出水面，变出各种样子来。"},
@@ -215,7 +215,7 @@ days:[
    obs:{id:"x1-yiwei",label:"全石以为底",skill:"句式"}},
   {t:"say",who:"hy",text:"为坻，为屿，为嵁，为岩：四个短句，一句一种石头。小声读一遍，读得干脆，一块一块点出来。"}
  ]},
- {title:"青树翠蔓",mood:"calm",bg:"img/xst-vines.webp",steps:[
+ {title:"青树翠蔓",mood:"calm",bg:"img/xst-vines.webp?v=2",steps:[
   {t:"poemHide",upto:0},
   {t:"say",who:"lzy",text:"岸上的树青青的，藤蔓翠绿翠绿的。一阵风吹过来……"},
   {t:"write",who:"lzy",speed:200,text:"青树翠蔓，蒙络摇缀，参差披拂。",show:0},
@@ -231,7 +231,7 @@ days:[
    obs:{id:"x1-cenci",label:"参差披拂",skill:"词义"}},
   {t:"say",who:"hy",text:"第一段写完了。先听见水声，再看见水，再写潭底的石头、岸上的树：跟着他的脚步一路写过来。"}
  ]},
- {title:"一潭鱼",mood:"bright",bg:"img/xst-fish.webp",steps:[
+ {title:"一潭鱼",mood:"bright",bg:"img/xst-fish.webp?v=2",steps:[
   {t:"poemHide",upto:1},
   {t:"say",who:"lzy",text:"咦，水里有鱼。你数数，有多少？"},
   {t:"lines",tap:"🐟 数一数",items:["一条，两条，三条……","数不清，大约有一百来条吧。"]},
@@ -271,7 +271,7 @@ days:[
    obs:{id:"x1-xiangle",label:"似与游者相乐",skill:"体会感情"}},
   {t:"say",who:"hy",text:"记住他此刻的“乐”：心乐之，似与游者相乐。明天，他的心情会变。"}
  ]},
- {title:"认一认字词",mood:"focus",bg:"img/xst-pond.webp",steps:[
+ {title:"认一认字词",mood:"focus",bg:"img/xst-pond.webp?v=2",steps:[
   {t:"poemHide",upto:2},
   {t:"mc",q:"“皆若空游无所依”的“若”，意思是：",feedbackWho:"hy",
    options:[{text:"好像",ok:true,reply:"对。“若”是好像。今天还说“若隐若现”“欣喜若狂”。"},
@@ -285,13 +285,13 @@ days:[
    how:["在课本第2段“可百许头”旁边，写第一行。","在“皆若空游无所依”和“影布石上”下面画波浪线，旁边写第二行。","在“似与游者相乐”下面画直线，旁边写第三行。"],
    what:["可：大约　许：表示约数　若：好像","侧面烘托：不写水，写鱼和影子，把水的清衬出来（烘云托月）","似：好像。他心里乐（心乐之），看鱼也像在乐"]}
  ]},
- {title:"背第2段",mood:"calm",bg:"img/xst-fish.webp",steps:[
+ {title:"背第2段",mood:"calm",bg:"img/xst-fish.webp?v=2",steps:[
   {t:"poemHide",upto:2},
   {t:"say",who:"hy",text:"第2段最短，也最美。跟着刚才的画面，把它背下来。"},
   {t:"listenAll",id:"x1listen",only:[1],q:"先听一遍第2段，跟着在心里念",rate:1,silentMin:30,button:"听完了，开始背",note:"左边第2段会跟着声音亮起来。",obs:{id:"x1-listen",label:"听读第2段",skill:"朗读"}},
   {t:"recite",q:"跟着画面背。每一轮，先小声读出来，再点“我背出来了”。",
    lines:["潭中鱼可百许头，皆若空游无所依。","日光下澈，影布石上，佁然不动；","俶尔远逝，往来翕忽，似与游者相乐。"],
-   pics:["img/xst-fish.webp"],cues:["一百来条鱼，像在空中游","阳光，影子，一动不动","忽然游远，又游回来"],obs:{id:"x1-recite",label:"当堂背第2段",skill:"背诵"}},
+   pics:["img/xst-fish.webp?v=2"],cues:["一百来条鱼，像在空中游","阳光，影子，一动不动","忽然游远，又游回来"],obs:{id:"x1-recite",label:"当堂背第2段",skill:"背诵"}},
   {t:"dictate",key:"x1.dict",q:"不看课本，把第2段默写下来（一行一句，标点可以不写）。",
    lines:["潭中鱼可百许头，皆若空游无所依。","日光下澈，影布石上，佁然不动；","俶尔远逝，往来翕忽，似与游者相乐。"],ph:["潭中鱼……","日光……","俶尔……"],
    obs:{id:"x1-dict",label:"当堂默写第2段",skill:"默写"}},
