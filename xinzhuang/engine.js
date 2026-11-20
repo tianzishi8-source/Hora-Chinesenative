@@ -869,10 +869,10 @@ function buildPractice(gi){var P=L.practice||{},g=PG[gi]||{days:[]},inG=function
 function cuotiIdx(){for(var i=0;i<DAYS.length;i++)if(DAYS[i].cuoti)return i+1;return 0;}
 function buildCuoti(){var ms=mStat(S.log),steps=[],n=0,cur="?";
   ms.todo.forEach(function(id){if(n>=10)return;var o=OBS[id],st=STEPOF[id],V=mVar(id),can=mRedo(id);n++;var w=typeof PTXT==="function"?PTXT(o.src||o.day):"main";if(w!==cur){steps.push({t:"text",id:w});cur=w;}
-    if(can&&!tOk(S.log["px-"+id])){var cs=cloneStep(st,{id:"px-"+id,label:"重做："+o.label,skill:o.skill});delete cs.say;cs.q="（"+(o.src?"第"+o.src+"天基础检测":"第"+o.day+"天原题")+" · "+o.label+"）"+fill(cs.q||"");steps.push(cs);}
+    if(can&&!tOk(S.log["px-"+id])){var cs=cloneStep(st,{id:"px-"+id,label:"重做："+o.label,skill:o.skill});delete cs.say;var nw=!(S.log[id]&&(S.log[id].answer!=null||tMiss(S.log[id])));cs.q="（"+(nw?"补做 · 第"+(o.src||o.day)+"天新加的题":o.src?"第"+o.src+"天基础检测":"第"+o.day+"天原题")+" · "+o.label+"）"+fill(cs.q||"");steps.push(cs);}
     if(V&&!tOk(S.log["pv-"+id]))steps.push(cloneStep(V,{id:"pv-"+id,label:"新题："+o.label,skill:o.skill}));});
   var idx=cuotiIdx();steps.forEach(function(st){regObs(st,idx);});
-  return [{title:"错题本",mood:"focus",steps:n?[{t:"say",who:L.cast.lead,text:"这是你的错题本：没有一次做对的题都在这里。先重做原题，再做一道相似的新题；做对了，这道题就从错题本里划掉。这一轮有 "+n+" 道。"}].concat(steps):[{t:"say",who:L.cast.lead,text:"错题本里没有要重做的题了。"}]}];}
+  return [{title:"错题本",mood:"focus",steps:n?[{t:"say",who:L.cast.lead,text:"这是你的错题本：没有一次做对的题，还有课文里新加、你还没做过的题，都在这里。先重做原题，再做一道相似的新题；做对了，这道题就从错题本里划掉。这一轮有 "+n+" 道。"}].concat(steps):[{t:"say",who:L.cast.lead,text:"错题本里没有要重做的题了。"}]}];}
 function openCuoti(){var n=cuotiIdx();if(!n)return;closeOv();if(S.day<=NVIS)S.retDay=S.day;DAYS[n-1].beats=buildCuoti();DAYS[n-1]._built=1;S.done[n]=0;startDay(n,false);}
 function openMastery(){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);var f=mFinish(S,HWST),ms=f.ms,pc=Math.round(ms.p*100);
   sh.append(x,el("h3",{text:f.ok?"✓ 这篇课文学完了":"学完这篇课文"}),el("p",{class:"hwnote",text:"课上和练习里的判分题，一次没做对的都进错题本。在错题本里重做对了，就算掌握。掌握到 90%，天天读完、练习做完、作业都交了，才算学完。"}));
@@ -1049,11 +1049,13 @@ function mRedo(id){var st=STEPOF[id];return !!(st&&(st.t==="mc"||st.t==="ask")&&
 function mVar(id){return ((L.practice||{}).variants||{})[id];}
 function mBase(){var out=[];OBSORDER.forEach(function(id){var o=OBS[id];if(!o||!tGrad(o)||/^p[xv]-/.test(id))return;var d=o.src||o.day;if(!(d>=1&&d<=NVIS))return;if(o.src==null&&DAYS[o.day-1]&&DAYS[o.day-1].hidden)return;out.push(id);});return out;}
 function mDone(log,id){log=log||{};var r=log[id];if(tOk(r))return true;var V=mVar(id),can=mRedo(id);if(!can&&!V)return !!(r&&r.answer!=null);return (!can||tOk(log["px-"+id]))&&(!V||tOk(log["pv-"+id]));}
-function mStat(log){log=log||{};var g=0,m=0,todo=[];mBase().forEach(function(id){g++;if(mDone(log,id))m++;else{var r=log[id];if(r&&(r.answer!=null||tMiss(r))&&(mRedo(id)||mVar(id)))todo.push(id);}});return {g:g,m:m,todo:todo,p:g?m/g:0};}
+/* 11-20 课文改版后新加的题：学生已经读完的那一天（或做完的那组练习）里还没做过的题，进错题本“补做”；没法单独补做的题型（排序、配对等）不计入掌握率 */
+function mPast(d,id){var o=OBS[id];return !!(d&&d.done&&d.done[o.day]);}
+function mStat(log,d){log=log||{};d=d||(log===S.log?S:null);var g=0,m=0,todo=[];mBase().forEach(function(id){var r=log[id],can=mRedo(id)||mVar(id),fresh=!(r&&(r.answer!=null||tMiss(r)));if(fresh&&!can&&mPast(d,id))return;g++;if(mDone(log,id))m++;else if(can&&(!fresh||mPast(d,id)))todo.push(id);});return {g:g,m:m,todo:todo,p:g?m/g:0};}
 function mHwBad(st){return !!(st&&st.status&&st.status!=="通过");}
 function mFinish(d,hwst){d=d||S;var days=0;for(var n=1;n<=NVIS;n++)if(d.done&&d.done[n])days++;var px=PG.filter(function(g,gi){return d.done&&d.done[practiceIdx(gi)];}).length;
   var hw=hwList().filter(function(h){return h.day<=NVIS;}),hg=(d.data||{}).hw||{},hwGot=hw.filter(function(h){return hg[h.day];}).length,hwFix=hw.filter(function(h){return mHwBad(hwst&&hwst[h.day]);}).length;
-  var ms=mStat(d.log);return {days:days,px:px,hw:hw.length,hwGot:hwGot,hwFix:hwFix,ms:ms,ok:days>=NVIS&&px>=PG.length&&hwGot>=hw.length&&!hwFix&&ms.p>=.9};}
+   var ms=mStat(d.log,d);return {days:days,px:px,hw:hw.length,hwGot:hwGot,hwFix:hwFix,ms:ms,ok:days>=NVIS&&px>=PG.length&&hwGot>=hw.length&&!hwFix&&ms.p>=.9};}
 function tDayStat(d,n){var g=0,ok=0,w=0,wl=0;OBSORDER.forEach(function(id){var o=OBS[id];if(o.day!==n)return;var r=(d.log||{})[id];if(!r)return;if(tGrad(o)){if(r.answer!=null||tMiss(r)){g++;if(tFirst(r))ok++;}}else if(r.answer!=null){w++;wl+=String(r.answer).length;}});return {g:g,ok:ok,w:w,wl:wl};}
 function tLevel(ok,g){if(!g)return "";var p=ok/g;return p>=.8?"lv-good":p>=.5?"lv-mid":"lv-low";}
 function tDayCell(d,n){var dy=DAYS[n-1],done=d.done&&d.done[n],b=d.beat&&d.beat[n]!=null?Math.max(d.beat[n],(d.reach||{})[n]||0):null;return done?"✓":b!=null?(Math.min(b+1,dy.beats.length)+"/"+dy.beats.length):"";}
