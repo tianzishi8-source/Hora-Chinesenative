@@ -1043,27 +1043,22 @@ H.xstHear=function(s,tok){clearTask();var box=el("div",{class:"xsthear"},[el("di
   task.append(q(s.q),box,el("div",{class:"row"},[b]),msg);xyLay();
   return new Promise(function(res,rej){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);b.disabled=true;box.classList.add("on");xstJade(7);setTimeout(function(){xstJade(5);},2600);msg.textContent=fill(s.done||"");logStep(s.obs,{answer:"听了水声"});setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);res();},reduce?300:4200);});}).then(function(){return next("继续",tok,true);});};
 /* 伐竹取道：点三下砍开竹子，后面露出小潭 */
-H.xstCut=function(s,tok){clearTask();var n=s.times||3,cut=0;var box=el("div",{class:"xstcut"},[el("div",{class:"xc-pond"},[el("span",{text:s.behind||"小潭"})]),el("div",{class:"xc-l"}),el("div",{class:"xc-r"})]);var b=btn(s.btn||"🪓 砍开竹子");var msg=el("p",{class:"note",text:"还要砍 "+n+" 下"});
+H.xstCut=function(s,tok){clearTask();var n=s.times||3,cut=0;var box=el("div",{class:"xstcut"},[el("div",{class:"xc-pond"}),el("div",{class:"xc-l"}),el("div",{class:"xc-r"})]);var b=btn(s.btn||"🪓 砍开竹子");var msg=el("p",{class:"note",text:"还要砍 "+n+" 下"});
   task.append(q(s.q),box,el("div",{class:"row"},[b]),msg);xyLay();
   return new Promise(function(res,rej){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);cut++;SOUND.sfx("page");box.style.setProperty("--open",(cut/n).toFixed(2));xyShake(box);
       if(cut<n){msg.textContent="还要砍 "+(n-cut)+" 下";return;}b.disabled=true;box.classList.add("open");msg.textContent=fill(s.done||"");logStep(s.obs,{answer:"开出了路"});setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);res();},reduce?200:1600);});}).then(function(){return next("继续",tok,true);});};
 /* 潭底的石头：按词找形状（坻、屿、嵁、岩），一次一个，点错了给提示 */
-function xstStonesSvg(){return '<svg viewBox="0 0 640 300" role="img" aria-label="示意图：小潭的剖面，水下是一整块石头，近岸处石头翻出水面，形成四种形状"><defs><linearGradient id="xw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3d6" stop-opacity=".55"/><stop offset="1" stop-color="#7fb7a6" stop-opacity=".55"/></linearGradient></defs>'+
-  '<rect width="640" height="300" fill="#eef4ec"/><path d="M0,150 L640,150 L640,300 L0,300Z" fill="url(#xw)"/><path d="M0,262 C120,250 260,268 380,256 S560,248 640,258 L640,300 L0,300Z" fill="#8f9a8c"/>'+
-  '<text x="20" y="290" font-size="15" fill="#f4f6f0" font-family="Noto Serif SC,serif">潭底：一整块石头</text><line x1="0" y1="150" x2="640" y2="150" stroke="#5f9c8c" stroke-width="2" stroke-dasharray="6 6"/><text x="560" y="142" font-size="14" fill="#5f9c8c" font-family="Noto Sans SC,sans-serif">水面</text>'+
-  '<g class="xs-shape" data-k="a"><path d="M60,262 C70,180 120,150 150,138 C182,150 220,190 232,262Z" fill="#a7a58f"/><text x="118" y="200" class="xs-n">A</text></g>'+
-  '<g class="xs-shape" data-k="b"><path d="M262,262 C270,170 300,112 340,104 C380,112 406,170 416,262Z" fill="#9fa38a"/><path d="M300,112 C320,96 360,96 382,112" fill="#6f9a62"/><text x="330" y="190" class="xs-n">B</text></g>'+
-  '<g class="xs-shape" data-k="c"><path d="M440,262 L448,150 L462,128 L474,150 L488,104 L500,138 L514,116 L526,150 L540,262Z" fill="#9b9b8b"/><text x="478" y="200" class="xs-n">C</text></g>'+
-  '<g class="xs-shape" data-k="d"><path d="M560,262 L566,60 C580,40 610,38 632,48 L640,262Z" fill="#8f8f7f"/><text x="592" y="160" class="xs-n">D</text></g></svg>';}
+function xstStonesSvg(){var B={a:[0.5,46,24.5,13],b:[26,25,22,33],c:[48.5,29.5,27,28.5],d:[76,14.5,23.5,43.5]};var h='<img src="img/xst-stones.webp" alt="潭边四块露出水面的石头：低平的一块、长着草木的小岛、高低不平的一片岩石、高高耸起的大石" draggable="false">';
+  for(var k in B){var b=B[k];h+='<div class="xs-shape'+(k==="a"?" low":"")+'" data-k="'+k+'" role="button" tabindex="0" style="left:'+b[0]+'%;top:'+b[1]+'%;width:'+b[2]+'%;height:'+b[3]+'%"></div>';}return h;}
 H.xstStones=function(s,tok){clearTask();var fb=s.feedbackWho||lead();var box=el("div",{class:"xststones"});box.innerHTML=xstStonesSvg();var cue=el("div",{class:"xs-cue"});var idx=0,miss=0;
-  task.append(q(s.q),cue,box,el("p",{class:"note",text:"示意图，不按比例。"}));xyLay();
+  task.append(q(s.q),cue,box);xyLay();
   return new Promise(function(res,rej){function show(){var it=s.items[idx];cue.innerHTML="";cue.append(el("b",{text:it.w}),el("span",{text:"："+it.gloss+"。点一点，是哪一块？"}));}
     show();$$(".xs-shape",box).forEach(function(g){g.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);if(idx>=s.items.length)return;var it=s.items[idx];logStep(s.obs,{try:1});
-      if(g.dataset.k===it.k){SOUND.sfx("ok");g.classList.add("got");var lab=document.createElementNS("http://www.w3.org/2000/svg","text");var bb=g.getBBox();lab.setAttribute("x",bb.x+bb.width/2);lab.setAttribute("y",Math.max(24,bb.y-8));lab.setAttribute("class","xs-w");lab.textContent=it.w;g.append(lab);idx++;
+      if(g.dataset.k===it.k){SOUND.sfx("ok");g.classList.add("got");g.append(el("span",{class:"xs-w",text:it.w}));idx++;
         if(idx>=s.items.length){cue.innerHTML="";cue.append(el("span",{text:fill(s.done||"都找到了。")}));logStep(s.obs,{answer:"四种都找对了"+(miss?"（点错 "+miss+" 次）":"")});commit();setTimeout(function(){res();},700);}else show();}
       else{SOUND.sfx("no");miss++;xyShake(g);logStep(s.obs,{miss:it.w});if(it.hint)sayQ(fill(it.hint),fb,tok);}});});}).then(function(){return next("继续",tok,true);});};
 /* 一潭鱼：清得像没有水；三步：佁然不动 → 俶尔远逝 → 往来翕忽 */
-H.xstFish=function(s,tok){clearTask();var box=el("div",{class:"xstfish ph0"});var fish=[];for(var k=0;k<7;k++){var f=el("div",{class:"xf",style:"--x:"+(14+k*11+(k%2)*4)+"%;--y:"+(26+((k*37)%46))+"%;--d:"+(k*0.37).toFixed(2)+"s"},[el("i",{class:"xf-body"}),el("i",{class:"xf-sh"})]);fish.push(f);box.append(f);}
+H.xstFish=function(s,tok){clearTask();var box=el("div",{class:"xstfish ph0"});var fish=[];for(var k=0;k<16;k++){var f=el("div",{class:"xf",style:"--x:"+(5+(k*23)%82)+"%;--y:"+(8+((k*37)%70))+"%;--d:"+(k*0.37).toFixed(2)+"s"},[el("i",{class:"xf-body"}),el("i",{class:"xf-sh"})]);fish.push(f);box.append(f);}
   box.append(el("div",{class:"xf-sun"}));var cap=el("div",{class:"xf-cap"});var b=btn(s.steps[0].btn);var idx=0;
   task.append(q(s.q),box,cap,el("div",{class:"row"},[b]));xyLay();cap.textContent=s.steps[0].cap||"";
   return new Promise(function(res,rej){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);var st=s.steps[idx];SOUND.sfx("page");box.className="xstfish "+st.ph;cap.textContent=st.after||"";logStep(s.obs,{answer:st.ph});idx++;
