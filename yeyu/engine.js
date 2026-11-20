@@ -1073,6 +1073,8 @@ function openPxMenu(){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("bu
 function reviewIdx(day){for(var i=0;i<DAYS.length;i++)if(DAYS[i].reviewOf===day)return i+1;return 0;}
 function openReview(day){var n=reviewIdx(day);if(!n)return;if(!hwOf(day)){openHw(day);return;}closeOv();S.retDay=S.day>NVIS?(S.retDay||1):S.day;startDay(n,false);}
 DAYS.forEach(function(d,di){d.beats.forEach(function(b){b.steps.forEach(function(s){if(s.obs)STEPOF[s.obs.id]=s;regObs(s,di+1);});});});
+/* 11-20 同一个题号可能有几步（如七、八年级各一版），每一步的 when 都记下：mWhen 里任何一步对这个学生成立，就算他那一版的题 */
+var MWHEN={};DAYS.forEach(function(d){d.beats.forEach(function(b){b.steps.forEach(function(s){if(s.obs)(MWHEN[s.obs.id]=MWHEN[s.obs.id]||[]).push(s.when||null);});});});
 (function(){var P=L.practice||{};if(!practiceIdx())return;PG.forEach(function(g,gi){var idx=practiceIdx(gi),inG=function(d){return g.days.indexOf(d)>=0;};(P.core||[]).forEach(function(c){if(inG(c.day)){regObs(c,idx);if(c.obs){STEPOF[c.obs.id]=c;if(OBS[c.obs.id])OBS[c.obs.id].src=c.day;}}});Object.keys(P.variants||{}).forEach(function(id){var o=STEPOF[id]&&STEPOF[id].obs,od=OBS[id]&&(OBS[id].src||OBS[id].day);if(P.variants[id]&&o&&inG(od)){regObs({t:STEPOF[id].t,obs:{id:"px-"+id,label:"重做："+o.label,skill:o.skill||""},options:STEPOF[id].options},idx);regObs({t:P.variants[id].t||"mc",obs:{id:"pv-"+id,label:"新题："+o.label,skill:o.skill||""},options:P.variants[id].options},idx);}});});})();
 var TMODE=false;
 function paintDays(){var nav=$("#days");nav.innerHTML="";setTimeout(paintPx,0);DAYS.forEach(function(d,i){var n=i+1;if(d.hidden)return;var b=el("button",{class:"dpad"+(S.done[n]?" done":""),type:"button","aria-current":String(n===S.day),title:d.title},[el("small",{text:"第"}),el("b",{text:String(n)}),el("small",{text:"天"}),el("span",{text:S.done[n]?"读完":d.short||""})]);b.addEventListener("click",function(){startDay(n,false);});nav.append(b);
@@ -1175,7 +1177,7 @@ function forMe(d){if(!d.only||TMODE)return true;var m=BK.me||{};return onlyFor(d
 function hwList(){var out=[];DAYS.forEach(function(d,i){if(!d.after||!/课后作业/.test(d.after))return;if(!forMe(d))return;var parts=String(d.after).replace(/<b>课后作业<\/b>(<br>)?/,"").split(/<br\s*\/?>/).map(function(x){return x.replace(/<[^>]+>/g,"").trim();}).filter(Boolean);out.push({day:i+1,title:d.title,items:parts,open:!!d.extra,extra:d.extraId||null,first:+d.hwFirst||0,only:d.only||null});});out.sort(function(a,b){return b.first-a.first;});return out;}
 var HWST={};
 function hwFlag(n){var o=HWST[n];return o&&o.status&&o.status!=="通过"?o:null;}
-function loadHwSt(){if(BK.mode!=="sheet"||!BK.me)return;api("hw_status",cred()).then(function(j){HWST={};(j.rows||[]).forEach(function(r){HWST[r.day]=r;});paintHw();}).catch(function(){});}
+function loadHwSt(){if(BK.mode!=="sheet"||!BK.me)return;HWOK=0;api("hw_status",cred()).then(function(j){HWST={};(j.rows||[]).forEach(function(r){HWST[r.day]=r;});HWOK=1;paintHw();}).catch(function(){});}
 function hwOf(n){return ((S.data&&S.data.hw)||{})[n]||null;}
 function hwDue(){var r=hwList().filter(function(h){return (S.done[h.day]||h.open)&&!hwOf(h.day);});if(!TMODE)DAYS.forEach(function(d,i){if(d.extra&&d.only&&!d.after&&forMe(d)&&!S.done[i+1])r.unshift({day:i+1,title:d.title,open:true,noHw:true});});return r;}
 function paintPx(){var b=$("#bPx");if(!b)return;b.hidden=!(L.practiceOpen||TMODE);var gi=pgCur(),fresh=pgOpen(gi)&&!S.done[practiceIdx(gi)];b.textContent=pgTitle(gi)+(PG.length>1?" ▾":"");b.classList.toggle("due",!!fresh);paintMs();}
@@ -1183,6 +1185,34 @@ function paintMs(){var b=$("#bMs");if(!b)return;var f=mFinish(S,HWST),ms=f.ms;if
 function paintHw(){paintPx();var b=$("#bHw");var n=hwDue().length,fl=Object.keys(HWST).filter(function(k){return hwFlag(k);});if(b){b.textContent=(fl.length?"⚠️ ":"")+(n?"作业（"+n+" 份没交）":"作业");b.classList.toggle("due",n>0);b.classList.toggle("warn",fl.length>0);b.title=fl.length?"AI 辅助作答警告：第"+fl.join("、")+"天的作业":"";}try{if(KEY)localStorage.setItem("hora-hwdue-"+KEY.replace(/^hora-/,""),JSON.stringify({due:n,days:hwDue().map(function(h){return h.day;}),at:Date.now()}));}catch(e){}}
 function shrinkImg(file){return new Promise(function(res,rej){var fr=new FileReader();fr.onerror=rej;fr.onload=function(){var im=new Image();im.onerror=rej;im.onload=function(){var M=1600,sc=Math.min(1,M/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.8));};im.src=fr.result;};fr.readAsDataURL(file);});}
 function hwOv(){var o=$("#ovHw");if(!o){o=el("div",{class:"ov",id:"ovHw",hidden:""},[el("div",{class:"sheet hw",role:"dialog","aria-label":"作业",id:"hwSheet"})]);o.addEventListener("click",function(e){if(e.target===o)closeOv();});document.body.append(o);}return o;}
+/* 11-20 回来补一补（弹窗标题写“补一补”：ZCOOL XiaoWei 的“回”字是实心方块）：学过的天里有老师新加的题、错题、没做的练习组、作业要订正或老师写了话，打开课文时提醒一次（每次打开浏览器一次） */
+var HWOK=0,BACKN=0;
+/* 老师的话看过没有（按学生记）：作业单里看到过、或弹窗里提过，就不再因为同一句话弹出来（订正时写的话，通过以后还留着） */
+function hwNoteK(d){return "hora-hwnote-"+L.id+"-"+((BK.me&&(BK.me.cls||"")+(BK.me.name||""))||"")+"-"+d;}
+function hwNoteSeen(d){try{return localStorage.getItem(hwNoteK(d));}catch(e){return null;}}
+function hwNoteSee(d){var o=HWST[d];if(o&&o.note)try{localStorage.setItem(hwNoteK(d),String(o.note));}catch(e){}}
+function backRemind(){if(TMODE||(BK.mode==="sheet"&&!BK.me))return;
+  if(BK.mode==="sheet"&&!HWOK&&BACKN++<8){setTimeout(backRemind,1500);return;}
+  if($$(".ov").some(function(o){return !o.hidden;})||document.body.classList.contains("staged")||document.getElementById("thIntro")){if(BACKN++<60)setTimeout(backRemind,3000);return;}
+  var past=0;for(var n=1;n<=NVIS;n++)if(S.done[n])past++;if(!past)return;
+  var who=(BK.me&&(BK.me.cls||"")+(BK.me.name||""))||"",sk="hora-back-"+L.id+"-"+who;try{if(sessionStorage.getItem(sk))return;}catch(e){}
+  var ms=mStat(S.log,S),bz=0,cw=0;ms.todo.forEach(function(id){var r=S.log[id];if(r&&(r.answer!=null||tMiss(r)))cw++;else bz++;});
+  var pxs=[];PG.forEach(function(g,gi){var last=g.days[g.days.length-1];if(S.done[last]&&pgOpen(gi)&&!S.done[practiceIdx(gi)])pxs.push(gi);});
+  var fixes=[],notes=[],hwd={};hwList().forEach(function(h){hwd[h.day]=1;});Object.keys(HWST).forEach(function(k){var o=HWST[k],d=+k;if(!o||!o.status||!hwd[d])return;if(o.status==="要订正"||(o.status==="AI辅助"&&!o.appeal))fixes.push(d);else if(o.status==="通过"&&o.note&&hwNoteSeen(d)!==String(o.note))notes.push(d);});
+  if(!bz&&!cw&&!pxs.length&&!fixes.length&&!notes.length)return;
+  function dn(d){var dy=DAYS[d-1]||{};return dy.hidden&&dy.title?"“"+dy.title+"”":typeof dayName==="function"?dayName(d):"第"+d+"天";}
+  try{sessionStorage.setItem(sk,"1");}catch(e){}
+  var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);
+  var onlyN=!bz&&!cw&&!pxs.length&&!fixes.length;sh.append(x,el("h3",{text:onlyN?"老师看了你的作业":"补一补"}),el("p",{class:"hwnote",text:onlyN?"老师看过你的作业，给你写了几句话。":"这篇课文你学过的部分，还有下面几件事没做完。做完了，才算真的学完。"}));
+  var box=el("div",{class:"backl"});
+  function row(t,sub,b){box.append(el("div",{class:"backr"},[el("div",{class:"backt"},[el("b",{text:t}),sub?el("small",{text:sub}):""]),b]));}
+  function go(t,f){var b=btn(t);b.addEventListener("click",function(){closeOv();f();});return b;}
+  if(bz||cw)row([bz?"没做过的题 "+bz+" 道":"",cw?"错题 "+cw+" 道":""].filter(Boolean).join("，"),(bz?"没做过的题，大多是老师后来把作业做成的线上题。":"")+(cw?"错题要重做对，才算掌握。":"")+"都在错题本里。",go("去错题本",openCuoti));
+  pxs.forEach(function(gi){row(pgTitle(gi)+"还没做",null,go("去做练习",function(){openPractice(gi);}));});
+  fixes.forEach(function(d){var o=HWST[d]||{},ai=o.status==="AI辅助";hwNoteSee(d);row(dn(d)+"的作业："+(ai?"老师认为可能不是你自己写的":"要订正"),(o.note?"老师的话："+o.note+"　":"")+(ai?"可以申诉，也可以自己重新写一份补交。":"改好以后，重新交一次。"),go(ai?"去看看":"去订正",function(){openHw(d);}));});
+  notes.forEach(function(d){var o=HWST[d]||{};hwNoteSee(d);row(dn(d)+"的作业：老师看过了，通过","老师的话："+o.note,go("看作业",function(){openHw(d);}));});
+  sh.append(box);if(ms.g)sh.append(el("p",{class:"mnum",text:"现在掌握 "+Math.round(ms.p*100)+"%（"+ms.m+"/"+ms.g+" 道）"+(ms.p>=.9?"，已经过了 90%。":"，到 90% 才算学完。")}));
+  var r=el("div",{class:"row"}),later=el("button",{class:"ghost",type:"button",text:onlyN?"知道了":"先接着学，等会儿再做"});later.addEventListener("click",closeOv);r.append(later);sh.append(r);o.hidden=false;}
 function openHw(focusDay){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);
   sh.append(x,el("h3",{text:"作业"}),el("p",{class:"note",style:"margin:0 0 6px",text:"读完一天，那一天的作业就布置下来了。写在课本、作文本上的，拍照交；也可以直接打字交。交了还能再交，会换成新的。"}));
   var list=hwList(),cards={};
@@ -1193,7 +1223,7 @@ function openHw(focusDay){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el
     if(h.extra){var dn=S.done[h.day],bx=btn(dn?"再做一遍":(S.beat&&S.beat[h.day]!=null?"接着做":"开始做")+"："+h.title);bx.classList.add("hwgo");bx.addEventListener("click",function(){openExtra(h.extra);});card.append(el("div",{class:"row"},[bx]),el("p",{class:"note",text:dn?"网站上的部分已经做完。下面交照片和文字。":"先点上面的按钮，在网站上做完；再在下面交照片和文字。"}));}
     var ol=el("ol");h.items.forEach(function(t){if(/^\d+[.．、]/.test(t))ol.append(el("li",{text:t.replace(/^\d+[.．、]\s*/,"")}));else card.append(el("p",{class:"note",text:t}));});if(ol.children.length)card.insertBefore(ol,card.children[1]||null);else if(h.items.length===1){card.append(el("p",{text:h.items[0]}));}
     if(!given){sh.append(card);return;}
-    var fg=hwFlag(h.day);if(HWST[h.day]&&HWST[h.day].status==="通过")card.append(el("p",{class:"hwok",text:"✓ 老师看过了：通过"+(HWST[h.day].note?"。老师的话："+HWST[h.day].note:"")}));if(fg&&fg.status==="要订正"){var wb=el("div",{class:"hwwarn fix"});wb.append(el("b",{text:"✏️ 要订正"}),el("p",{text:(fg.note?"老师的话："+fg.note+"　":"")+"改好以后，在下面重新交一次（可以重新拍照）。重新交了，这个提醒就消失，老师会再看。"}));card.append(wb);fg=null;}if(fg){var wb=el("div",{class:"hwwarn"});wb.append(el("b",{text:"⚠️ AI 辅助作答警告"}),el("p",{text:"老师认为这份作业可能不是你自己写的（借助了 AI 或参考答案）。"+(fg.note?"老师的话："+fg.note:"")+" 你可以申诉，也可以重新写一份补交。补交以后，这个提醒就会消失。"}));
+    hwNoteSee(h.day);var fg=hwFlag(h.day);if(HWST[h.day]&&HWST[h.day].status==="通过")card.append(el("p",{class:"hwok",text:"✓ 老师看过了：通过"+(HWST[h.day].note?"。老师的话："+HWST[h.day].note:"")}));if(fg&&fg.status==="要订正"){var wb=el("div",{class:"hwwarn fix"});wb.append(el("b",{text:"✏️ 要订正"}),el("p",{text:(fg.note?"老师的话："+fg.note+"　":"")+"改好以后，在下面重新交一次（可以重新拍照）。重新交了，这个提醒就消失，老师会再看。"}));card.append(wb);fg=null;}if(fg){var wb=el("div",{class:"hwwarn"});wb.append(el("b",{text:"⚠️ AI 辅助作答警告"}),el("p",{text:"老师认为这份作业可能不是你自己写的（借助了 AI 或参考答案）。"+(fg.note?"老师的话："+fg.note:"")+" 你可以申诉，也可以重新写一份补交。补交以后，这个提醒就会消失。"}));
       if(fg.appeal)wb.append(el("p",{class:"note",text:"你已经申诉："+fg.appeal+"（等老师看）"}));
       var ap=el("button",{type:"button",class:"ghost",text:fg.appeal?"再写一次申诉":"申诉"}),re=el("button",{type:"button",class:"ghost",text:"补交新作业"});
       ap.addEventListener("click",function(){if(wb.querySelector("textarea"))return;var at=el("textarea",{rows:"3",placeholder:"说说这份作业是怎么写的：自己想的、参考了什么。老师会看。"}),go=btn("提交申诉"),m=el("p",{class:"note"});go.addEventListener("click",function(){var t=at.value.trim();if(t.length<5){m.textContent="多写几句。";return;}go.disabled=true;m.textContent="正在提交……";var p=(BK.mode==="sheet"&&BK.me)?api("hw_appeal",Object.assign(cred(),{day:h.day,text:t})):Promise.resolve();p.then(function(){HWST[h.day]=Object.assign({},HWST[h.day],{appeal:t});openHw(h.day);}).catch(function(){go.disabled=false;m.textContent="没提交上，等一下再试。";});});wb.append(at,el("div",{class:"row"},[go]),m);at.focus();});
@@ -1280,7 +1310,9 @@ function mBase(){var out=[];OBSORDER.forEach(function(id){var o=OBS[id];if(!o||!
 function mDone(log,id){log=log||{};var r=log[id];if(tOk(r))return true;var V=mVar(id),can=mRedo(id);if(!can&&!V)return !!(r&&r.answer!=null);return (!can||tOk(log["px-"+id]))&&(!V||tOk(log["pv-"+id]));}
 /* 11-20 课文改版后新加的题：学生已经读完的那一天（或做完的那组练习）里还没做过的题，进错题本“补做”；没法单独补做的题型（排序、配对等）不计入掌握率 */
 function mPast(d,id){var o=OBS[id];return !!(d&&d.done&&d.done[o.day]);}
-function mStat(log,d){log=log||{};d=d||(log===S.log?S:null);var g=0,m=0,todo=[];mBase().forEach(function(id){var r=log[id],can=mRedo(id)||mVar(id),fresh=!(r&&(r.answer!=null||tMiss(r)));if(fresh&&!can&&mPast(d,id))return;g++;if(mDone(log,id))m++;else if(can&&(!fresh||mPast(d,id)))todo.push(id);});return {g:g,m:m,todo:todo,p:g?m/g:0};}
+/* 11-20 分年级（when）的题：不是这个学生那一版、也没做过的，不算（七年级不会被要求补做八年级题） */
+function mWhen(d,id){var ws=MWHEN[id];if(!ws||!d)return true;var D=d.data||{};return ws.some(function(w){if(!w)return true;var wv=get(w.key,D);return w.is!=null?wv===w.is:!!wv;});}
+function mStat(log,d){log=log||{};d=d||(log===S.log?S:null);var g=0,m=0,todo=[];mBase().forEach(function(id){var r=log[id],can=mRedo(id)||mVar(id),fresh=!(r&&(r.answer!=null||tMiss(r)));if(fresh&&!mWhen(d,id))return;if(fresh&&!can&&mPast(d,id))return;g++;if(mDone(log,id))m++;else if(can&&(!fresh||mPast(d,id)))todo.push(id);});return {g:g,m:m,todo:todo,p:g?m/g:0};}
 function mHwBad(st){return !!(st&&st.status&&st.status!=="通过");}
 function mFinish(d,hwst){d=d||S;var days=0;for(var n=1;n<=NVIS;n++)if(d.done&&d.done[n])days++;var px=PG.filter(function(g,gi){return d.done&&d.done[practiceIdx(gi)];}).length;
   var hw=hwList().filter(function(h){return h.day<=NVIS;}),hg=(d.data||{}).hw||{},hwGot=hw.filter(function(h){return hg[h.day];}).length,hwFix=hw.filter(function(h){return mHwBad(hwst&&hwst[h.day]);}).length;
@@ -1388,10 +1420,10 @@ window.HORA.teacherMode=function(on){setTMode(on!==false);};
 window.HORA.pxCount=function(){var f=function(x){return x.steps.filter(function(s){return s.obs;}).length;};return PG.map(function(g,gi){var b=buildPractice(gi);return (pgOpen(gi)?"":"🔒")+f(b[0])+"+"+f(b[1]);});};
 window.HORA.setHwSt=function(o){HWST=o||{};paintHw();};
 
-function restart(){refreshMe();paintDays();paintHw();loadHwSt();setTimeout(hwRemind,1200);if(S.day>DAYS.length)S.day=1;runFrom(S.day,Math.min(S.beat[S.day]||0,DAYS[S.day-1].beats.length));}
+function restart(){refreshMe();paintDays();paintHw();loadHwSt();setTimeout(hwRemind,1200);BACKN=0;setTimeout(backRemind,2600);if(S.day>DAYS.length)S.day=1;runFrom(S.day,Math.min(S.beat[S.day]||0,DAYS[S.day-1].beats.length));}
 renderText();paintTabs();paintDays();
 if(BK.mode==="sheet")sheetStart();
-else{paintHw();loadHwSt();setTimeout(hwRemind,1200);if(S.day>DAYS.length)S.day=1;runFrom(S.day,Math.min(S.beat[S.day]||0,DAYS[S.day-1].beats.length));}
+else{paintHw();loadHwSt();setTimeout(hwRemind,1200);BACKN=0;setTimeout(backRemind,2600);if(S.day>DAYS.length)S.day=1;runFrom(S.day,Math.min(S.beat[S.day]||0,DAYS[S.day-1].beats.length));}
 
 /* ================= 网站版：登录（班级码＋名字＋4位数字）、换人、老师 ================= */
 function normCls(v){return String(v||"").replace(/\s+/g,"").toUpperCase();}
