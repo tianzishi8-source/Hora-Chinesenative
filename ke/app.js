@@ -74,28 +74,53 @@ function blank() { return { v: 1, lessonAt: 1, story: {}, recite: {}, cards: {},
 function loadLocal() { S = blank(); var o = lsGet(KEY); if (o) for (var k in o) S[k] = o[k]; }
 function save() { S.savedAt = new Date().toISOString(); lsPut(KEY, S); sync(); }
 function payload() { var p = JSON.parse(JSON.stringify(S)); p.name = ME.name; p.cls = ME.cls; p.lesson = LID; return p; }
-function mergeRemote(r) { if (r && r.savedAt && (!S.savedAt || r.savedAt > S.savedAt)) { var n = blank(); for (var k in r) if (k !== "name" && k !== "cls" && k !== "lesson") n[k] = r[k]; S = n; lsPut(KEY, S); return true; } return false; }
+/* 11-20 合并：本机和表格两份取并集（原来“谁新用谁”，连不上表格时本机那份会把表格里的进度盖掉）。
+   直接合进 S（不换成新对象：正在做的那一页手里拿着 S.story[…] 等对象，换掉的话后面的作答就写丢了）。
+   一边有、一边没有的都留下；两边都有的：次数、最高分、做对做错的个数、进度号取大的，“做完”只要一边有就算，其余以新的那份为准。
+   做题记录 drills 两份合起来去重、按时间排、留最近 80 条。 */
+var MG_MAX = { best: 1, tries: 1, seen: 1, right: 1, wrong: 1, lessonAt: 1, v: 1 }, MG_KEEP = { node: 1, shot: 1 };
+function mergeIn(a, b, newer) { var ch = false, f, x, y;
+  for (f in b) { x = a[f]; y = b[f]; if (y == null) continue;
+    if (x == null) { if (MG_KEEP[f] && !newer) continue; a[f] = JSON.parse(JSON.stringify(y)); ch = true; continue; }
+    if (Array.isArray(x) || Array.isArray(y)) { if (newer && JSON.stringify(x) !== JSON.stringify(y)) { a[f] = JSON.parse(JSON.stringify(y)); ch = true; } continue; }
+    if (typeof x === "object" && typeof y === "object") { if (mergeIn(x, y, newer)) ch = true; continue; }
+    if (MG_MAX[f] && typeof x === "number" && typeof y === "number") { if (y > x) { a[f] = y; ch = true; } continue; }
+    if (f === "done") { if (y && !x) { a[f] = y; ch = true; } continue; }
+    if (newer && x !== y) { a[f] = y; ch = true; } }
+  return ch; }
+function mergeRemote(r) { if (!r || typeof r !== "object" || !S) return false;
+  var newer = !!(r.savedAt && (!S.savedAt || r.savedAt > S.savedAt)), ch = false, k, b0 = blank(), rr = {};
+  for (k in b0) if (S[k] == null) S[k] = b0[k];
+  if (Array.isArray(r.drills) && r.drills.length) { var seen = {}, all = (Array.isArray(S.drills) ? S.drills : []).concat(JSON.parse(JSON.stringify(r.drills))).filter(function (x) { var s = JSON.stringify(x); if (seen[s]) return false; seen[s] = 1; return true; });
+    all.sort(function (x, y) { var p = String((x && x.at) || ""), q = String((y && y.at) || ""); return p < q ? -1 : p > q ? 1 : 0; }); all = all.slice(-80);
+    if (JSON.stringify(all) !== JSON.stringify(S.drills)) { S.drills = all; ch = true; } }
+  for (k in r) if (k !== "name" && k !== "cls" && k !== "lesson" && k !== "drills") rr[k] = r[k];
+  if (mergeIn(S, rr, newer)) ch = true;
+  lsPut(KEY, S); return ch; }
 function api(action, body) {
   return fetch(SITE.sheetUrl, { method: "POST", body: JSON.stringify(Object.assign({ action: action, lesson: LID, lessonTitle: LTITLE }, body || {})) })
     .then(function (r) { return r.json(); }).then(function (j) { if (!j || !j.ok) { var e = new Error((j && j.err) || "server"); e.code = (j && j.err) || "server"; throw e; } return j; });
 }
 function cred() { return { cls: ME.cls, name: ME.name, pin: ME.pin }; }
+var PULL = 1; /* 还没从表格取回进度：先不往表格存 */
 var saveT = null, dirty = false, SV = 0, INFL = false, saveMsg = "", saveBad = false;
 function setSaveSt(t, bad) { saveMsg = t; saveBad = !!bad; var s = $("#saveSt"); if (s) { s.textContent = t; s.classList.toggle("bad", !!bad); } }
 function sync() { if (!SITE.sheetUrl || !ME || SAMPLE || TEACH) return; dirty = true; SV++; clearTimeout(saveT); saveT = setTimeout(sheetSave, 2500); }
 function sheetSave() {
-  if (INFL || !ME || !SITE.sheetUrl) return; INFL = true; var v = SV, p = payload(); setSaveSt("保存中…");
+  if (INFL || !ME || !SITE.sheetUrl) return;
+  if (PULL) { INFL = true; api("login", ME).then(function (j) { var c = mergeRemote(j.state); PULL = 0; INFL = false; if (c && (!location.hash || location.hash === "#home")) route(); sheetSave(); }).catch(function (e) { INFL = false; setSaveSt(e && (e.code === "pin" || e.code === "roster") ? "没保存：请重新签到" : "没连上，稍后自动再存", true); setTimeout(function () { if (dirty) sheetSave(); }, 15000); }); return; }
+  INFL = true; var v = SV, p = payload(); setSaveSt("保存中…");
   api("save", Object.assign(cred(), { payload: p, summary: summary(p) })).then(function () { INFL = false; if (SV === v) { dirty = false; setSaveSt("已保存"); } else sheetSave(); })
     .catch(function (e) { INFL = false; setSaveSt(e.code === "pin" || e.code === "roster" ? "没保存：请重新签到" : "没连上，稍后自动再存", true); setTimeout(function () { if (dirty) sheetSave(); }, 15000); });
 }
 var leaving = false;
 function leaveTo(url) {
-  leaving = true; if (!SITE.sheetUrl || !dirty || !ME) { location.href = url; return; }
+  leaving = true; if (!SITE.sheetUrl || !dirty || !ME || PULL) { location.href = url; return; }
   clearTimeout(saveT); setSaveSt("保存中…"); var gone = false; function go() { if (!gone) { gone = true; location.href = url; } }
   api("save", Object.assign(cred(), { payload: payload(), summary: summary(payload()) })).then(function () { dirty = false; go(); }).catch(go); setTimeout(go, 4000);
 }
 addEventListener("beforeunload", function (e) { if (SITE.sheetUrl && dirty && !leaving) { e.preventDefault(); e.returnValue = ""; } });
-addEventListener("pagehide", function () { if (SITE.sheetUrl && dirty && ME && navigator.sendBeacon) { try { navigator.sendBeacon(SITE.sheetUrl, JSON.stringify(Object.assign({ action: "save", lesson: LID, lessonTitle: LTITLE }, cred(), { payload: payload(), summary: summary(payload()) }))); } catch (e) {} } });
+addEventListener("pagehide", function () { if (SITE.sheetUrl && dirty && ME && !PULL && navigator.sendBeacon) { try { navigator.sendBeacon(SITE.sheetUrl, JSON.stringify(Object.assign({ action: "save", lesson: LID, lessonTitle: LTITLE }, cred(), { payload: payload(), summary: summary(payload()) }))); } catch (e) {} } });
 
 /* 作答摘要（老师在表格“作答摘要”一格里看） */
 function summary(d) {
@@ -896,7 +921,7 @@ function boot() {
     if (TEACH) { setSaveSt("老师预览，不存档"); return; }
     if (!SITE.sheetUrl) { setSaveSt("只存在这台设备上"); return; }
     setSaveSt("正在连接…");
-    api("login", ME).then(function (j) { if (j.name) ME.name = j.name; if (mergeRemote(j.state)) route(); setSaveSt("已连上"); if (!j.state) save(); })
+    api("login", ME).then(function (j) { if (j.name) ME.name = j.name; var c = mergeRemote(j.state); PULL = 0; if (c) route(); setSaveSt("已连上"); if (!j.state) save(); })
       .catch(function (e) { if (/^(pin|cls|bad|new|roster)$/.test(e.code)) { try { sessionStorage.removeItem("hora-session"); } catch (x) {} location.replace(HOME + "#login"); return; } setSaveSt("没连上，稍后自动再存", true); });
   });
 }

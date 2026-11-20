@@ -83,7 +83,29 @@ function logStep(obs,patch){if(!obs)return;if(patch&&patch.answer!=null&&S.data.
 var SITE=window.HORA_SITE||{};
 var RESTORED=false,DB=null,UID=null,syncOK=null,writing=false,pending=false,CANEDIT=false;
 function payload(){return {name:S.data.name||"",data:S.data,log:S.log,done:S.done,day:S.day,beat:S.beat,reach:S.reach||{},savedAt:S.savedAt||"",chats:(S.chats||[]).slice(-30),updatedAt:new Date().toISOString()};}
-function mergeRemote(r){if(r&&r.savedAt&&(!S.savedAt||r.savedAt>S.savedAt)){["data","log","done","beat","reach","chats"].forEach(function(k){if(r[k]!=null)S[k]=r[k];});if(r.day)S.day=r.day;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}return true;}return false;}
+/* 11-20 合并进度：本机和老师表格里的两份，取并集，不再“谁新用谁”。
+   原来连不上表格时会用本机那份（可能是空的）接着做，再存回表格，把表格里的进度盖掉。
+   现在：读完的天、作答、交过的作业，只要有一边有，就都留下；同一题两边都有，留做过的、时间晚的那份。 */
+/* 作答 data 逐层合并（x1.fears、x1.loom1 这样分开存在 x1 里；只比最上一层的话，本机那份 x1 会把表格里 x1 多出来的作答盖掉） */
+function mergeData(o,k,y,newer){if(y==null)return false;var x=o[k];if(x==null){o[k]=JSON.parse(JSON.stringify(y));return true;}
+  if(x&&y&&typeof x==="object"&&typeof y==="object"&&!Array.isArray(x)&&!Array.isArray(y)){var c=false;Object.keys(y).forEach(function(j){if(mergeData(x,j,y[j],newer))c=true;});return c;}
+  if(newer&&JSON.stringify(x)!==JSON.stringify(y)){o[k]=JSON.parse(JSON.stringify(y));return true;}return false;}
+function mergeLog(a,b){if(!a)return b;if(!b)return a;var p=(b.answer!=null&&a.answer==null)?b:(a.answer!=null&&b.answer==null)?a:((b.at||"")>(a.at||"")?b:a);
+  var o=JSON.parse(JSON.stringify(p));o.tries=Math.max(a.tries||0,b.tries||0);var m={};[a.misses||{},b.misses||{}].forEach(function(x){for(var k in x)m[k]=Math.max(m[k]||0,x[k]||0);});o.misses=m;return o;}
+function mergeRemote(r){if(!r||typeof r!=="object")return false;if(typeof fixXShift==="function")fixXShift(r);
+  var newer=!!(r.savedAt&&(!S.savedAt||r.savedAt>S.savedAt)),ch=false;S.done=S.done||{};S.log=S.log||{};S.beat=S.beat||{};S.reach=S.reach||{};S.data=S.data||{};
+  Object.keys(r.done||{}).forEach(function(k){if(r.done[k]&&!S.done[k]){S.done[k]=r.done[k];ch=true;}});
+  Object.keys(r.log||{}).forEach(function(k){if(!r.log[k]||typeof r.log[k]!=="object")return;var a=S.log[k],m=mergeLog(a,r.log[k]);if(JSON.stringify(m)!==JSON.stringify(a)){S.log[k]=m;ch=true;}});
+  Object.keys(r.reach||{}).forEach(function(k){if(S.reach[k]==null||+r.reach[k]>+S.reach[k]){S.reach[k]=r.reach[k];ch=true;}});
+  Object.keys(r.beat||{}).forEach(function(k){if(S.beat[k]==null||(newer&&S.beat[k]!==r.beat[k])){S.beat[k]=r.beat[k];ch=true;}});
+  var D=(r.data&&typeof r.data==="object")?r.data:{};Object.keys(D).forEach(function(k){
+    if(k==="hw"){var H=D.hw||{},M=S.data.hw=S.data.hw||{};Object.keys(H).forEach(function(d){if(H[d]&&(!M[d]||(H[d].at||"")>(M[d].at||""))){M[d]=H[d];ch=true;}});return;}
+    if(k==="name")return;if(mergeData(S.data,k,D[k],newer))ch=true;});
+  if(Array.isArray(r.chats)&&r.chats.length){var cs={},cc=(S.chats||[]).concat(r.chats).filter(function(x){var s=JSON.stringify(x);if(cs[s])return false;cs[s]=1;return true;});cc.sort(function(x,y){var p=String((x&&x.at)||""),q=String((y&&y.at)||"");return p<q?-1:p>q?1:0;});if(cc.length!==(S.chats||[]).length)ch=true;S.chats=cc;}
+  if(newer){S.savedAt=r.savedAt;if(r.day&&r.day!==S.day){S.day=r.day;ch=true;}}
+  try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}return ch;}
+/* 连不上表格时先在本机做，但先不往表格存；重新连上、取回表格里那份并合并以后，才存回去。 */
+function pullThen(f,g){if(!BK.me){f();return;}var me=BK.me;api("login",me).then(function(j){if(BK.me!==me){if(g)g();return;}var c=mergeRemote(j.state);BK.pull=0;if(c){try{paintDays();paintHw();}catch(e){}}f();}).catch(function(e){if(g)g();setSaveSt(e&&(e.code==="pin"||e.code==="roster")?"没保存：请重新签到":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)sheetSave();},15000);});}
 var BK={mode:SITE.sheetUrl?"sheet":"claude",me:null,tpw:null};
 function online(){return BK.mode==="sheet"?!!BK.me:!!(DB&&UID);}
 /* 表格后台：一律用 POST、正文是 JSON 文本（不设 Content-Type，浏览器就不会先发预检请求） */
@@ -96,7 +118,7 @@ function sync(){
   if(!DB||!UID||syncOK===false)return;if(writing){pending=true;return;}writing=true;DB.doc("answers/"+UID).set(JSON.parse(JSON.stringify(payload()))).then(function(){syncOK=true;}).catch(function(e){if(e&&e.code==="invalid_argument")syncOK=false;}).then(function(){writing=false;if(pending){pending=false;sync();}});}
 /* 存表格：同一时间只发一个请求；发送期间又有改动，回来后再存一次（全班同时用时不挤） */
 var SV=0,INFL=false;
-function sheetSave(){if(INFL||!BK.me)return;INFL=true;var v=SV,p=JSON.parse(JSON.stringify(payload()));setSaveSt("保存中…");
+function sheetSave(){if(INFL||!BK.me)return;if(BK.pull){INFL=true;pullThen(function(){INFL=false;sheetSave();},function(){INFL=false;});return;}INFL=true;var v=SV,p=JSON.parse(JSON.stringify(payload()));setSaveSt("保存中…");
   api("save",Object.assign(cred(),{payload:p,summary:studentText(p),progress:progressText(p)})).then(function(){INFL=false;if(SV===v){dirty=false;setSaveSt("已保存");}else sheetSave();})
     .catch(function(e){INFL=false;setSaveSt(e.code==="pin"||e.code==="roster"?"没保存：请重新签到":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)sheetSave();},15000);});}
 function commit(){save();sync();}
@@ -110,12 +132,12 @@ task.addEventListener("input",function(e){var f=e.target;if(!f||!/^(TEXTAREA|INP
   clearTimeout(DRT);DRT=setTimeout(save,700);});
 new MutationObserver(function(){var dr=S.data&&S.data._dr;if(!dr)return;var o=dr[draftSig()];if(!o||!o.v)return;draftFields().forEach(function(f,i){if(!f.value&&o.v[i]&&!f.dataset.drOk){f.dataset.drOk=1;f.value=o.v[i];try{f.dispatchEvent(new Event("input",{bubbles:true}));}catch(e){}}});}).observe(task,{childList:true,subtree:true});
 function flushSave(){
-  if(BK.mode!=="sheet"||!BK.me||!dirty)return;clearTimeout(saveT);var p=JSON.parse(JSON.stringify(payload()));var body=JSON.stringify(Object.assign({action:"save",lesson:L.id,lessonTitle:L.title},cred(),{payload:p,summary:studentText(p),progress:progressText(p)}));
+  if(BK.mode!=="sheet"||!BK.me||!dirty||BK.pull)return;clearTimeout(saveT);var p=JSON.parse(JSON.stringify(payload()));var body=JSON.stringify(Object.assign({action:"save",lesson:L.id,lessonTitle:L.title},cred(),{payload:p,summary:studentText(p),progress:progressText(p)}));
   try{fetch(SITE.sheetUrl,{method:"POST",body:body,keepalive:body.length<60000}).catch(function(){});}catch(e){}}
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"){if(DRT){clearTimeout(DRT);save();}flushSave();}});
 addEventListener("pagehide",function(){if(DRT){clearTimeout(DRT);save();}flushSave();});
 var leaving=false;
-function leaveTo(url){leaving=true;if(BK.mode!=="sheet"||!dirty||!BK.me){location.href=url;return;}clearTimeout(saveT);setSaveSt("保存中…");var done=false;function go(){if(!done){done=true;location.href=url;}}
+function leaveTo(url){leaving=true;if(BK.mode!=="sheet"||!dirty||!BK.me||BK.pull){location.href=url;return;}clearTimeout(saveT);setSaveSt("保存中…");var done=false;function go(){if(!done){done=true;location.href=url;}}
   var p=JSON.parse(JSON.stringify(payload()));api("save",Object.assign(cred(),{payload:p,summary:studentText(p),progress:progressText(p)})).then(function(){dirty=false;go();}).catch(go);setTimeout(go,4000);}
 addEventListener("beforeunload",function(e){if(BK.mode==="sheet"&&dirty&&!leaving){e.preventDefault();e.returnValue="";}});
 BK.share=function(key,items){if(BK.mode==="sheet"){if(BK.me)api("share",Object.assign(cred(),{key:key,items:items})).catch(function(){});return;}if(DB&&UID)DB.doc("shares/"+UID).set({key:key,items:items,at:new Date().toISOString()}).catch(function(){});};
@@ -1029,7 +1051,7 @@ var DAYS=L.days;
 var PG=L.practice?(L.practice.groups||[{days:L.days.map(function(d,i){return i+1;})}]):[];
 function pgTitle(gi){var g=PG[gi]||{days:[]},a=g.days[0],b=g.days[g.days.length-1];return "第"+(a===b?a:a+"–"+b)+"天练习";}
 if(L.practice&&!DAYS.some(function(d){return d.practice;}))PG.forEach(function(g,gi){DAYS.push({hidden:true,practice:true,pg:gi,title:pgTitle(gi),short:"练习",end:"这一组练习做完了。",beats:[{title:"基础检测",steps:[]}]});});
-if(!DAYS.some(function(d){return d.cuoti;}))DAYS.push({hidden:true,cuoti:true,title:"错题本",short:"错题",end:"这一轮错题做完了。",beats:[{title:"错题本",steps:[]}]});
+/* 错题本挪到下面（所有隐藏天之后），见 11-20 修正 */
 var NVIS=DAYS.filter(function(d){return !d.hidden;}).length;
 /* 练习：每两天一组（lesson 的 practice.groups）。基础检测 ＋ 这一组里自己错过的原题再做 ＋ 每道错题一道相似的新题。每次打开按当下的作答记录重新挑 */
 var STEPOF={};
@@ -1038,6 +1060,8 @@ function pgOf(day){for(var i=0;i<PG.length;i++)if(PG[i].days.indexOf(day)>=0)ret
 function dayReached(n){var d=DAYS[n-1];return !!(S.done[n]||(d&&((S.reach||{})[n]||0)>=d.beats.length-1));}
 /* 一组练习：读完这一组的最后一天（或者已经读完后面的天）就开放 */
 (L.extras||[]).forEach(function(x){if(!DAYS.some(function(d){return d.extraId===x.extraId;}))DAYS.push(Object.assign({hidden:true,extra:true},x));});
+/* 11-20 修正：错题本必须放在所有隐藏天的最后。它曾插在补作业前面，补作业的天号往后挪了一位，学生交过的补作业显示成没交。 */
+if(!DAYS.some(function(d){return d.cuoti;}))DAYS.push({hidden:true,cuoti:true,title:"错题本",short:"错题",end:"这一轮错题做完了。",beats:[{title:"错题本",steps:[]}]});
 function extraIdx(id){for(var i=0;i<DAYS.length;i++)if(DAYS[i].extraId===id)return i+1;return 0;}
 function openExtra(id){var n=extraIdx(id);if(!n)return;closeOv();if(S.day<=NVIS)S.retDay=S.day;startDay(n,S.beat&&S.beat[n]!=null&&!S.done[n]);}
 function pgOpen(gi){var g=PG[gi];if(!g)return false;if(TMODE)return true;if(!L.practiceOpen)return false;var last=g.days[g.days.length-1];for(var n=last;n<=NVIS;n++)if(dayReached(n))return true;return false;}
@@ -1442,7 +1466,7 @@ function sheetStart(){
   addEventListener("hashchange",function(){if(location.hash==="#teacher"&&!BK.tpw)showTeacherLogin(!BK.me);});}
 function autoLogin(ss){var me={cls:normCls(ss.cls),name:normName(ss.name),pin:String(ss.pin)};var keep=false;try{keep=!!JSON.parse(localStorage.getItem("hora-last")||"{}").pin;}catch(e){}
   setSaveSt("正在连接……");var dt=$("#dTxt");if(dt)dt.textContent="正在打开你上次读到的地方，稍等几秒……";
-  api("login",me).then(function(j){enter(me,j.state,keep);}).catch(function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"||e.code==="new"||e.code==="roster"){dropSess();if(HOME){location.replace(HOME+"#login");return;}showLogin();return;}enter(me,null,keep);setSaveSt("没连上，稍后自动再存",true);});}
+  api("login",me).then(function(j){enter(me,j.state||false,keep);}).catch(function(e){if(e.code==="pin"||e.code==="cls"||e.code==="bad"||e.code==="new"||e.code==="roster"){dropSess();if(HOME){location.replace(HOME+"#login");return;}showLogin();return;}enter(me,null,keep);setSaveSt("没连上，稍后自动再存",true);});}
 function confirmLeave(){return true;}
 function overlay(id){var o=$("#"+id);if(!o){o=el("div",{class:"ov login",id:id},[el("div",{class:"sheet login-s",role:"dialog"})]);document.body.append(o);}o.hidden=false;return $(".sheet",o);}
 function showLogin(){var sh=overlay("ovLogin");var last={};try{last=JSON.parse(localStorage.getItem("hora-last")||"{}");}catch(e){}
@@ -1458,12 +1482,12 @@ function showLogin(){var sh=overlay("ovLogin");var last={};try{last=JSON.parse(l
   go.addEventListener("click",function(){var me={cls:normCls(c.value),name:normName(n.value),pin:p.value.trim()};
     if(!me.cls){c.focus();msg.textContent="请写班级码。";return;}if(!me.name){n.focus();msg.textContent="请写名字或昵称。";return;}if(!/^\d{4}$/.test(me.pin)){p.focus();msg.textContent="请写 4 位数字。";return;}
     go.disabled=true;msg.textContent="正在连接……";
-    api("login",me).then(function(j){enter(me,j.state,keep.checked);}).catch(function(e){go.disabled=false;
+    api("login",me).then(function(j){enter(me,j.state||false,keep.checked);}).catch(function(e){go.disabled=false;
       if(e.code==="pin")msg.textContent="这个班里已经有人用了这个名字，数字对不上。是你的话，再想想当初定的数字；不是你，就换个名字（比如加上姓）。";
       else if(e.code==="cls")msg.textContent="没有这个班级码，请问一下老师。";
       else{msg.innerHTML="";msg.append("连不上老师的表格（可能是网络问题）。 ");var off=el("button",{type:"button",class:"ghost",text:"先在这台设备上做"});off.addEventListener("click",function(){enter(me,null,keep.checked);setSaveSt("没连上，稍后自动再存",true);});msg.append(off);}});});}
-function enter(me,state,keep){BK.me=me;if(!HOME)try{localStorage.setItem("hora-last",JSON.stringify(keep?me:{cls:me.cls,name:me.name}));}catch(e){}try{sessionStorage.setItem("hora-session",JSON.stringify(me));}catch(e){}
-  KEY="hora-"+L.id+"-"+me.cls+"|"+me.name;S={day:1,beat:{},done:{},data:{},log:{},chats:[]};try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);for(var k in o)S[k]=o[k];}}catch(e){}
+function enter(me,state,keep){BK.me=me;BK.pull=state===null?1:0;if(!HOME)try{localStorage.setItem("hora-last",JSON.stringify(keep?me:{cls:me.cls,name:me.name}));}catch(e){}try{sessionStorage.setItem("hora-session",JSON.stringify(me));}catch(e){}
+  KEY="hora-"+L.id+"-"+me.cls+"|"+me.name;S={day:1,beat:{},done:{},data:{},log:{},chats:[]};try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);for(var k in o)S[k]=o[k];}}catch(e){}if(typeof fixXShift==="function")fixXShift(S);
   mergeRemote(state);S.data.name=me.name;save();if($("#ovLogin"))$("#ovLogin").hidden=true;$("#bWho").hidden=false;if(state!==null)setSaveSt("已连上");restart();}
 function showTeacherLogin(fromHash){var sh=overlay("ovTLogin");
   sh.innerHTML='<h3>老师</h3><label class="field"><span class="lab">老师密码</span><input type="password" id="tl-pw" autocomplete="off"></label><div class="row"><button type="button" class="btn" id="tl-go">进入</button><button type="button" class="ghost" id="tl-x">'+(fromHash?"我是学生":"取消")+'</button></div><p class="note" id="tl-msg">密码是部署表格时你自己设的。</p>';
