@@ -990,7 +990,7 @@ H.note=function(s,tok){var NCm=["","①","②","③","④","⑤","⑥","⑦","�
    pond 秋池涨满　candle 剪烛（屋里变暗，点了才亮）　askAuthor 问作者（选问题，听回答）
    recite 跟着画面背（三轮遮字）　dictate 默写，逐字核对　bins 分到几栏 */
 function yyShowUpto(n){var ps=$$("p",rbody).slice(0,PARAS.length);$$("p",rbody).slice(PARAS.length).forEach(function(p){p.classList.remove("yyhid");});ps.forEach(function(p,k){if(!p.dataset.ph){var t=(PARAS[k]||p.textContent||"");p.dataset.ph=t.replace(/[^，。、！？]/g,"□");}p.classList.toggle("yyhid",k>=n);p.classList.toggle("yynew",false);});
-  rbody.classList.toggle("yypend",n<ps.length);rbody.classList.toggle("yynone",n<=0);}
+  rbody.classList.toggle("yypend",n<ps.length);rbody.classList.toggle("yynone",n<=0);if(S.data&&S.data.xink)xstInkPaint(n);}
 H.poemHide=function(s){yyShowUpto(s.upto==null?4:s.upto);return Promise.resolve();};
 H.write=function(s,tok){var t=s.text||PARAS[s.line]||"";var shown=s.text?s.show:s.line;clearTask();var card=el("div",{class:"yywrite"});var row=el("div",{class:"yyw-line"});card.append(row);task.append(card);xyLay();
   var chars=t.split(""),i=0;return new Promise(function(res,rej){function step(){if(tok!==RUN.token)return rej(CANCEL);if(i>=chars.length){var p=shown!=null?$$("p",rbody)[shown]:null;if(p){p.classList.remove("yyhid");p.classList.add("yynew");var left=$$("p.yyhid",rbody).length;rbody.classList.toggle("yypend",left>0);rbody.classList.remove("yynone");try{p.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}SOUND.sfx("page");res();return;}
@@ -1063,6 +1063,72 @@ H.xstFish=function(s,tok){clearTask();var box=el("div",{class:"xstfish ph0"});va
   task.append(q(s.q),box,cap,el("div",{class:"row"},[b]));xyLay();cap.textContent=s.steps[0].cap||"";
   return new Promise(function(res,rej){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);var st=s.steps[idx];SOUND.sfx("page");box.className="xstfish "+st.ph;cap.textContent=st.after||"";logStep(s.obs,{answer:st.ph});idx++;
       if(idx>=s.steps.length){b.disabled=true;commit();setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);res();},reduce?200:1800);return;}b.textContent=s.steps[idx].btn;});}).then(function(){return next("继续",tok,true);});};
+/* ===== 小石潭记 11-20 改版：走到哪里写到哪里（xstScene）、炼字（xstLian）、落笔进左边原文（xstInk）、一潭鱼动手看（xstPond） ===== */
+/* 落笔：左边原文按句出现。S.data.xink = {句子编号:1}；只管还藏着的段落（poemHide 已整段放出来的不动） */
+function xstInkPaint(n){var ink=(S.data&&S.data.xink)||{},any=false;$$("p",rbody).slice(0,PARAS.length).forEach(function(p,k){if(n!=null&&k<n)return;var ids=PSENT[k]||[],got=ids.filter(function(id){return ink[id];});
+  if(!got.length){p.classList.remove("xpart");return;}any=true;var all=got.length===ids.length;p.classList.remove("yyhid");p.classList.toggle("xpart",!all);
+  ids.forEach(function(id){var sp=$('.s[data-id="'+id+'"]',p);if(!sp)return;if(!sp.dataset.ph)sp.dataset.ph=SENT[id].t.replace(/[^，。、！？；：]/g,"□");sp.classList.toggle("xsh",!all&&!ink[id]);});});
+  if(any){rbody.classList.remove("yynone");rbody.classList.toggle("yypend",$$("p.yyhid,p.xpart",rbody).length>0);}}
+function xstFindSent(t){var n=String(t).replace(/\s/g,"");for(var k=0;k<SENT.length;k++){if(SENT[k].t.replace(/\s/g,"")===n)return k;}for(var j=0;j<SENT.length;j++){if(SENT[j].t.indexOf(n)>=0||n.indexOf(SENT[j].t)>=0)return j;}return -1;}
+H.xstInk=function(s,tok){var id=xstFindSent(s.text);if(!S.data.xink)S.data.xink={};if(id>=0)S.data.xink[id]=1;commit();xstInkPaint(null);if(isNarrow())openReader();
+  var sp=id>=0?$('.s[data-id="'+id+'"]',rbody):null;if(sp){sp.classList.remove("xnew");void sp.offsetWidth;sp.classList.add("xnew");try{sp.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}
+  SOUND.sfx("page");clearTask();var card=el("div",{class:"xinkcard"},[el("div",{class:"xi-brush",text:"✒"}),el("div",{class:"xi-t",text:s.text}),el("p",{class:"note",text:fill(s.note||"柳先生写下了这一句。看左边，文章又多了一句。")})]);task.append(card);xyLay();
+  return say(s.text,s.who||"lzy",tok).then(function(){return next("继续",tok,true);});};
+/* 炼字：句子里空一个词，学生先替柳先生选，再看他用的是哪个、为什么 */
+H.xstLian=function(s,tok){clearTask();var who=s.who||"lzy";var parts=String(s.text).split(s.blank);var blank=el("span",{class:"xl-blank",text:"　".repeat(Math.max(1,s.blank.length))});
+  var line=el("div",{class:"xl-line"},[parts[0],blank,parts.slice(1).join(s.blank)]);var opts=el("div",{class:"xl-opts"});var cap=el("p",{class:"note",text:fill(s.tip||"你来替柳先生落笔：点一个词，放进空格里。")});
+  task.append(q(s.q),el("div",{class:"xlian"},[el("div",{class:"xl-paper"},[line]),opts]),cap);xyLay();
+  return new Promise(function(res,rej){var done=false;s.options.forEach(function(o,i){var b=el("button",{type:"button",class:"xl-opt","data-i":String(i)},[el("b",{text:o.t})]);opts.append(b);
+    b.addEventListener("click",function(){if(done)return;if(tok!==RUN.token)return rej(CANCEL);done=true;$$(".xl-opt",opts).forEach(function(x){x.disabled=true;});b.classList.add("picked");
+      blank.textContent=o.t;blank.classList.add("mine");SOUND.sfx("page");logStep(s.obs,{answer:o.t+(o.ok?"（和柳宗元一样）":"（柳宗元用的是“"+s.blank+"”）")});commit();
+      cap.textContent=o.ok?"你放进去的，正是柳先生写的。":"你放进去的是“"+o.t+"”。听听柳先生怎么说。";
+      say(fill(o.reply),who,tok).then(function(){if(!o.ok){blank.classList.remove("mine");blank.classList.add("real");blank.textContent=s.blank;cap.textContent="柳先生写的是“"+s.blank+"”。";SOUND.sfx("ok");}else{blank.classList.add("real");}
+        return s.reveal?say(fill(s.reveal),s.revealWho||who,tok):null;}).then(res,rej);});});}).then(function(){return next("继续",tok,true);});};
+/* 走到哪里写到哪里：一张场景大图，发光的地方点进去，各自带一段小环节；都看过了才往下走 */
+H.xstScene=function(s,tok){var seen={};var need=s.need||s.spots.length;
+  function render(){clearTask();var box=el("div",{class:"xscene"},[el("img",{src:s.img,alt:s.alt||"",draggable:"false"})]);var cnt=Object.keys(seen).length;
+    s.spots.forEach(function(p){var b=el("button",{type:"button",class:"xsp"+(seen[p.id]?" seen":""),"data-id":p.id,style:"left:"+p.x+"%;top:"+p.y+"%","aria-label":p.label},[el("i"),el("span",{text:(seen[p.id]?"✓ ":"")+p.label})]);box.append(b);});
+    var tip=el("p",{class:"note xs-tip",text:cnt>=need?fill(s.done||"都看过了。"):fill(s.tip||"点画面里发光的地方，看一看。")+"（"+cnt+"/"+s.spots.length+"）"});
+    task.append(q(s.q),box,tip);xyLay();return box;}
+  return new Promise(function(res,rej){function loop(){if(tok!==RUN.token)return rej(CANCEL);var box=render();if(Object.keys(seen).length>=need){setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);res();},400);return;}
+      $$(".xsp",box).forEach(function(b){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);var p=s.spots.filter(function(x){return x.id===b.dataset.id;})[0];if(!p)return;
+        if(seen[p.id]&&!p.again)return;seen[p.id]=1;logStep(s.obs,{answer:"看了"+Object.keys(seen).length+"处"});SOUND.sfx("page");box.style.transformOrigin=p.x+"% "+p.y+"%";box.classList.add("zoom");
+        setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);runSteps(p.steps||[],tok).then(loop,rej);},reduce?50:750);});});}
+    loop();}).then(function(){return next("继续",tok,true);});};
+/* 一潭鱼：phase "drift" 只看鱼在“空中”游；phase "rest"：拨开云（阳光、影子、一动不动）→ 点水面（忽然游远）→ 手放进水里（来来往往，围着你游） */
+H.xstPond=function(s,tok){clearTask();var box=el("div",{class:"xpond"}),fl=el("div",{class:"xp-fish"}),sl=el("div",{class:"xp-shadow"}),cloud=el("div",{class:"xp-cloud"}),sun=el("div",{class:"xp-sun"});
+  box.append(sl,fl,sun);var cap=el("p",{class:"xf-cap"});var row=el("div",{class:"row"});task.append(q(s.q),box,cap,row);xyLay();
+  var N=s.n||16,F=[],W=0,Hh=0,mode="drift",ptr=null,raf=0,alive=true,still=false;
+  function sz(){W=box.clientWidth;Hh=box.clientHeight;}sz();
+  for(var k=0;k<N;k++){var f=el("i",{class:"xpf"}),h=el("i",{class:"xps"});fl.append(f);sl.append(h);F.push({e:f,h:h,x:W*(.12+.76*Math.random()),y:Hh*(.15+.7*Math.random()),vx:(Math.random()-.5),vy:(Math.random()-.5)*.4,ox:(Math.random()-.5)*120,oy:(Math.random()-.5)*80,tx:0,ty:0,a:0});}
+  function tgt(f){f.tx=W*(.08+.84*Math.random());f.ty=Hh*(.1+.8*Math.random());}F.forEach(tgt);
+  function tick(){if(!alive)return;if(tok!==RUN.token){alive=false;return;}if(!W)sz();
+    F.forEach(function(f,i){var sp=mode==="drift"?.45:mode==="still"?0:mode==="flee"?9:mode==="back"?2.2:3.2;
+      if(mode==="still"){f.vx*=.85;f.vy*=.85;}
+      else if(mode==="flee"){}
+      else{var tx=f.tx,ty=f.ty;if(mode==="play"&&ptr){tx=ptr.x+f.ox;ty=ptr.y+f.oy;}var dx=tx-f.x,dy=ty-f.y,d=Math.hypot(dx,dy)||1;if(d<14&&!(mode==="play"&&ptr))tgt(f);
+        var burst=(mode==="play"&&Math.random()<.02)?2.4:1;f.vx+=(dx/d*sp*burst-f.vx)*.08;f.vy+=(dy/d*sp*burst-f.vy)*.08;if(mode==="play"&&ptr&&d<30){f.ox=(Math.random()-.5)*130;f.oy=(Math.random()-.5)*90;}}
+      f.x+=f.vx;f.y+=f.vy;var spd=Math.hypot(f.vx,f.vy);if(spd>.08)f.a=Math.atan2(f.vy,f.vx);
+      f.e.style.transform="translate("+(f.x-22).toFixed(1)+"px,"+(f.y-6).toFixed(1)+"px) rotate("+f.a.toFixed(2)+"rad)";
+      f.h.style.transform="translate("+(f.x-22+14).toFixed(1)+"px,"+(f.y-6+26).toFixed(1)+"px) rotate("+f.a.toFixed(2)+"rad)";});
+    raf=requestAnimationFrame(tick);}
+  raf=requestAnimationFrame(tick);
+  function stop(){alive=false;cancelAnimationFrame(raf);}
+  function step(label,fn){row.innerHTML="";var b=btn(label);b.classList.add("xp-btn");row.append(b);b.addEventListener("click",fn);return b;}
+  return new Promise(function(res,rej){function fin(){row.innerHTML="";var b=btn(s.doneBtn||"继续 ▸");b.classList.add("xp-btn");row.append(b);b.addEventListener("click",function(){stop();res();});}
+    if(s.phase==="drift"){box.classList.add("cloudy");cap.textContent=fill(s.c0||"看这些鱼。");setTimeout(function(){if(tok!==RUN.token)return;logStep(s.obs,{answer:"看了鱼"});fin();},reduce?100:2500);return;}
+    box.append(cloud);box.classList.add("cloudy");mode="drift";cap.textContent=fill(s.c1||"一片云遮着太阳。点一下云，把它拨开。");
+    function sunUp(){if(!box.classList.contains("cloudy"))return;if(tok!==RUN.token)return rej(CANCEL);box.classList.remove("cloudy");box.classList.add("sunny");mode="still";row.innerHTML="";SOUND.sfx("ok");cap.textContent=fill(s.c2||"阳光照到潭底，影子落在石头上。鱼一动不动。");logStep(s.obs,{answer:"拨开云"});
+      setTimeout(function(){if(tok!==RUN.token)return;cap.textContent=fill(s.c2b||"伸手点一下水面看看。");step("✋ 点一下水面",function(){tap({x:W*.5,y:Hh*.5});});box.addEventListener("pointerdown",onTap);},reduce?100:2600);}
+    cloud.addEventListener("click",sunUp);step("☀ 拨开云",sunUp);
+    var tapped=false;function onTap(e){var r=box.getBoundingClientRect();tap({x:e.clientX-r.left,y:e.clientY-r.top});}
+    function tap(p){if(tapped||mode!=="still")return;if(tok!==RUN.token)return rej(CANCEL);tapped=true;box.removeEventListener("pointerdown",onTap);var rp=el("i",{class:"xp-ripple",style:"left:"+p.x+"px;top:"+p.y+"px"});box.append(rp);SOUND.sfx("page");
+      mode="flee";F.forEach(function(f){var dx=f.x-p.x,dy=f.y-p.y,d=Math.hypot(dx,dy)||1;f.vx=dx/d*(7+Math.random()*4);f.vy=dy/d*(7+Math.random()*4);});cap.textContent=fill(s.c3||"忽然，鱼一下子游远了。");row.innerHTML="";logStep(s.obs,{answer:"点了水面"});
+      setTimeout(function(){if(tok!==RUN.token)return;F.forEach(function(f){var side=Math.random()<.5;f.x=side?-30:W+30;f.y=Hh*(.1+.8*Math.random());f.vx=0;f.vy=0;tgt(f);});mode="back";cap.textContent=fill(s.c4||"过了一会儿，它们又游回来了。把手（鼠标）放进水里，慢慢动一动。");
+        var moved=0,last=null;function mv(e){var r=box.getBoundingClientRect();var p2={x:e.clientX-r.left,y:e.clientY-r.top};if(last)moved+=Math.hypot(p2.x-last.x,p2.y-last.y);last=p2;ptr=p2;mode="play";if(moved>500&&!box.dataset.ok){box.dataset.ok="1";cap.textContent=fill(s.c5||"它们来来往往，围着你的手游，一会儿过来，一会儿又跑开。");logStep(s.obs,{answer:"手放进水里"});fin();}}
+        box.addEventListener("pointermove",mv);box.addEventListener("pointerleave",function(){ptr=null;mode="play";});
+        setTimeout(function(){if(tok!==RUN.token)return;mode=ptr?"play":"play";if(!box.dataset.ok){step("👀 就这样看着",function(){box.dataset.ok="1";cap.textContent=fill(s.c5||"它们来来往往，轻快极了。");fin();});}},reduce?100:5000);},1500);}
+  }).then(function(){stop();},function(e){stop();throw e;});};
 H.bins=function(s,tok){var fb=s.feedbackWho||lead();return new Promise(function(res,rej){clearTask();var left=s.items.length;var cols={};var wrap=el("div",{class:"yybins",style:"--n:"+s.cols.length});
     s.cols.forEach(function(c){var d=el("div",{class:"yybin"},[el("h4",{text:c.label})]);cols[c.id]=d;wrap.append(d);});var pool=el("div",{class:"yybpool"});
     xyShuffle(s.items).forEach(function(it){var row=el("div",{class:"yybit"},[el("span",{text:it.text})]);var bs=el("div",{class:"yybbs"});
