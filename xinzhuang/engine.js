@@ -888,10 +888,16 @@ if(!DAYS.some(function(d){return d.cuoti;}))DAYS.push({hidden:true,cuoti:true,ti
    做完——作业搬了，那天的“做完”也一起搬；另外，错位到的那天只给别的同学（only）、原来那天是给这个同学的，也搬。这样判断不靠时间，也不靠标记，重复搬不会搬错，旧页面后来交的也能搬回来。 */
 function xsHw(d){return !!(d&&d.after&&/课后作业/.test(d.after));}
 function xsSure(n){var a=DAYS[n-2],b=DAYS[n-1];return !!(a&&a.extra&&xsHw(a)&&b&&b.hidden&&!xsHw(b));}
+function xsWrote(d,st){return (d.beats||[]).some(function(bt){return (bt.steps||[]).some(function(s){if(s.t!=="input"||!s.key)return false;var v=get(s.key,st.data);if(v&&typeof v==="object")v=v.text;return !!String(v==null?"":v).trim();});});}
+/* 读到第几段（beat、reach）跟着“做完”一起搬：n 那天只给别人或是错题本，这份进度只能是 o 那天的 */
+function xsBR(st,o,n){["beat","reach"].forEach(function(f){var x=st[f];if(!x||typeof x!=="object"||x[n]==null)return;x[o]=x[n];delete x[n];});}
 function fixXShift(st,cls,name){if(!st||typeof st!=="object")return;if(!st.data||typeof st.data!=="object")st.data={};if(cls==null&&BK.me){cls=BK.me.cls;name=BK.me.name;}var hw=st.data.hw||{};
   DAYS.forEach(function(d,i){if(!d.extra)return;var o=i+1,n=o+1,b=DAYS[n-1],h=hw[n];
     if(h&&xsSure(n)){if(!hw[o]||((h.at||"")>(hw[o].at||""))){hw[o]=h;}if(st.done&&st.done[n]){if(!st.done[o])st.done[o]=st.done[n];delete st.done[n];}["beat","reach"].forEach(function(f){var x=st[f];if(!x||typeof x!=="object"||x[n]==null)return;if(!(st.done&&st.done[o]))x[o]=x[n];delete x[n];});delete hw[n];}
-    if(st.done&&st.done[n]&&!st.done[o]&&cls!=null&&b&&b.extra&&b.only&&!onlyFor(b,cls,name)&&onlyFor(d,cls,name)){st.done[o]=st.done[n];delete st.done[n];}});
+    if(st.done&&st.done[n]&&!st.done[o]&&cls!=null&&b&&b.extra&&b.only&&!onlyFor(b,cls,name)&&onlyFor(d,cls,name)){st.done[o]=st.done[n];delete st.done[n];xsBR(st,o,n);}
+    /* 最后一个补作业天（《影子》读后感，只给 Lyida）错位后落在错题本那一天。错题本的“做完”每次打开错题本都会重设，搬走不影响什么。
+       修正上线后错题本就在这一天，她做完一轮错题本也会记在这里，所以还要看补作业里的输入框有没有写过（读后感 bz.read8），写过才搬。 */
+    if(st.done&&st.done[n]&&!st.done[o]&&cls!=null&&b&&b.cuoti&&d.only&&onlyFor(d,cls,name)&&xsWrote(d,st)){st.done[o]=st.done[n];delete st.done[n];xsBR(st,o,n);}});
   if(st.data.hw)st.data.hw=hw;}
 /* 老师标的作业状态（“作业”页的行）也按同样的规则对回原来的天号 */
 function xsRows(m,pre){Object.keys(m).forEach(function(k){var x=m[k],n=+x.day;if(!(n>1)||!xsSure(n))return;var t=(pre||"")+(n-1);if(m[t])return;m[t]=Object.assign({},x,{day:n-1});delete m[k];});}
