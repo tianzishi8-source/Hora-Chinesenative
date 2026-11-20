@@ -76,7 +76,8 @@ visuals:{},
 sound:{mood:"calm",vol:.4,
  notes:[392,440,493.88,587.33,659.25,783.99,880,987.77],
  moods:{calm:{music:.7,tick:0},memory:{music:.5,tick:0},focus:{music:0,tick:.3},bright:{music:1,tick:0}},
- amb:{dir:"amb/",v:1,vol:.8,duck:.4,def:"xst-brook",byBg:{
+ /* 11-20 老师：背景音“沙沙的，不知道是什么声音”——合成的溪水/风声先关掉，等真录音再接回 */
+ amb:{dir:"amb/",v:1,vol:.8,duck:.4,def:"",byBgOff:{
   "img/xst-path.webp?v=2":"xst-wind","img/xst-bamboo.webp?v=2":"xst-wind","img/xst-pond.webp?v=2":"xst-brook","img/xst-fish.webp?v=2":"xst-brook","img/xst-vines.webp?v=2":"xst-brook",
   "img/xst-stream.webp?v=2":"xst-brook","img/xst-cold.webp?v=2":"xst-cold","img/xst-leave.webp?v=2":"xst-wind"}}},
 rainfx:{byBg:{}},
