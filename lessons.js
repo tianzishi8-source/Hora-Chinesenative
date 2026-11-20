@@ -12,7 +12,7 @@
 window.HORA_LESSONS = [
   { id: "g8-rili-v3", folder: "rili", grade: 8, title: "日历", author: "冯骥才",
     blurb: "一页 1976 年 7 月 28 日的日历。作者为什么只用日历，不用月历？后半单元同读周涛《每天诞生一次》。",
-    open: 11, total: 11,
+    open: 8, total: 8, hwReq: 7,
     pic: "rili/img/page1976-sm.webp", picAlt: "1976 年 7 月 28 日那一页日历：撕下来的，发黄，有水渍和折痕",
     picText: { top: "一九七六年　七月", day: "28", lunar: "丙辰年七月初二", week: "星期三" } },
   { id: "g78-xinzhuang", folder: "xinzhuang", grade: 7, title: "皇帝的新装", author: "安徒生",

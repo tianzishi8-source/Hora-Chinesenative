@@ -29,7 +29,9 @@
   /* 册页上显示的“读完了几天”：只数第 1—total 天里真读完的（练习、错题本、假期作业等也记在 done 里，不算；八年级《皇帝的新装》total 只有 3） */
   function readDays(l) { if (!me) return 0; var s = get("hora-" + l.id + "-" + me.cls + "|" + me.name), t = l.total || 99; return s && s.done ? Object.keys(s.done).filter(function (k) { return +k >= 1 && +k <= t && s.done[k]; }).length : 0; }
   /* 课文页记下的“作业还没交几份”（读完的天里没交的） */
-  function hwDue(l) { if (!me) return 0; var h = get("hora-hwdue-" + l.id + "-" + me.cls + "|" + me.name); return h && h.due ? h.due : 0; }
+  /* 11-20 写了 l.hwReq 的课文（《日历》＝7）只数第 1—hwReq 天：旧版课文页记下的天数里可能有后来取消、改成选做的天，学生回到课文页之前也不算。
+     没写 hwReq 的照旧（《皇帝的新装》的假期作业、补作业接在正课后面，天号比 total 大，不能按 total 截） */
+  function hwDue(l) { if (!me) return 0; var h = get("hora-hwdue-" + l.id + "-" + me.cls + "|" + me.name); if (l.hwReq && h && Array.isArray(h.days)) return h.days.filter(function (d) { return +d >= 1 && +d <= l.hwReq; }).length; return h && h.due ? h.due : 0; }
   function hwNote() { var due = LESSONS.filter(function (l) { return hwDue(l); }); if (!due.length) return ""; return '<div class="hwnote">' + due.map(function (l) { return '<button type="button" data-hw="' + esc(l.id) + '">《' + esc(l.title) + '》还有 ' + hwDue(l) + ' 份作业没交 →</button>'; }).join("") + '</div>'; }
   function wireHw(root) { [].forEach.call(root.querySelectorAll("[data-hw]"), function (b) { b.addEventListener("click", function () { var l = LESSONS.filter(function (x) { return x.id === b.getAttribute("data-hw"); })[0]; if (l) { try { sessionStorage.setItem("hora-openhw", l.id); } catch (e) {} go(l, l.folder); } }); }); }
   function allDone() { return LESSONS.reduce(function (a, l) { return a + doneDays(l); }, 0); }
