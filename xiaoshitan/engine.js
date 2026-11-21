@@ -976,7 +976,7 @@ H.assemble=function(s,tok){return new Promise(function(res,rej){clearTask();var 
 H.lines=function(s,tok){return new Promise(function(res,rej){clearTask();var list=el("div",{class:"xlines"});var go=s.tap?btn(s.tap):null;
     function run(){if(go)go.remove();s.items.forEach(function(t,k){setTimeout(function(){if(tok!==RUN.token)return;list.append(el("p",{class:"xli",text:t}));SOUND.sfx("page");if(k===s.items.length-1)setTimeout(res,600);},reduce?0:k*900);});}
     [s.q?q(s.q):null,list,go].forEach(function(x){if(x)task.append(x);});xyLay();if(go)go.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);run();});else run();});};
-H.note=function(s,tok){var NCm=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];clearTask();
+H.note=function(s,tok){var NCm=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫","⑬"];clearTask();
   var card=el("div",{class:"xnote"},[el("div",{class:"xnh"},[el("b",{text:"笔记卡"+(NCm[s.n]||s.n)}),el("span",{class:"seal",text:"抄到课本"})]),
     el("h5",{text:"怎么抄"}),el("ol",{},s.how.map(function(h){return el("li",{text:h});})),el("h5",{text:"抄什么"}),el("div",{class:"xnw"},s.what.map(function(w){return el("p",{text:w});})),el("p",{class:"xnfoot",text:"慢慢抄，抄好了自己点“我抄好了”。以后在“我的笔记本”里还能再看到这张卡。"})]);
   task.append(card);xyLay();if(s.mark&&s.mark.length){R.keys={};var first=null;SENT.forEach(function(x){if(s.mark.some(function(m){return x.t.indexOf(m)>=0;})){R.keys[x.id]=1;if(first==null)first=x.id;}});paintMarks();if(first!=null){var se=$('.s[data-id="'+first+'"]',rbody);if(se)try{se.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}}
@@ -1039,9 +1039,11 @@ H.dictate=function(s,tok){clearTask();var want=(s.lines||PARAS).map(function(t){
 /* 听：竹林那边的水声，夹着玉佩相碰的叮咚声（WebAudio 合成，不用录音文件） */
 function xstJade(n){try{var A=window.__xstAC||(window.__xstAC=new (window.AudioContext||window.webkitAudioContext)());if(A.state==="suspended")A.resume();var t0=A.currentTime+.05;
   for(var k=0;k<n;k++){var t=t0+k*(.28+Math.random()*.35),f=[1568,1760,2093,2349,2637][Math.floor(Math.random()*5)];[1,2.76,5.4].forEach(function(m,j){var o=A.createOscillator(),g=A.createGain();o.type="sine";o.frequency.value=f*m;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime([.16,.06,.025][j],t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+[1.6,.7,.35][j]);o.connect(g);g.connect(A.destination);o.start(t);o.stop(t+1.7);});}}catch(e){}}
+/* 11-21 换成真实溪水录音（BigSoundBank《Brooklet》CC0）；放不出来才退回合成的叮咚声 */
+function xstHearPlay(){try{var a=new Audio("amb/xst-hear.mp3?v=1");a.volume=.9;var p=a.play();if(p&&p.catch)p.catch(function(){xstJade(7);});}catch(e){xstJade(7);}}
 H.xstHear=function(s,tok){clearTask();var box=el("div",{class:"xsthear"},[el("div",{class:"xh-bamboo"}),el("div",{class:"xh-wave"},[el("i"),el("i"),el("i"),el("i"),el("i")])]);var b=btn(s.btn||"👂 侧耳听一听");var msg=el("p",{class:"note",text:""});
   task.append(q(s.q),box,el("div",{class:"row"},[b]),msg);xyLay();
-  return new Promise(function(res,rej){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);b.disabled=true;box.classList.add("on");xstJade(7);setTimeout(function(){xstJade(5);},2600);msg.textContent=fill(s.done||"");logStep(s.obs,{answer:"听了水声"});setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);res();},reduce?300:4200);});}).then(function(){return next("继续",tok,true);});};
+  return new Promise(function(res,rej){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);b.disabled=true;box.classList.add("on");xstHearPlay();msg.textContent=fill(s.done||"");logStep(s.obs,{answer:"听了水声"});setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);res();},reduce?300:4200);});}).then(function(){return next("继续",tok,true);});};
 /* 伐竹取道：点三下砍开竹子，后面露出小潭 */
 H.xstCut=function(s,tok){clearTask();var n=s.times||3,cut=0;var box=el("div",{class:"xstcut"},[el("div",{class:"xc-pond"}),el("div",{class:"xc-l"}),el("div",{class:"xc-r"})]);var b=btn(s.btn||"🪓 砍开竹子");var msg=el("p",{class:"note",text:"还要砍 "+n+" 下"});
   task.append(q(s.q),box,el("div",{class:"row"},[b]),msg);xyLay();
@@ -1161,7 +1163,7 @@ H.xstDuan=function(s,tok){clearTask();var chars=s.text.split(""),want={};s.break
       if(!bad&&!miss||tries>=3){line.classList.add("fin");gaps.forEach(function(g){var k=+g.dataset.k;if(want[k]){g.classList.add("ok");g.classList.remove("bad","miss");}else{g.classList.remove("bad");}});commit();SOUND.sfx(bad||miss?"page":"ok");
         msg.textContent=(!bad&&!miss)?"全对！":"看看绿色的地方，是该停顿的。";task.append(el("blockquote",{class:"quote",text:s.punct}));if(s.mean)task.append(el("p",{class:"note xd-mean",text:s.mean}));go.textContent="继续 ▸";xyLay();
         if(s.after)return say(fill(s.after),s.afterWho||lead(),tok);return;}
-      SOUND.sfx("no");msg.textContent=tries>=2?"红色的地方不该断；虚线框的地方少断了一处。改一改，再核对。":"有 "+(bad?bad+" 处不该断":"")+(bad&&miss?"，":"")+(miss?"还少断 "+miss+" 处":"")+"。再读一读，改一改。";
+      SOUND.sfx("no");msg.textContent=tries>=2?"红色的地方不该断；虚线框的地方是少断的。改一改，再核对。":"有 "+(bad?bad+" 处不该断":"")+(bad&&miss?"，":"")+(miss?"还少断 "+miss+" 处":"")+"。再读一读，改一改。";
       if(s.hints&&s.hints[tries-1])sayQ(fill(s.hints[tries-1]),s.feedbackWho||lead(),tok);});});};
 H.bins=function(s,tok){var fb=s.feedbackWho||lead();return new Promise(function(res,rej){clearTask();var left=s.items.length;var cols={};var wrap=el("div",{class:"yybins",style:"--n:"+s.cols.length});
     s.cols.forEach(function(c){var d=el("div",{class:"yybin"},[el("h4",{text:c.label})]);cols[c.id]=d;wrap.append(d);});var pool=el("div",{class:"yybpool"});
