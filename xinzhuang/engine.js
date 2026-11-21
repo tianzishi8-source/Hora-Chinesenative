@@ -105,7 +105,7 @@ function mergeRemote(r){if(!r||typeof r!=="object")return false;if(typeof fixXSh
   if(newer){S.savedAt=r.savedAt;if(r.day&&r.day!==S.day){S.day=r.day;ch=true;}}
   try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}return ch;}
 /* 连不上表格时先在本机做，但先不往表格存；重新连上、取回表格里那份并合并以后，才存回去。 */
-function pullThen(f,g){if(!BK.me){f();return;}var me=BK.me;api("login",me).then(function(j){if(BK.me!==me){if(g)g();return;}var c=mergeRemote(j.state);BK.pull=0;if(c){try{paintDays();paintHw();}catch(e){}}f();}).catch(function(e){if(g)g();setSaveSt(e&&(e.code==="pin"||e.code==="roster")?"没保存：请重新签到":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)sheetSave();},15000);});}
+function pullThen(f,g){if(!BK.me){f();return;}var me=BK.me;api("login",me).then(function(j){if(BK.me!==me){if(g)g();return;}var c=mergeRemote(j.state);pxInfer(S);BK.pull=0;if(c){try{paintDays();paintHw();}catch(e){}}f();}).catch(function(e){if(g)g();setSaveSt(e&&(e.code==="pin"||e.code==="roster")?"没保存：请重新签到":"没连上，稍后自动再存",true);setTimeout(function(){if(dirty)sheetSave();},15000);});}
 var BK={mode:SITE.sheetUrl?"sheet":"claude",me:null,tpw:null};
 function online(){return BK.mode==="sheet"?!!BK.me:!!(DB&&UID);}
 /* 表格后台：一律用 POST、正文是 JSON 文本（不设 Content-Type，浏览器就不会先发预检请求） */
@@ -149,7 +149,7 @@ BK.gallery=function(key,maxReal){
     if(r[1])r[1].docs.forEach(function(d){if(d.id===UID)return;((d.data()||{}).items||[]).forEach(function(it){if(it.to===UID&&it.key===key)got.push(it.text);});});
     return {real:shuffle(real).slice(0,maxReal),got:got};});};
 BK.reply=function(to,key,text,all){if(BK.mode==="sheet"){if(BK.me)api("reply",Object.assign(cred(),{key:key,to:to,text:text})).catch(function(){});return;}if(DB&&UID)DB.doc("replies/"+UID).set({items:all}).catch(function(){});};
-BK.teacherLoad=function(){if(BK.mode==="sheet")return api("t_all",{pw:BK.tpw}).then(function(j){var sh={};tHw={};(j.hw||[]).forEach(function(h){tHw[h.sid+"|"+h.day]=h;});var bySid={};Object.keys(tHw).forEach(function(k){var h=tHw[k];(bySid[h.sid]=bySid[h.sid]||{})[k]=h;});tHw={};Object.keys(bySid).forEach(function(sid){var m=bySid[sid];xsRows(m,sid+"|");Object.assign(tHw,m);});var docs=(j.rows||[]).map(function(r){var v=r.payload||{};if(typeof fixXShift==="function")fixXShift(v,r.cls,v.name||r.name);v._id=r.sid;v.name=v.name||r.name;v._cls=r.cls;if(r.shared)sh[r.sid]=1;return v;});return {docs:docs,shares:sh};});
+BK.teacherLoad=function(){if(BK.mode==="sheet")return api("t_all",{pw:BK.tpw}).then(function(j){var sh={};tHw={};(j.hw||[]).forEach(function(h){tHw[h.sid+"|"+h.day]=h;});var bySid={};Object.keys(tHw).forEach(function(k){var h=tHw[k];(bySid[h.sid]=bySid[h.sid]||{})[k]=h;});tHw={};Object.keys(bySid).forEach(function(sid){var m=bySid[sid];xsRows(m,sid+"|");Object.assign(tHw,m);});var docs=(j.rows||[]).map(function(r){var v=r.payload||{};if(typeof fixXShift==="function")fixXShift(v,r.cls,v.name||r.name);pxInfer(v);v._id=r.sid;v.name=v.name||r.name;v._cls=r.cls;if(r.shared)sh[r.sid]=1;return v;});return {docs:docs,shares:sh};});
   return Promise.resolve(null);};
 BK.teacherHide=function(id){if(BK.mode==="sheet")return api("t_hide",{pw:BK.tpw,sid:id});return DB.doc("shares/"+id).delete();};
 var SAMPLE=null,sampleP=null;
@@ -883,6 +883,14 @@ function dayReached(n){var d=DAYS[n-1];return !!(S.done[n]||(d&&((S.reach||{})[n
 (L.extras||[]).forEach(function(x){if(!DAYS.some(function(d){return d.extraId===x.extraId;}))DAYS.push(Object.assign({hidden:true,extra:true},x));});
 /* 11-20 修正：错题本必须放在所有隐藏天的最后。它曾插在补作业前面，补作业的天号往后挪了一位，学生交过的补作业显示成没交。 */
 if(!DAYS.some(function(d){return d.cuoti;}))DAYS.push({hidden:true,cuoti:true,title:"错题本",short:"错题",end:"这一轮错题做完了。",beats:[{title:"错题本",steps:[]}]});
+/* 11-21 练习组“做完”不再丢：
+   以前再点开一组练习（再练、补做）会先把这一组记成“没做完”，学生中途离开就一直显示没做。现在点开不清“做完”。
+   已经被清掉的：这一组的基础检测题（不算后来加的作业线上题）都答过，就算做完。 */
+function pxInfer(st){if(!st||typeof st!=="object"||!st.done||!L.practice||!L.practice.core||typeof practiceIdx!=="function")return;
+  PG.forEach(function(g,gi){var n=practiceIdx(gi);if(!n||st.done[n])return;
+    var cs=L.practice.core.filter(function(c){return c&&c.obs&&c.obs.id&&g.days.indexOf(c.day)>=0&&!/^hwq-/.test(c.obs.id)&&(function(){try{return mWhen({data:st.data||{}},c.obs.id);}catch(e){return true;}})();});
+    if(!cs.length)return;if(cs.every(function(c){var r=st.log&&st.log[c.obs.id];return r&&r.answer!=null;}))st.done[n]=1;});}
+pxInfer(S);
 /* 11-20 03:05 到这次修正上线之间（没刷新的旧页面可能更晚），补作业类隐藏天（假期作业、慢读、补作业）的天号比原来大 1。
    搬回原来的天号。只搬“一定是错位”的：作业——原来那天有课后作业、错位到的那天本来没有作业（假期作业 13→12、字词抄写 15→14）；
    做完——作业搬了，那天的“做完”也一起搬；另外，错位到的那天只给别的同学（only）、原来那天是给这个同学的，也搬。这样判断不靠时间，也不靠标记，重复搬不会搬错，旧页面后来交的也能搬回来。 */
@@ -898,7 +906,11 @@ function fixXShift(st,cls,name){if(!st||typeof st!=="object")return;if(!st.data|
     /* 最后一个补作业天（《影子》读后感，只给 Lyida）错位后落在错题本那一天。错题本的“做完”每次打开错题本都会重设，搬走不影响什么。
        修正上线后错题本就在这一天，她做完一轮错题本也会记在这里，所以还要看补作业里的输入框有没有写过（读后感 bz.read8），写过才搬。 */
     if(st.done&&st.done[n]&&!st.done[o]&&cls!=null&&b&&b.cuoti&&d.only&&onlyFor(d,cls,name)&&xsWrote(d,st)){st.done[o]=st.done[n];delete st.done[n];xsBR(st,o,n);}});
+  /* 11-21 补回“做完”：错位那段时间，打开错题本会把假期作业那一天（当时的天号）记成“没做完”。
+     补作业天里给这个学生的最后一个写作框已经写好（写不够字数交不了），就算这一天做完了。 */
+  DAYS.forEach(function(d,i){var o=i+1;if(!d.extra||(st.done&&st.done[o]))return;if(d.only&&(cls==null||!onlyFor(d,cls,name)))return;if(xsLastWrote(d,st)){st.done=st.done||{};st.done[o]=1;}});
   if(st.data.hw)st.data.hw=hw;}
+function xsLastWrote(d,st){var last=null,D=st.data||{};(d.beats||[]).forEach(function(bt){(bt.steps||[]).forEach(function(s){if(s.t!=="input"||!s.key)return;if(s.when){var wv=get(s.when.key,D);if(s.when.not!=null?wv===s.when.not:s.when.is!=null?wv!==s.when.is:!wv)return;}last=s;});});if(!last)return false;var v=get(last.key,D);if(v&&typeof v==="object")v=v.text;return !!String(v==null?"":v).trim();}
 /* 老师标的作业状态（“作业”页的行）也按同样的规则对回原来的天号 */
 function xsRows(m,pre){Object.keys(m).forEach(function(k){var x=m[k],n=+x.day;if(!(n>1)||!xsSure(n))return;var t=(pre||"")+(n-1);if(m[t])return;m[t]=Object.assign({},x,{day:n-1});delete m[k];});}
 fixXShift(S);
@@ -929,7 +941,7 @@ function openMastery(){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("b
   var ul=el("ul",{class:"mchk"});[[f.days>=f.need,(DAYS.some(function(x,xi){return x.home&&!x.hidden&&dayOk(xi+1);})?"每一天读完、课后做完（":"每一天读完（")+f.days+"/"+f.need+"）"],[f.px>=f.pgN,"每组练习做完（"+f.px+"/"+f.pgN+"）"],[ms.p>=.9,"掌握率 90% 以上"],[f.hwGot>=f.hw&&!f.hwFix,"作业都交了"+(f.hwFix?"，有 "+f.hwFix+" 份要订正":"")+"（"+f.hwGot+"/"+f.hw+"）"]].forEach(function(c){if(c[1].indexOf("（0/0）")>0)return;ul.append(el("li",{class:c[0]?"y":"n",text:(c[0]?"✓ ":"○ ")+c[1]}));});sh.append(ul);
   var r=el("div",{class:"row"});if(ms.todo.length){var b=btn("做错题（还有 "+ms.todo.length+" 道，一轮最多 10 道）");b.addEventListener("click",openCuoti);r.append(b);}else r.append(el("p",{class:"note",text:"错题本里没有要重做的题。"+(ms.g>ms.m?"还没做到的题，读完那一天、做完练习就会有。":"")}));
   if(f.hwFix){var bh=el("button",{class:"ghost",type:"button",text:"去订正作业"});bh.addEventListener("click",function(){openHw();});r.append(bh);}sh.append(r);o.hidden=false;}
-function openPractice(gi){if(typeof gi!=="number")gi=pgCur();var n=practiceIdx(gi);if(!n||!pgOpen(gi))return;closeOv();if(S.day<=NVIS)S.retDay=S.day;DAYS[n-1].beats=buildPractice(gi);DAYS[n-1]._built=1;S.done[n]=0;startDay(n,false);}
+function openPractice(gi){if(typeof gi!=="number")gi=pgCur();var n=practiceIdx(gi);if(!n||!pgOpen(gi))return;closeOv();if(S.day<=NVIS)S.retDay=S.day;DAYS[n-1].beats=buildPractice(gi);DAYS[n-1]._built=1;startDay(n,false);}
 /* 练习目录：每一组一行，开放的可以点 */
 function pxStat(gi){var n=practiceIdx(gi),ok=0,g=0;OBSORDER.forEach(function(id){var o=OBS[id],r=S.log[id];if(o.day!==n||!r||r.answer==null)return;g++;if(!tMiss(r))ok++;});return {done:!!S.done[n],ok:ok,g:g};}
 function openPxMenu(){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);sh.append(x,el("h3",{text:"练习"}),el("p",{class:"hwnote",text:"每两天一组。读完这一组的最后一天，这组练习就开放：基础检测人人都做，再加你自己错过的旧题和相似的新题。"}));
@@ -1284,7 +1296,7 @@ function showLogin(){var sh=overlay("ovLogin");var last={};try{last=JSON.parse(l
       else{msg.innerHTML="";msg.append("连不上老师的表格（可能是网络问题）。 ");var off=el("button",{type:"button",class:"ghost",text:"先在这台设备上做"});off.addEventListener("click",function(){enter(me,null,keep.checked);setSaveSt("没连上，稍后自动再存",true);});msg.append(off);}});});}
 function enter(me,state,keep){BK.me=me;BK.pull=state===null?1:0;if(!HOME)try{localStorage.setItem("hora-last",JSON.stringify(keep?me:{cls:me.cls,name:me.name}));}catch(e){}try{sessionStorage.setItem("hora-session",JSON.stringify(me));}catch(e){}
   KEY="hora-"+L.id+"-"+me.cls+"|"+me.name;S={day:1,beat:{},done:{},data:{},log:{},chats:[]};try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);for(var k in o)S[k]=o[k];}}catch(e){}if(typeof fixXShift==="function")fixXShift(S);
-  mergeRemote(state);S.data.name=me.name;save();if($("#ovLogin"))$("#ovLogin").hidden=true;$("#bWho").hidden=false;if(state!==null)setSaveSt("已连上");restart();}
+  mergeRemote(state);pxInfer(S);S.data.name=me.name;save();if($("#ovLogin"))$("#ovLogin").hidden=true;$("#bWho").hidden=false;if(state!==null)setSaveSt("已连上");restart();}
 function showTeacherLogin(fromHash){var sh=overlay("ovTLogin");
   sh.innerHTML='<h3>老师</h3><label class="field"><span class="lab">老师密码</span><input type="password" id="tl-pw" autocomplete="off"></label><div class="row"><button type="button" class="btn" id="tl-go">进入</button><button type="button" class="ghost" id="tl-x">'+(fromHash?"我是学生":"取消")+'</button></div><p class="note" id="tl-msg">密码是部署表格时你自己设的。</p>';
   var pw=$("#tl-pw",sh),msg=$("#tl-msg",sh);pw.focus();
