@@ -1165,6 +1165,26 @@ H.xstDuan=function(s,tok){clearTask();var chars=s.text.split(""),want={};s.break
         if(s.after)return say(fill(s.after),s.afterWho||lead(),tok);return;}
       SOUND.sfx("no");msg.textContent=tries>=2?"红色的地方不该断；虚线框的地方是少断的。改一改，再核对。":"有 "+(bad?bad+" 处不该断":"")+(bad&&miss?"，":"")+(miss?"还少断 "+miss+" 处":"")+"。再读一读，改一改。";
       if(s.hints&&s.hints[tries-1])sayQ(fill(s.hints[tries-1]),s.feedbackWho||lead(),tok);});});};
+/* 11-21 赏析写作（老师：选择题难以检验是否真读懂情感，要让学生自己写出来）：
+   先自己写（有句式支架，不给答案）→ 交了才出参考答案 → 对照要点自己勾“我写到了” → 把批注抄到课本上。写的原文和自评都记进作答，老师页能看到。 */
+function xstMarkSents(ms){if(!ms||!ms.length)return;R.keys={};var first=null;SENT.forEach(function(x){if(ms.some(function(m){return x.t.indexOf(m)>=0;})){R.keys[x.id]=1;if(first==null)first=x.id;}});paintMarks();if(first!=null){var se=$('.s[data-id="'+first+'"]',rbody);if(se)try{se.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}}
+H.xstShang=function(s,tok){clearTask();var who=s.who||lead();var head=[q(s.q)];if(s.quote)head.push(el("blockquote",{class:"quote",text:s.quote}));
+  var ta=textBox("in-"+s.key.replace(/\./g,"-"),s.rows||4,fill(s.ph||"自己先写，写完再对照。"),get(s.key));
+  var fr=s.frame?el("div",{class:"xsh-frame"},[el("b",{text:"可以这样说"}),el("span",{text:s.frame})]):null;
+  var b=btn("写好了，对照一下");task.append.apply(task,head.concat([fr,el("div",{class:"field"},[ta]),el("div",{class:"row"},[b])]).filter(Boolean));xyLay();if(s.mark)xstMarkSents(s.mark);
+  return new Promise(function(res,rej){var nudged=0;
+    b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);var v=ta.value.trim();if(!v){ta.focus();return;}
+      if(v.replace(/\s/g,"").length<(s.min||25)&&nudged<1){nudged++;logStep(s.obs,{miss:"short"});sayQ(fill(s.short||"再多写一两句：说说你的理由，最好用上原文里的词。"),who,tok);return;}
+      set(s.key,v);ta.readOnly=true;b.remove();SOUND.sfx("page");
+      var got={};var chips=el("div",{class:"xsh-pts"});s.points.forEach(function(p,i){var c=el("button",{type:"button",class:"xchip",text:p});c.addEventListener("click",function(){got[i]=!got[i];c.classList.toggle("sel",!!got[i]);});chips.append(c);});
+      var card=el("div",{class:"xshang"},[el("h5",{text:"参考答案"}),el("p",{class:"xsh-ref",text:s.ref}),el("h5",{text:"对照一下：下面几点，你写到了哪几点？点一点"}),chips]);
+      if(s.pizhu)card.append(el("div",{class:"xsh-pz"},[el("b",{text:"批注到课本"}),el("span",{class:"seal",text:"抄到课本"}),el("p",{text:(s.pizhu.how||"在左边标出的句子旁边，写下这一行：")}),el("p",{class:"xsh-pzt",text:s.pizhu.text})]));
+      task.append(card);xyLay();try{card.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}
+      if(s.pizhu&&s.pizhu.mark)xstMarkSents(s.pizhu.mark);
+      say(fill(s.revealSay||"对照参考答案，看看自己写到了哪几点。没写到的，用另一种颜色补在课本上。"),who,tok).then(function(){
+        var ok=btn(s.pizhu?"对照好了，也抄好了":"对照好了");task.append(el("div",{class:"row"},[ok]));xyLay();
+        ok.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);var g=s.points.filter(function(p,i){return got[i];});
+          set(s.key+"_pts",g.length+"/"+s.points.length);logStep(s.obs,{try:1,answer:v+"｜自评："+g.length+"/"+s.points.length+(g.length?"（"+g.join("；")+"）":"")});commit();res();});},rej);});});};
 H.bins=function(s,tok){var fb=s.feedbackWho||lead();return new Promise(function(res,rej){clearTask();var left=s.items.length;var cols={};var wrap=el("div",{class:"yybins",style:"--n:"+s.cols.length});
     s.cols.forEach(function(c){var d=el("div",{class:"yybin"},[el("h4",{text:c.label})]);cols[c.id]=d;wrap.append(d);});var pool=el("div",{class:"yybpool"});
     xyShuffle(s.items).forEach(function(it){var row=el("div",{class:"yybit"},[el("span",{text:it.text})]);var bs=el("div",{class:"yybbs"});

@@ -1009,3 +1009,15 @@ textarea.fixnote{width:100%;margin-top:6px}
 .xd-help{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}.xd-help span{font-size:.92rem;background:rgba(63,107,82,.08);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
 @media (max-width:640px){.xduan{font-size:1.2rem}.xduan .xd-gap{width:13px}}
 @media (prefers-reduced-motion:reduce){.xtrace .xt-fog{animation:none;opacity:.6}}
+/* 11-21 赏析写作 */
+.xsh-frame{display:flex;gap:10px;align-items:flex-start;background:rgba(63,107,82,.07);border:1px dashed var(--line);border-radius:10px;padding:8px 12px;margin:8px 0;font-size:.98rem;line-height:1.7}
+.xsh-frame b{white-space:nowrap;color:#3f6b52}
+.xshang{background:linear-gradient(#fbf8ef,#f3eddc);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:10px}
+.xshang h5{margin:6px 0 4px;font-size:.95rem;color:#3f6b52}
+.xshang .xsh-ref{font:1.05rem/1.85 var(--f-text);margin:0}
+.xsh-pts{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.xsh-pts .xchip.sel{background:#3f6b52;color:#fff;border-color:#3f6b52}
+.xsh-pts .xchip.sel::before{content:"✓ "}
+.xsh-pz{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;position:relative}
+.xsh-pz .seal{position:absolute;right:0;top:8px}
+.xsh-pz p{margin:4px 0}.xsh-pz .xsh-pzt{font:700 1.05rem/1.8 var(--f-text);color:#7a3a1f}
