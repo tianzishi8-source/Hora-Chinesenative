@@ -1041,18 +1041,18 @@ function xstJade(n){try{var A=window.__xstAC||(window.__xstAC=new (window.AudioC
   for(var k=0;k<n;k++){var t=t0+k*(.28+Math.random()*.35),f=[1568,1760,2093,2349,2637][Math.floor(Math.random()*5)];[1,2.76,5.4].forEach(function(m,j){var o=A.createOscillator(),g=A.createGain();o.type="sine";o.frequency.value=f*m;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime([.16,.06,.025][j],t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+[1.6,.7,.35][j]);o.connect(g);g.connect(A.destination);o.start(t);o.stop(t+1.7);});}}catch(e){}}
 /* 11-21 换成真实溪水录音（BigSoundBank《Brooklet》CC0）；放不出来才退回合成的叮咚声 */
 function xstHearPlay(){try{var a=new Audio("amb/xst-hear.mp3?v=1");a.volume=.9;var p=a.play();if(p&&p.catch)p.catch(function(){xstJade(7);});}catch(e){xstJade(7);}}
-H.xstHear=function(s,tok){clearTask();var box=el("div",{class:"xsthear"},[el("div",{class:"xh-bamboo"}),el("div",{class:"xh-wave"},[el("i"),el("i"),el("i"),el("i"),el("i")])]);var b=btn(s.btn||"👂 侧耳听一听");var msg=el("p",{class:"note",text:""});
+H.xstHear=function(s,tok){clearTask();closeReaderIfNarrow();var box=el("div",{class:"xsthear"},[el("div",{class:"xh-bamboo"}),el("div",{class:"xh-wave"},[el("i"),el("i"),el("i"),el("i"),el("i")])]);var b=btn(s.btn||"👂 侧耳听一听");var msg=el("p",{class:"note",text:""});
   task.append(q(s.q),box,el("div",{class:"row"},[b]),msg);xyLay();
   return new Promise(function(res,rej){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);b.disabled=true;box.classList.add("on");xstHearPlay();msg.textContent=fill(s.done||"");logStep(s.obs,{answer:"听了水声"});setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);res();},reduce?300:4200);});}).then(function(){return next("继续",tok,true);});};
 /* 伐竹取道：点三下砍开竹子，后面露出小潭 */
-H.xstCut=function(s,tok){clearTask();var n=s.times||3,cut=0;var box=el("div",{class:"xstcut"},[el("div",{class:"xc-pond"}),el("div",{class:"xc-l"}),el("div",{class:"xc-r"})]);var b=btn(s.btn||"🪓 砍开竹子");var msg=el("p",{class:"note",text:"还要砍 "+n+" 下"});
+H.xstCut=function(s,tok){clearTask();closeReaderIfNarrow();var n=s.times||3,cut=0;var box=el("div",{class:"xstcut"},[el("div",{class:"xc-pond"}),el("div",{class:"xc-l"}),el("div",{class:"xc-r"})]);var b=btn(s.btn||"🪓 砍开竹子");var msg=el("p",{class:"note",text:"还要砍 "+n+" 下"});
   task.append(q(s.q),box,el("div",{class:"row"},[b]),msg);xyLay();
   return new Promise(function(res,rej){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);cut++;SOUND.sfx("page");box.style.setProperty("--open",(cut/n).toFixed(2));xyShake(box);
       if(cut<n){msg.textContent="还要砍 "+(n-cut)+" 下";return;}b.disabled=true;box.classList.add("open");msg.textContent=fill(s.done||"");logStep(s.obs,{answer:"开出了路"});setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);res();},reduce?200:1600);});}).then(function(){return next("继续",tok,true);});};
 /* 潭底的石头：按词找形状（坻、屿、嵁、岩），一次一个，点错了给提示 */
 function xstStonesSvg(){var B={a:[0.5,46,24.5,13],b:[26,25,22,33],c:[48.5,29.5,27,28.5],d:[76,14.5,23.5,43.5]};var h='<img src="img/xst-stones.webp" alt="潭边四块露出水面的石头：低平的一块、长着草木的小岛、高低不平的一片岩石、高高耸起的大石" draggable="false">';
   for(var k in B){var b=B[k];h+='<div class="xs-shape'+(k==="a"?" low":"")+'" data-k="'+k+'" role="button" tabindex="0" style="left:'+b[0]+'%;top:'+b[1]+'%;width:'+b[2]+'%;height:'+b[3]+'%"></div>';}return h;}
-H.xstStones=function(s,tok){clearTask();var fb=s.feedbackWho||lead();var box=el("div",{class:"xststones"});box.innerHTML=xstStonesSvg();var cue=el("div",{class:"xs-cue"});var idx=0,miss=0;
+H.xstStones=function(s,tok){clearTask();closeReaderIfNarrow();var fb=s.feedbackWho||lead();var box=el("div",{class:"xststones"});box.innerHTML=xstStonesSvg();var cue=el("div",{class:"xs-cue"});var idx=0,miss=0;
   task.append(q(s.q),cue,box);xyLay();
   return new Promise(function(res,rej){function show(){var it=s.items[idx];cue.innerHTML="";cue.append(el("b",{text:it.w}),el("span",{text:"："+it.gloss+"。点一点，是哪一块？"}));}
     show();$$(".xs-shape",box).forEach(function(g){g.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);if(idx>=s.items.length)return;var it=s.items[idx];logStep(s.obs,{try:1});
@@ -1060,7 +1060,7 @@ H.xstStones=function(s,tok){clearTask();var fb=s.feedbackWho||lead();var box=el(
         if(idx>=s.items.length){cue.innerHTML="";cue.append(el("span",{text:fill(s.done||"都找到了。")}));logStep(s.obs,{answer:"四种都找对了"+(miss?"（点错 "+miss+" 次）":"")});commit();setTimeout(function(){res();},700);}else show();}
       else{SOUND.sfx("no");miss++;xyShake(g);logStep(s.obs,{miss:it.w});if(it.hint)sayQ(fill(it.hint),fb,tok);}});});}).then(function(){return next("继续",tok,true);});};
 /* 一潭鱼：清得像没有水；三步：佁然不动 → 俶尔远逝 → 往来翕忽 */
-H.xstFish=function(s,tok){clearTask();var box=el("div",{class:"xstfish ph0"});var fish=[];for(var k=0;k<16;k++){var f=el("div",{class:"xf",style:"--x:"+(5+(k*23)%82)+"%;--y:"+(8+((k*37)%70))+"%;--d:"+(k*0.37).toFixed(2)+"s"},[el("i",{class:"xf-body"}),el("i",{class:"xf-sh"})]);fish.push(f);box.append(f);}
+H.xstFish=function(s,tok){clearTask();closeReaderIfNarrow();var box=el("div",{class:"xstfish ph0"});var fish=[];for(var k=0;k<16;k++){var f=el("div",{class:"xf",style:"--x:"+(5+(k*23)%82)+"%;--y:"+(8+((k*37)%70))+"%;--d:"+(k*0.37).toFixed(2)+"s"},[el("i",{class:"xf-body"}),el("i",{class:"xf-sh"})]);fish.push(f);box.append(f);}
   box.append(el("div",{class:"xf-sun"}));var cap=el("div",{class:"xf-cap"});var b=btn(s.steps[0].btn);var idx=0;
   task.append(q(s.q),box,cap,el("div",{class:"row"},[b]));xyLay();cap.textContent=s.steps[0].cap||"";
   return new Promise(function(res,rej){b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);var st=s.steps[idx];SOUND.sfx("page");box.className="xstfish "+st.ph;cap.textContent=st.after||"";logStep(s.obs,{answer:st.ph});idx++;
@@ -1077,7 +1077,7 @@ H.xstInk=function(s,tok){var id=xstFindSent(s.text);if(!S.data.xink)S.data.xink=
   SOUND.sfx("page");clearTask();var card=el("div",{class:"xinkcard"},[el("div",{class:"xi-brush",text:"✒"}),el("div",{class:"xi-t",text:s.text}),el("p",{class:"note",text:fill(s.note||"柳先生写下了这一句。看左边，文章又多了一句。")})]);task.append(card);xyLay();
   return say(s.text,s.who||"lzy",tok).then(function(){return next("继续",tok,true);});};
 /* 炼字：句子里空一个词，学生先替柳先生选，再看他用的是哪个、为什么 */
-H.xstLian=function(s,tok){clearTask();var who=s.who||"lzy";var parts=String(s.text).split(s.blank);var blank=el("span",{class:"xl-blank",text:"　".repeat(Math.max(1,s.blank.length))});
+H.xstLian=function(s,tok){clearTask();closeReaderIfNarrow();var who=s.who||"lzy";var parts=String(s.text).split(s.blank);var blank=el("span",{class:"xl-blank",text:"　".repeat(Math.max(1,s.blank.length))});
   var line=el("div",{class:"xl-line"},[parts[0],blank,parts.slice(1).join(s.blank)]);var opts=el("div",{class:"xl-opts"});var cap=el("p",{class:"note",text:fill(s.tip||"你来替柳先生落笔：点一个词，放进空格里。")});
   task.append(q(s.q),el("div",{class:"xlian"},[el("div",{class:"xl-paper"},[line]),opts]),cap);xyLay();
   return new Promise(function(res,rej){var done=false;s.options.forEach(function(o,i){var b=el("button",{type:"button",class:"xl-opt","data-i":String(i)},[el("b",{text:o.t})]);opts.append(b);
@@ -1087,9 +1087,9 @@ H.xstLian=function(s,tok){clearTask();var who=s.who||"lzy";var parts=String(s.te
       say(fill(o.reply),who,tok).then(function(){if(!o.ok){blank.classList.remove("mine");blank.classList.add("real");blank.textContent=s.blank;cap.textContent="柳先生写的是“"+s.blank+"”。";SOUND.sfx("ok");}else{blank.classList.add("real");}
         return s.reveal?say(fill(s.reveal),s.revealWho||who,tok):null;}).then(res,rej);});});}).then(function(){return next("继续",tok,true);});};
 /* 走到哪里写到哪里：一张场景大图，发光的地方点进去，各自带一段小环节；都看过了才往下走 */
-H.xstScene=function(s,tok){var seen={};var need=s.need||s.spots.length;
+H.xstScene=function(s,tok){closeReaderIfNarrow();var seen={};var need=s.need||s.spots.length;
   function render(){clearTask();var box=el("div",{class:"xscene"+(s.chill?" chilly":"")},[el("img",{src:s.img,alt:s.alt||"",draggable:"false"})]);var cnt=Object.keys(seen).length;if(s.chill){box.style.setProperty("--chill",(cnt/s.spots.length).toFixed(2));box.append(el("div",{class:"xtherm","aria-hidden":"true"},[el("i",{style:"height:"+Math.round(90-cnt/s.spots.length*75)+"%"})]));}
-    s.spots.forEach(function(p){var b=el("button",{type:"button",class:"xsp"+(seen[p.id]?" seen":""),"data-id":p.id,style:"left:"+p.x+"%;top:"+p.y+"%","aria-label":p.label},[el("i"),el("span",{text:(seen[p.id]?"✓ ":"")+p.label})]);box.append(b);});
+    s.spots.forEach(function(p){var b=el("button",{type:"button",class:"xsp"+(seen[p.id]?" seen":"")+(p.x>80?" r":p.x<20?" l":"")+(p.y>78?" up":""),"data-id":p.id,style:"left:"+p.x+"%;top:"+p.y+"%","aria-label":p.label},[el("i"),el("span",{text:(seen[p.id]?"✓ ":"")+p.label})]);box.append(b);});
     var tip=el("p",{class:"note xs-tip",text:cnt>=need?fill(s.done||"都看过了。"):fill(s.tip||"点画面里发光的地方，看一看。")+"（"+cnt+"/"+s.spots.length+"）"});
     task.append(q(s.q),box,tip);xyLay();return box;}
   return new Promise(function(res,rej){function loop(){if(tok!==RUN.token)return rej(CANCEL);var box=render();if(Object.keys(seen).length>=need){setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);res();},400);return;}
@@ -1098,7 +1098,7 @@ H.xstScene=function(s,tok){var seen={};var need=s.need||s.spots.length;
         setTimeout(function(){if(tok!==RUN.token)return rej(CANCEL);runSteps(p.steps||[],tok).then(loop,rej);},reduce?50:750);});});}
     loop();}).then(function(){return next("继续",tok,true);});};
 /* 一潭鱼：phase "drift" 只看鱼在“空中”游；phase "rest"：拨开云（阳光、影子、一动不动）→ 点水面（忽然游远）→ 手放进水里（来来往往，围着你游） */
-H.xstPond=function(s,tok){clearTask();var box=el("div",{class:"xpond"}),fl=el("div",{class:"xp-fish"}),sl=el("div",{class:"xp-shadow"}),cloud=el("div",{class:"xp-cloud"}),sun=el("div",{class:"xp-sun"});
+H.xstPond=function(s,tok){clearTask();closeReaderIfNarrow();var box=el("div",{class:"xpond"}),fl=el("div",{class:"xp-fish"}),sl=el("div",{class:"xp-shadow"}),cloud=el("div",{class:"xp-cloud"}),sun=el("div",{class:"xp-sun"});
   box.append(sl,fl,sun);var cap=el("p",{class:"xf-cap"});var row=el("div",{class:"row"});task.append(q(s.q),box,cap,row);xyLay();
   var N=s.n||16,F=[],W=0,Hh=0,mode="drift",ptr=null,raf=0,alive=true,still=false;
   function sz(){W=box.clientWidth;Hh=box.clientHeight;}sz();
@@ -1133,7 +1133,7 @@ H.xstPond=function(s,tok){clearTask();var box=el("div",{class:"xpond"}),fl=el("d
   }).then(function(){stop();},function(e){stop();throw e;});};
 /* ===== 小石潭记 第2、3天（11-21）：顺着溪水画（xstTrace）、断句（xstDuan）；xstScene 加 chill（越看越冷） ===== */
 /* 顺着溪水画：手指（鼠标）从潭边按住，沿小溪往上画；按顺序经过各个点；雾一阵浓一阵淡，溪水一段看得见一段看不见 */
-H.xstTrace=function(s,tok){clearTask();var box=el("div",{class:"xtrace"},[el("img",{src:s.img,alt:s.alt||"",draggable:"false"})]);var cv=document.createElement("canvas");cv.className="xt-cv";box.append(cv);
+H.xstTrace=function(s,tok){clearTask();closeReaderIfNarrow();var box=el("div",{class:"xtrace"},[el("img",{src:s.img,alt:s.alt||"",draggable:"false"})]);var cv=document.createElement("canvas");cv.className="xt-cv";box.append(cv);
   var P=s.pts,at=0,path=[],drawing=false,done=false;var dots=P.map(function(p,i){var d=el("i",{class:"xt-dot"+(i===0?" go":""),style:"left:"+p[0]+"%;top:"+p[1]+"%"});box.append(d);return d;});
   (s.fog||[]).forEach(function(f,i){box.append(el("i",{class:"xt-fog",style:"left:"+f[0]+"%;top:"+f[1]+"%;width:"+f[2]+"%;animation-delay:"+(i*1.7)+"s"}));});
   var cap=el("p",{class:"xf-cap",text:fill(s.c0||"按住潭边发光的点，顺着溪水往上画。")});var row=el("div",{class:"row"});task.append(q(s.q),box,cap,row);xyLay();
@@ -1141,7 +1141,7 @@ H.xstTrace=function(s,tok){clearTask();var box=el("div",{class:"xtrace"},[el("im
   function paint(){if(!ctx)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,cv.width,cv.height);if(path.length<2)return;ctx.lineCap="round";ctx.lineJoin="round";
     [[12,"rgba(255,255,255,.35)"],[5,"rgba(255,252,235,.95)"]].forEach(function(w){ctx.lineWidth=w[0];ctx.strokeStyle=w[1];ctx.beginPath();path.forEach(function(p,i){if(i)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);});ctx.stroke();});}
   function pos(e){var r=box.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top,w:r.width,h:r.height};}
-  function near(p,k){var t=P[k];var dx=(p.x/p.w*100-t[0])*p.w/100,dy=(p.y/p.h*100-t[1])*p.h/100;return Math.hypot(dx,dy)<Math.max(26,p.w*.06);}
+  function near(p,k){var t=P[k];var dx=(p.x/p.w*100-t[0])*p.w/100,dy=(p.y/p.h*100-t[1])*p.h/100;return Math.hypot(dx,dy)<Math.max(isNarrow()?32:26,p.w*.07);}
   return new Promise(function(res,rej){function hit(p){while(at<P.length&&near(p,at)){dots[at].classList.remove("go");dots[at].classList.add("on");SOUND.sfx("page");at++;if(at<P.length)dots[at].classList.add("go");
         if(at>=P.length){finish();return;}if(s.mid&&s.mid[at])cap.textContent=fill(s.mid[at]);}}
     function finish(){if(done)return;done=true;drawing=false;box.classList.add("done");cap.textContent=fill(s.done||"画到头了。");logStep(s.obs,{answer:"顺着溪水画到了头"});commit();SOUND.sfx("ok");row.innerHTML="";
@@ -1152,11 +1152,11 @@ H.xstTrace=function(s,tok){clearTask();var box=el("div",{class:"xtrace"},[el("im
     setTimeout(fit,60);window.addEventListener("resize",fit);
     setTimeout(function(){if(done||tok!==RUN.token)return;var b=btn("🖐 帮我画");b.classList.add("ghost");row.append(b);b.addEventListener("click",function(){if(done)return;b.remove();if(!cv.width)fit();var r=box.getBoundingClientRect();var k=at;(function go(){if(done||tok!==RUN.token)return;var t=P[k];var p={x:t[0]/100*r.width,y:t[1]/100*r.height,w:r.width,h:r.height};path.push(p);hit(p);paint();k++;if(k<P.length)setTimeout(go,reduce?30:420);})();});},reduce?200:20000);});};
 /* 断句：一串没有标点的字，点两个字之间的缝，加一条“/”；核对后显出标点和意思 */
-H.xstDuan=function(s,tok){clearTask();var chars=s.text.split(""),want={};s.breaks.forEach(function(k){want[k]=1;});var on={},tries=0;
+H.xstDuan=function(s,tok){clearTask();closeReaderIfNarrow();var chars=s.text.split(""),want={};s.breaks.forEach(function(k){want[k]=1;});var on={},tries=0;
   var line=el("div",{class:"xduan"});var gaps=[];chars.forEach(function(c,i){if(i>0){var g=el("button",{type:"button",class:"xd-gap","data-k":String(i),"aria-label":"在“"+chars[i-1]+"”和“"+c+"”之间断开"});g.addEventListener("click",function(){if(line.classList.contains("fin"))return;on[i]=!on[i];g.classList.toggle("on",!!on[i]);g.classList.remove("bad","miss","ok");SOUND.sfx("page");});gaps.push(g);line.append(g);}line.append(el("span",{class:"xd-c",text:c}));});
   var msg=el("p",{class:"note",text:fill(s.tip||"读一读，觉得该停顿的地方，点两个字中间的缝，画一条“/”。再点一下就取消。")});var go=btn("核对");var row=el("div",{class:"row"},[go]);
   var help=s.help?el("div",{class:"xd-help"},s.help.map(function(h){return el("span",{text:h});})):null;
-  task.append(q(s.q),line,help,msg,row);xyLay();
+  task.append.apply(task,[q(s.q),line,help,msg,row].filter(Boolean));xyLay();
   return new Promise(function(res,rej){go.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
       if(line.classList.contains("fin")){res();return;}tries++;var bad=0,miss=0;gaps.forEach(function(g){var k=+g.dataset.k;g.classList.remove("bad","miss","ok");if(on[k]&&want[k])g.classList.add("ok");else if(on[k]){g.classList.add("bad");bad++;}else if(want[k]){miss++;if(tries>=2)g.classList.add("miss");}});
       logStep(s.obs,{try:1,answer:"第"+tries+"次：多断 "+bad+" 处，少断 "+miss+" 处"});
@@ -1168,7 +1168,7 @@ H.xstDuan=function(s,tok){clearTask();var chars=s.text.split(""),want={};s.break
 /* 11-21 赏析写作（老师：选择题难以检验是否真读懂情感，要让学生自己写出来）：
    先自己写（有句式支架，不给答案）→ 交了才出参考答案 → 对照要点自己勾“我写到了” → 把批注抄到课本上。写的原文和自评都记进作答，老师页能看到。 */
 function xstMarkSents(ms){if(!ms||!ms.length)return;R.keys={};var first=null;SENT.forEach(function(x){if(ms.some(function(m){return x.t.indexOf(m)>=0;})){R.keys[x.id]=1;if(first==null)first=x.id;}});paintMarks();if(first!=null){var se=$('.s[data-id="'+first+'"]',rbody);if(se)try{se.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}}
-H.xstShang=function(s,tok){clearTask();var who=s.who||lead();var head=[q(s.q)];if(s.quote)head.push(el("blockquote",{class:"quote",text:s.quote}));
+H.xstShang=function(s,tok){clearTask();closeReaderIfNarrow();var who=s.who||lead();var head=[q(s.q)];if(s.quote)head.push(el("blockquote",{class:"quote",text:s.quote}));
   var ta=textBox("in-"+s.key.replace(/\./g,"-"),s.rows||4,fill(s.ph||"自己先写，写完再对照。"),get(s.key));
   var fr=s.frame?el("div",{class:"xsh-frame"},[el("b",{text:"可以这样说"}),el("span",{text:s.frame})]):null;
   var b=btn("写好了，对照一下");task.append.apply(task,head.concat([fr,el("div",{class:"field"},[ta]),el("div",{class:"row"},[b])]).filter(Boolean));xyLay();if(s.mark)xstMarkSents(s.mark);

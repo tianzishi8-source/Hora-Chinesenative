@@ -1021,3 +1021,6 @@ textarea.fixnote{width:100%;margin-top:6px}
 .xsh-pz{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;position:relative}
 .xsh-pz .seal{position:absolute;right:0;top:8px}
 .xsh-pz p{margin:4px 0}.xsh-pz .xsh-pzt{font:700 1.05rem/1.8 var(--f-text);color:#7a3a1f}
+.xscene .xsp.r span{left:auto;right:30%;transform:none}
+.xscene .xsp.l span{left:30%;transform:none}
+.xscene .xsp.up span{top:auto;bottom:100%}
