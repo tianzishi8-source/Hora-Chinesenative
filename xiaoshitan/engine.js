@@ -976,7 +976,7 @@ H.assemble=function(s,tok){return new Promise(function(res,rej){clearTask();var 
 H.lines=function(s,tok){return new Promise(function(res,rej){clearTask();var list=el("div",{class:"xlines"});var go=s.tap?btn(s.tap):null;
     function run(){if(go)go.remove();s.items.forEach(function(t,k){setTimeout(function(){if(tok!==RUN.token)return;list.append(el("p",{class:"xli",text:t}));SOUND.sfx("page");if(k===s.items.length-1)setTimeout(res,600);},reduce?0:k*900);});}
     [s.q?q(s.q):null,list,go].forEach(function(x){if(x)task.append(x);});xyLay();if(go)go.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);run();});else run();});};
-H.note=function(s,tok){var NCm=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"];clearTask();
+H.note=function(s,tok){var NCm=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];clearTask();
   var card=el("div",{class:"xnote"},[el("div",{class:"xnh"},[el("b",{text:"笔记卡"+(NCm[s.n]||s.n)}),el("span",{class:"seal",text:"抄到课本"})]),
     el("h5",{text:"怎么抄"}),el("ol",{},s.how.map(function(h){return el("li",{text:h});})),el("h5",{text:"抄什么"}),el("div",{class:"xnw"},s.what.map(function(w){return el("p",{text:w});})),el("p",{class:"xnfoot",text:"慢慢抄，抄好了自己点“我抄好了”。以后在“我的笔记本”里还能再看到这张卡。"})]);
   task.append(card);xyLay();if(s.mark&&s.mark.length){R.keys={};var first=null;SENT.forEach(function(x){if(s.mark.some(function(m){return x.t.indexOf(m)>=0;})){R.keys[x.id]=1;if(first==null)first=x.id;}});paintMarks();if(first!=null){var se=$('.s[data-id="'+first+'"]',rbody);if(se)try{se.scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"});}catch(e){}}}
@@ -1086,7 +1086,7 @@ H.xstLian=function(s,tok){clearTask();var who=s.who||"lzy";var parts=String(s.te
         return s.reveal?say(fill(s.reveal),s.revealWho||who,tok):null;}).then(res,rej);});});}).then(function(){return next("继续",tok,true);});};
 /* 走到哪里写到哪里：一张场景大图，发光的地方点进去，各自带一段小环节；都看过了才往下走 */
 H.xstScene=function(s,tok){var seen={};var need=s.need||s.spots.length;
-  function render(){clearTask();var box=el("div",{class:"xscene"},[el("img",{src:s.img,alt:s.alt||"",draggable:"false"})]);var cnt=Object.keys(seen).length;
+  function render(){clearTask();var box=el("div",{class:"xscene"+(s.chill?" chilly":"")},[el("img",{src:s.img,alt:s.alt||"",draggable:"false"})]);var cnt=Object.keys(seen).length;if(s.chill){box.style.setProperty("--chill",(cnt/s.spots.length).toFixed(2));box.append(el("div",{class:"xtherm","aria-hidden":"true"},[el("i",{style:"height:"+Math.round(90-cnt/s.spots.length*75)+"%"})]));}
     s.spots.forEach(function(p){var b=el("button",{type:"button",class:"xsp"+(seen[p.id]?" seen":""),"data-id":p.id,style:"left:"+p.x+"%;top:"+p.y+"%","aria-label":p.label},[el("i"),el("span",{text:(seen[p.id]?"✓ ":"")+p.label})]);box.append(b);});
     var tip=el("p",{class:"note xs-tip",text:cnt>=need?fill(s.done||"都看过了。"):fill(s.tip||"点画面里发光的地方，看一看。")+"（"+cnt+"/"+s.spots.length+"）"});
     task.append(q(s.q),box,tip);xyLay();return box;}
@@ -1129,6 +1129,40 @@ H.xstPond=function(s,tok){clearTask();var box=el("div",{class:"xpond"}),fl=el("d
         box.addEventListener("pointermove",mv);box.addEventListener("pointerleave",function(){ptr=null;mode="play";});
         setTimeout(function(){if(tok!==RUN.token)return;mode=ptr?"play":"play";if(!box.dataset.ok){step("👀 就这样看着",function(){box.dataset.ok="1";cap.textContent=fill(s.c5||"它们来来往往，轻快极了。");fin();});}},reduce?100:5000);},1500);}
   }).then(function(){stop();},function(e){stop();throw e;});};
+/* ===== 小石潭记 第2、3天（11-21）：顺着溪水画（xstTrace）、断句（xstDuan）；xstScene 加 chill（越看越冷） ===== */
+/* 顺着溪水画：手指（鼠标）从潭边按住，沿小溪往上画；按顺序经过各个点；雾一阵浓一阵淡，溪水一段看得见一段看不见 */
+H.xstTrace=function(s,tok){clearTask();var box=el("div",{class:"xtrace"},[el("img",{src:s.img,alt:s.alt||"",draggable:"false"})]);var cv=document.createElement("canvas");cv.className="xt-cv";box.append(cv);
+  var P=s.pts,at=0,path=[],drawing=false,done=false;var dots=P.map(function(p,i){var d=el("i",{class:"xt-dot"+(i===0?" go":""),style:"left:"+p[0]+"%;top:"+p[1]+"%"});box.append(d);return d;});
+  (s.fog||[]).forEach(function(f,i){box.append(el("i",{class:"xt-fog",style:"left:"+f[0]+"%;top:"+f[1]+"%;width:"+f[2]+"%;animation-delay:"+(i*1.7)+"s"}));});
+  var cap=el("p",{class:"xf-cap",text:fill(s.c0||"按住潭边发光的点，顺着溪水往上画。")});var row=el("div",{class:"row"});task.append(q(s.q),box,cap,row);xyLay();
+  var ctx=cv.getContext("2d"),dpr=window.devicePixelRatio||1;function fit(){var r=box.getBoundingClientRect();cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);paint();}
+  function paint(){if(!ctx)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,cv.width,cv.height);if(path.length<2)return;ctx.lineCap="round";ctx.lineJoin="round";
+    [[12,"rgba(255,255,255,.35)"],[5,"rgba(255,252,235,.95)"]].forEach(function(w){ctx.lineWidth=w[0];ctx.strokeStyle=w[1];ctx.beginPath();path.forEach(function(p,i){if(i)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);});ctx.stroke();});}
+  function pos(e){var r=box.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top,w:r.width,h:r.height};}
+  function near(p,k){var t=P[k];var dx=(p.x/p.w*100-t[0])*p.w/100,dy=(p.y/p.h*100-t[1])*p.h/100;return Math.hypot(dx,dy)<Math.max(26,p.w*.06);}
+  return new Promise(function(res,rej){function hit(p){while(at<P.length&&near(p,at)){dots[at].classList.remove("go");dots[at].classList.add("on");SOUND.sfx("page");at++;if(at<P.length)dots[at].classList.add("go");
+        if(at>=P.length){finish();return;}if(s.mid&&s.mid[at])cap.textContent=fill(s.mid[at]);}}
+    function finish(){if(done)return;done=true;drawing=false;box.classList.add("done");cap.textContent=fill(s.done||"画到头了。");logStep(s.obs,{answer:"顺着溪水画到了头"});commit();SOUND.sfx("ok");row.innerHTML="";
+      var b=btn(s.doneBtn||"继续 ▸");row.append(b);b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);res();});}
+    box.addEventListener("pointerdown",function(e){if(done||tok!==RUN.token)return;var p=pos(e);if(!path.length&&!near(p,0))return;if(!cv.width)fit();e.preventDefault();try{box.setPointerCapture(e.pointerId);}catch(x){}drawing=true;path.push(p);hit(p);paint();});
+    box.addEventListener("pointermove",function(e){if(!drawing||done)return;var p=pos(e);path.push(p);hit(p);paint();});
+    ["pointerup","pointercancel"].forEach(function(ev){box.addEventListener(ev,function(){drawing=false;});});
+    setTimeout(fit,60);window.addEventListener("resize",fit);
+    setTimeout(function(){if(done||tok!==RUN.token)return;var b=btn("🖐 帮我画");b.classList.add("ghost");row.append(b);b.addEventListener("click",function(){if(done)return;b.remove();if(!cv.width)fit();var r=box.getBoundingClientRect();var k=at;(function go(){if(done||tok!==RUN.token)return;var t=P[k];var p={x:t[0]/100*r.width,y:t[1]/100*r.height,w:r.width,h:r.height};path.push(p);hit(p);paint();k++;if(k<P.length)setTimeout(go,reduce?30:420);})();});},reduce?200:20000);});};
+/* 断句：一串没有标点的字，点两个字之间的缝，加一条“/”；核对后显出标点和意思 */
+H.xstDuan=function(s,tok){clearTask();var chars=s.text.split(""),want={};s.breaks.forEach(function(k){want[k]=1;});var on={},tries=0;
+  var line=el("div",{class:"xduan"});var gaps=[];chars.forEach(function(c,i){if(i>0){var g=el("button",{type:"button",class:"xd-gap","data-k":String(i),"aria-label":"在“"+chars[i-1]+"”和“"+c+"”之间断开"});g.addEventListener("click",function(){if(line.classList.contains("fin"))return;on[i]=!on[i];g.classList.toggle("on",!!on[i]);g.classList.remove("bad","miss","ok");SOUND.sfx("page");});gaps.push(g);line.append(g);}line.append(el("span",{class:"xd-c",text:c}));});
+  var msg=el("p",{class:"note",text:fill(s.tip||"读一读，觉得该停顿的地方，点两个字中间的缝，画一条“/”。再点一下就取消。")});var go=btn("核对");var row=el("div",{class:"row"},[go]);
+  var help=s.help?el("div",{class:"xd-help"},s.help.map(function(h){return el("span",{text:h});})):null;
+  task.append(q(s.q),line,help,msg,row);xyLay();
+  return new Promise(function(res,rej){go.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
+      if(line.classList.contains("fin")){res();return;}tries++;var bad=0,miss=0;gaps.forEach(function(g){var k=+g.dataset.k;g.classList.remove("bad","miss","ok");if(on[k]&&want[k])g.classList.add("ok");else if(on[k]){g.classList.add("bad");bad++;}else if(want[k]){miss++;if(tries>=2)g.classList.add("miss");}});
+      logStep(s.obs,{try:1,answer:"第"+tries+"次：多断 "+bad+" 处，少断 "+miss+" 处"});
+      if(!bad&&!miss||tries>=3){line.classList.add("fin");gaps.forEach(function(g){var k=+g.dataset.k;if(want[k]){g.classList.add("ok");g.classList.remove("bad","miss");}else{g.classList.remove("bad");}});commit();SOUND.sfx(bad||miss?"page":"ok");
+        msg.textContent=(!bad&&!miss)?"全对！":"看看绿色的地方，是该停顿的。";task.append(el("blockquote",{class:"quote",text:s.punct}));if(s.mean)task.append(el("p",{class:"note xd-mean",text:s.mean}));go.textContent="继续 ▸";xyLay();
+        if(s.after)return say(fill(s.after),s.afterWho||lead(),tok);return;}
+      SOUND.sfx("no");msg.textContent=tries>=2?"红色的地方不该断；虚线框的地方少断了一处。改一改，再核对。":"有 "+(bad?bad+" 处不该断":"")+(bad&&miss?"，":"")+(miss?"还少断 "+miss+" 处":"")+"。再读一读，改一改。";
+      if(s.hints&&s.hints[tries-1])sayQ(fill(s.hints[tries-1]),s.feedbackWho||lead(),tok);});});};
 H.bins=function(s,tok){var fb=s.feedbackWho||lead();return new Promise(function(res,rej){clearTask();var left=s.items.length;var cols={};var wrap=el("div",{class:"yybins",style:"--n:"+s.cols.length});
     s.cols.forEach(function(c){var d=el("div",{class:"yybin"},[el("h4",{text:c.label})]);cols[c.id]=d;wrap.append(d);});var pool=el("div",{class:"yybpool"});
     xyShuffle(s.items).forEach(function(it){var row=el("div",{class:"yybit"},[el("span",{text:it.text})]);var bs=el("div",{class:"yybbs"});

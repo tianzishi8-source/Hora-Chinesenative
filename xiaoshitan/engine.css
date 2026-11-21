@@ -983,3 +983,29 @@ textarea.fixnote{width:100%;margin-top:6px}
 .xpond .xp-ripple{position:absolute;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;border:2px solid rgba(255,255,255,.9);animation:xrip 1.2s ease-out forwards;pointer-events:none;z-index:4}
 @keyframes xrip{to{transform:scale(9);opacity:0}}
 @media (prefers-reduced-motion:reduce){.xscene{transition:none}.xscene.zoom{transform:none}.xscene .xsp i{animation:none}}
+/* 11-21 第2、3天 */
+.xtrace{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:16/9;max-height:340px;width:100%;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;background:#dfe9dd}
+.xtrace img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.xtrace .xt-cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.xtrace .xt-dot{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid rgba(255,255,255,.7);pointer-events:none;transition:background .3s}
+.xtrace .xt-dot.go{background:rgba(255,246,200,.95);box-shadow:0 0 0 0 rgba(255,240,180,.8);animation:xpulse 1.6s ease-out infinite}
+.xtrace .xt-dot.on{background:#3f6b52;border-color:#fff}
+.xtrace .xt-fog{position:absolute;aspect-ratio:1.6;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(246,249,246,.97),rgba(246,249,246,.85) 55%,rgba(246,249,246,0));pointer-events:none;z-index:2;animation:xfog 3.4s ease-in-out infinite}
+@keyframes xfog{0%,100%{opacity:.08}45%,60%{opacity:1}}
+.xtrace.done .xt-fog{animation-duration:2.4s}
+.xscene.chilly img{filter:saturate(calc(1 - var(--chill,0)*.55)) brightness(calc(1 - var(--chill,0)*.12)) hue-rotate(calc(var(--chill,0)*12deg));transition:filter 1.2s}
+.xscene.chilly::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(205,225,238,calc(var(--chill,0)*.85)) 100%);transition:background 1.2s}
+.xscene .xtherm{position:absolute;right:12px;top:12px;width:14px;height:90px;border-radius:8px;background:rgba(255,255,255,.75);border:1px solid rgba(60,90,110,.4);overflow:hidden;z-index:3}
+.xscene .xtherm i{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(#e0703a,#4a86b8);transition:height 1.2s}
+.xduan{font:1.45rem/2.4 var(--f-text);color:var(--ink);background:#fbf7ec url(img/paper.webp) center/cover;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:center;row-gap:4px}
+.xduan .xd-c{display:inline-block;letter-spacing:0}
+.xduan .xd-gap{width:16px;height:2.1em;border:0;background:none;padding:0;cursor:pointer;position:relative;border-radius:4px}
+.xduan .xd-gap:hover{background:rgba(63,107,82,.10)}
+.xduan .xd-gap.on::after,.xduan .xd-gap.ok::after{content:"/";position:absolute;inset:0;display:grid;place-items:center;font:700 1.35rem var(--f-text);color:#b8342a}
+.xduan .xd-gap.ok::after{color:#2f7a4c}
+.xduan .xd-gap.bad{background:rgba(184,52,42,.16)}
+.xduan .xd-gap.miss{outline:2px dashed #b8342a;outline-offset:-2px}
+.xduan.fin .xd-gap{cursor:default}
+.xd-help{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}.xd-help span{font-size:.92rem;background:rgba(63,107,82,.08);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+@media (max-width:640px){.xduan{font-size:1.2rem}.xduan .xd-gap{width:13px}}
+@media (prefers-reduced-motion:reduce){.xtrace .xt-fog{animation:none;opacity:.6}}
