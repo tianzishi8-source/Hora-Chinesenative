@@ -835,3 +835,6 @@ textarea.fixnote{width:100%;margin-top:6px}
 .backt{display:flex;flex-direction:column;gap:2px;min-width:0}
 .backt small{color:var(--muted,#666);font-size:.85em;line-height:1.4}
 .backr button{flex:none}
+
+/* 11-22 默写错字提示 */
+.typonote{color:#b3261e;font-weight:600}

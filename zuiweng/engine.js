@@ -91,7 +91,7 @@ function fill(str,extra){var out=String(str==null?"":str).replace(/\{([\w.]+)(?:
 
 /* ---- 学情 ---- */
 var OBS={},OBSORDER=[];
-function regObs(step,day){var o=step.obs;if(!o||OBS[o.id])return;var ml={};(step.misses||[]).forEach(function(m){if(m.id)ml[m.id]=m.label||m.text;});if(step.requireEnd)ml.noEnd=step.requireEnd.label||"没有按要求收尾";if(step.fallback)ml.other="点了其他不相关的句子";if(step.t==="layering"){ml.few="层分得太少";ml.many="层分得太密";ml.keyOut="关键句不在这一层";}if(step.t==="ask"){ml.h0="第一次没说对";ml.h1="提示后还没说对";ml.h2="要看选项";(step.choices||[]).forEach(function(c,i){if(!c.ok)ml["c"+i]="选了“"+String(c.text).slice(0,30)+"”";});}if(step.options&&step.t==="mc")step.options.forEach(function(op,i){if(op.ok!==true&&!ml["o"+i])ml["o"+i]="选了“"+String(op.text||"").replace(/\{[a-z]+\}/g,"…").slice(0,40)+"”";});OBS[o.id]={id:o.id,label:o.label,skill:o.skill||"",day:day,misses:ml,kind:step.t,stance:!!step.stance,q:String(step.q||"").replace(/\{[^}|]*\|([^}]*)\}/g,"$1").replace(/\{[^}]*\}/g,"…").slice(0,80)};OBSORDER.push(o.id);}
+function regObs(step,day){var o=step.obs;if(!o||OBS[o.id])return;var ml={};(step.misses||[]).forEach(function(m){if(m.id)ml[m.id]=m.label||m.text;});if(step.requireEnd)ml.noEnd=step.requireEnd.label||"没有按要求收尾";if(step.fallback)ml.other="点了其他不相关的句子";if(step.t==="layering"){ml.few="层分得太少";ml.many="层分得太密";ml.keyOut="关键句不在这一层";}if(step.t==="ask"){ml.h0="第一次没说对";ml.h1="提示后还没说对";ml.h2="要看选项";ml.typo="默写写错了字";(step.choices||[]).forEach(function(c,i){if(!c.ok)ml["c"+i]="选了“"+String(c.text).slice(0,30)+"”";});}if(step.options&&step.t==="mc")step.options.forEach(function(op,i){if(op.ok!==true&&!ml["o"+i])ml["o"+i]="选了“"+String(op.text||"").replace(/\{[a-z]+\}/g,"…").slice(0,40)+"”";});OBS[o.id]={id:o.id,label:o.label,skill:o.skill||"",day:day,misses:ml,kind:step.t,stance:!!step.stance,q:String(step.q||"").replace(/\{[^}|]*\|([^}]*)\}/g,"$1").replace(/\{[^}]*\}/g,"…").slice(0,80)};OBSORDER.push(o.id);}
 function logStep(obs,patch){if(!obs)return;if(patch&&patch.answer!=null&&S.data._dr&&typeof task!=="undefined"){try{delete S.data._dr[draftSig()];}catch(e){}}var r=S.log[obs.id]||{tries:0,misses:{}};if(patch.try)r.tries++;if(patch.miss){r.misses[patch.miss]=(r.misses[patch.miss]||0)+1;r.lm=1;}if(patch.answer!=null){r.answer=patch.answer;r.at=new Date().toISOString();r.last=r.lm?0:1;r.lm=0;}if(patch.ai!=null)r.ai=patch.ai;S.log[obs.id]=r;}
 
 /* ---- 作答存哪里：BK（后台）有三种
@@ -527,13 +527,16 @@ H.trans=function(s,tok){return new Promise(function(res,rej){clearTask();if(s.pa
 
 /* 11-12 自己说出答案（字词意思、写法名称）：{t:"ask",who,q,ctx:"原句",hl:"要标出的字",accept:["可接受的说法"...],hints:["第一次错的提示","第二次错的提示"],choices:[{text,ok,reply}],ans:"标准答案",reply:"答对后说的话",obs,key,paras}
  * 先自己写 → 错了只给提示（不给答案）→ 提示用完还不对，给几个选项选 → 选对了才讲明白。 */
+/* 11-22 默写错字：整句对了、只有一两个字写错（如把“暝”写成“瞑”），直接指出是哪个字，不再提示“回到第几句”，也不算进“看提示/选答案”的次数（各最多两次）。 */
+function askTypoOn(s){return s.typo!=null?!!s.typo:!!((s.obs&&s.obs.skill==="默写")||/默写/.test(String(s.q||"")));}
+function askTypo(nv,acc){var best=null;(acc||[]).forEach(function(a){var na=String(a).replace(/[\s，。、；：！？“”‘’"'（）()……\.,!?]/g,"");if(na.length<4||nv.length<na.length)return;for(var o=0;o+na.length<=nv.length;o++){var bad=[];for(var i=0;i<na.length;i++){if(nv[o+i]!==na[i])bad.push(nv[o+i]);if(bad.length>2)break;}if(bad.length&&bad.length<=2&&bad.length*4<=na.length&&(!best||bad.length<best.length))best=bad;}});return best;}
 H.ask=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.say?say(fill(s.say),s.who,tok):Promise.resolve();
   return pre.then(function(){return new Promise(function(res,rej){clearTask();keepQ();if(s.paras)QP=s.paras;task.append(q(s.q));
     if(s.ctx){var cx=el("div",{class:"ask-ctx"});var parts=s.hl?String(s.ctx).split(s.hl):[s.ctx];parts.forEach(function(pt,i){cx.append(document.createTextNode(pt));if(i<parts.length-1)cx.append(el("mark",{text:s.hl}));});task.append(cx);}
     var inp=el("input",{type:"text",class:"ask-in",autocomplete:"off",placeholder:s.ph||"写下你的答案",id:"in-ask-"+(s.obs?s.obs.id:"x")});var go=btn("确定");var row=el("div",{class:"orow"},[inp,go]);task.append(row);
-    var miss=0,done=false,chBox=null;
+    var typo=0,miss=0,done=false,chBox=null;
     function norm(v){return String(v).replace(/[\s，。、；：！？“”‘’"'（）()……\.,!?]/g,"");}
-    function finish(v,how){if(done)return;done=true;inp.disabled=true;go.disabled=true;if(chBox)$$("button",chBox).forEach(function(x){x.disabled=true;});task.classList.remove("ask");SOUND.sfx("ok");
+    function finish(v,how){if(done)return;done=true;var tn0=task.querySelector(".typonote");if(tn0)tn0.remove();inp.disabled=true;go.disabled=true;if(chBox)$$("button",chBox).forEach(function(x){x.disabled=true;});task.classList.remove("ask");SOUND.sfx("ok");
       logStep(s.obs,{answer:v+(how?"（"+how+"）":"")});logMe(v);if(s.key)set(s.key,v);commit();showLoc();
       if(s.note!==false&&(s.paras||s.hl))task.append(typeof s.hl==="string"&&!s.note?noteChip({note:"在“"+s.hl+"”旁边写："+(s.ans||v)},{}):noteChip(s,{text:s.ans||v}));
       var r=s.reply||(s.ans?"对。"+s.ans:"对。");say(fill(r),s.who||fbWho,tok).then(function(){res();},function(){});}
@@ -543,6 +546,7 @@ H.ask=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.say?say(fill(s.s
       task.append(el("p",{class:"note",text:"从下面选一个："}),chBox);return true;}
     function check(){if(tok!==RUN.token)return rej(CANCEL);if(done)return;var v=inp.value.trim();if(norm(v).length<1){inp.focus();return;}logStep(s.obs,{try:1});
       var nv=norm(v);if(!(s.reject||[]).some(function(a){return nv.indexOf(norm(a))>=0;})&&(s.accept||[]).some(function(a){return nv.indexOf(norm(a))>=0;})){finish(v);return;}
+      var bad=(askTypoOn(s)&&!(s.reject||[]).some(function(a){return nv.indexOf(norm(a))>=0;}))?askTypo(nv,s.accept):null;var tn=task.querySelector(".typonote");if(bad){if(!tn){tn=el("p",{class:"note typonote"});inp.parentNode.after?inp.parentNode.after(tn):task.append(tn);}tn.textContent="✗ 写错的字："+bad.join("、")+"　对照原文，看清偏旁再写";typo++;if(typo<=2){logStep(s.obs,{miss:"typo"});SOUND.sfx("no");sayQ(typo===1?"句子找对了，有字写错了。对照原文，看清偏旁，再写一遍。":"还是那个字。把原文里的字和你写的比一比，再写。",fbWho,tok);inp.focus();return;}}else if(tn)tn.remove();
       logStep(s.obs,{miss:"h"+Math.min(miss,2)});SOUND.sfx("no");var h=(s.hints||[])[miss];miss++;
       if(h){sayQ(fill(h),fbWho,tok);inp.select();return;}
       if(showChoices()){sayQ("不着急，从这几个里选一选。",fbWho,tok);return;}
@@ -1031,7 +1035,16 @@ function closeOv(){$$(".ov").forEach(function(o){o.hidden=true;});}
 $$(".ov").forEach(function(o){o.addEventListener("click",function(e){if(e.target===o)closeOv();});});
 addEventListener("keydown",function(e){if(e.key==="Escape"){closeOv();if(chatEl)chatEl.hidden=true;}});
 (function(){var t=$(".tools");if(!t||$("#bHw"))return;var b=el("button",{class:"tbtn",type:"button",id:"bHw",text:"作业"});b.addEventListener("click",function(){openHw();});var bk=$("#bBook");if(bk&&bk.parentNode===t)t.insertBefore(b,bk);else t.append(b);
-  if(L.practice){var bp=el("button",{class:"tbtn",type:"button",id:"bPx",text:"练习"});bp.addEventListener("click",openPxMenu);t.insertBefore(bp,b);}var bm=el("button",{class:"tbtn",type:"button",id:"bMs",text:"错题本"});bm.addEventListener("click",openMastery);t.insertBefore(bm,b);})();
+  if(L.practice){var bp=el("button",{class:"tbtn",type:"button",id:"bPx",text:"练习"});bp.addEventListener("click",openPxMenu);t.insertBefore(bp,b);}var bm=el("button",{class:"tbtn",type:"button",id:"bMs",text:"错题本"});bm.addEventListener("click",openMastery);t.insertBefore(bm,b);if(yiwenData().length){var by=el("button",{class:"tbtn",type:"button",id:"bYw",text:"全文译文"});by.addEventListener("click",openYiwen);t.insertBefore(by,b);}})();
+/* 11-22 全文译文：把课上逐句翻译（trans）按段落拼成整段，学过的那几段可以对照订正（作业“整段翻译写在本子上，对照译文订正”用）。 */
+function yiwenData(){var out={};DAYS.forEach(function(d,di){if(d.hidden)return;(d.beats||[]).forEach(function(bt){(bt.steps||[]).forEach(function(st){if(st.t!=="trans"||!st.pairs)return;var pn=(st.paras&&st.paras[0])||0;if(!pn)return;var o=out[pn]=out[pn]||{p:pn,day:di+1,src:[],tr:[]};o.src.push(st.src||"");o.tr.push(st.tr||st.pairs.map(function(x){return x[1];}).join(""));});});});return Object.keys(out).map(function(k){return out[k];}).sort(function(a,b){return a.p-b.p;});}
+function openYiwen(){var o=hwOv(),sh=$("#hwSheet");sh.innerHTML="";var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);
+  sh.append(x,el("h3",{text:"全文译文"}),el("p",{class:"hwnote",text:"先把这一段的翻译自己写在本子上，再打开对照、用红笔订正。学过的段落才显示译文。"}));
+  var cur=S.day<=NVIS?S.day:(S.retDay||0);yiwenData().forEach(function(y){var open=TMODE||S.done[y.day]||dayReached(y.day)||cur>y.day;var box=el("div",{class:"ywbox"});
+    box.append(el("b",{text:"第"+y.p+"段"+(open?"":"（学完第"+y.day+"天后显示）")}));
+    if(open){var det=el("details",{class:"ywdet"});det.append(el("summary",{text:"原文"}),el("p",{class:"ywsrc",text:y.src.join("")}));box.append(det,el("p",{class:"ywtr",text:y.tr.join("")}));if(L.yiwenNote&&L.yiwenNote[y.p])box.append(el("p",{class:"ywnote",text:L.yiwenNote[y.p]}));}
+    sh.append(box);});
+  var r=el("div",{class:"row"}),c=el("button",{class:"ghost",type:"button",text:"关上"});c.addEventListener("click",closeOv);r.append(c);sh.append(r);sh.setAttribute("aria-label","全文译文");o.hidden=false;x.focus();}
 $("#bLog").addEventListener("click",function(){var sh=$("#logSheet");sh.innerHTML="";var x=el("button",{class:"ghost x",type:"button",text:"关上"});x.addEventListener("click",closeOv);sh.append(x,el("h3",{text:"刚才说过的话"}));DLOG.slice(-60).forEach(function(m){sh.append(el("p",{},[el("b",{text:nameOf(m.who)}),m.text]));});$("#ovLog").hidden=false;x.focus();});
 /* ================= 作业：清单、提醒、交作业（打字或拍照） =================
    每天的 after 里写着“课后作业”；读完那一天就算布置了。交了的存在 S.data.hw[天]={text,photos,at}；
@@ -1046,7 +1059,7 @@ function paintPx(){var b=$("#bPx");if(!b)return;b.hidden=!(L.practiceOpen||TMODE
 function paintMs(){var b=$("#bMs");if(!b)return;var f=mFinish(S,HWST),ms=f.ms;if(!ms.g){b.hidden=true;return;}b.hidden=false;b.textContent=f.ok?"✓ 学完了":"错题本"+(ms.todo.length?"（"+ms.todo.length+"）":"")+" · 掌握 "+Math.round(ms.p*100)+"%";b.classList.toggle("due",ms.todo.length>0);}
 function paintHw(){paintPx();var b=$("#bHw");var n=hwDue().length,fl=Object.keys(HWST).filter(function(k){return hwFlag(k);});if(b){b.textContent=(fl.length?"⚠️ ":"")+(n?"作业（"+n+" 份没交）":"作业");b.classList.toggle("due",n>0);b.classList.toggle("warn",fl.length>0);b.title=fl.length?"AI 辅助作答警告：第"+fl.join("、")+"天的作业":"";}try{if(KEY)localStorage.setItem("hora-hwdue-"+KEY.replace(/^hora-/,""),JSON.stringify({due:n,days:hwDue().map(function(h){return h.day;}),at:Date.now()}));}catch(e){}}
 function shrinkImg(file){return new Promise(function(res,rej){var fr=new FileReader();fr.onerror=rej;fr.onload=function(){var im=new Image();im.onerror=rej;im.onload=function(){var M=1600,sc=Math.min(1,M/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.8));};im.src=fr.result;};fr.readAsDataURL(file);});}
-function hwOv(){var o=$("#ovHw");if(!o){o=el("div",{class:"ov",id:"ovHw",hidden:""},[el("div",{class:"sheet hw",role:"dialog","aria-label":"作业",id:"hwSheet"})]);o.addEventListener("click",function(e){if(e.target===o)closeOv();});document.body.append(o);}return o;}
+function hwOv(){var o=$("#ovHw");if(!o){o=el("div",{class:"ov",id:"ovHw",hidden:""},[el("div",{class:"sheet hw",role:"dialog","aria-label":"作业",id:"hwSheet"})]);o.addEventListener("click",function(e){if(e.target===o)closeOv();});document.body.append(o);}var hs=$("#hwSheet");if(hs)hs.setAttribute("aria-label","作业");return o;}
 /* 11-20 回来补一补（弹窗标题写“补一补”：ZCOOL XiaoWei 的“回”字是实心方块）：学过的天里有老师新加的题、错题、没做的练习组、作业要订正或老师写了话，打开课文时提醒一次（每次打开浏览器一次） */
 var HWOK=0,BACKN=0;
 /* 老师的话看过没有（按学生记）：作业单里看到过、或弹窗里提过，就不再因为同一句话弹出来（订正时写的话，通过以后还留着） */

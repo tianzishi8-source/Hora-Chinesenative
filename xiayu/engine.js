@@ -73,7 +73,7 @@ function fill(str,extra){var out=String(str==null?"":str).replace(/\{([\w.]+)(?:
 
 /* ---- 学情 ---- */
 var OBS={},OBSORDER=[];
-function regObs(step,day){var o=step.obs;if(!o||OBS[o.id])return;var ml={};(step.misses||[]).forEach(function(m){if(m.id)ml[m.id]=m.label||m.text;});if(step.requireEnd)ml.noEnd=step.requireEnd.label||"没有按要求收尾";if(step.fallback)ml.other="点了其他不相关的句子";if(step.t==="layering"){ml.few="层分得太少";ml.many="层分得太密";ml.keyOut="关键句不在这一层";}if(step.options&&step.t==="mc")step.options.forEach(function(op,i){if(op.ok!==true&&!ml["o"+i])ml["o"+i]="选了“"+String(op.text||"").replace(/\{[a-z]+\}/g,"…").slice(0,40)+"”";});OBS[o.id]={id:o.id,label:o.label,skill:o.skill||"",day:day,misses:ml,kind:step.t,stance:!!step.stance,q:String(step.q||"").replace(/\{[^}|]*\|([^}]*)\}/g,"$1").replace(/\{[^}]*\}/g,"…").slice(0,80)};OBSORDER.push(o.id);}
+function regObs(step,day){var o=step.obs;if(!o||OBS[o.id])return;var ml={};(step.misses||[]).forEach(function(m){if(m.id)ml[m.id]=m.label||m.text;});if(step.requireEnd)ml.noEnd=step.requireEnd.label||"没有按要求收尾";if(step.fallback)ml.other="点了其他不相关的句子";if(step.t==="layering"){ml.few="层分得太少";ml.many="层分得太密";ml.keyOut="关键句不在这一层";}if(step.t==="ask"){ml.h0="第一次没说对";ml.h1="提示后还没说对";ml.h2="要看选项";ml.typo="默写写错了字";(step.choices||[]).forEach(function(c,i){if(!c.ok)ml["c"+i]="选了“"+String(c.text).slice(0,30)+"”";});}if(step.options&&step.t==="mc")step.options.forEach(function(op,i){if(op.ok!==true&&!ml["o"+i])ml["o"+i]="选了“"+String(op.text||"").replace(/\{[a-z]+\}/g,"…").slice(0,40)+"”";});OBS[o.id]={id:o.id,label:o.label,skill:o.skill||"",day:day,misses:ml,kind:step.t,stance:!!step.stance,q:String(step.q||"").replace(/\{[^}|]*\|([^}]*)\}/g,"$1").replace(/\{[^}]*\}/g,"…").slice(0,80)};OBSORDER.push(o.id);}
 function logStep(obs,patch){if(!obs)return;if(patch&&patch.answer!=null&&S.data._dr&&typeof task!=="undefined"){try{delete S.data._dr[draftSig()];}catch(e){}}var r=S.log[obs.id]||{tries:0,misses:{}};if(patch.try)r.tries++;if(patch.miss){r.misses[patch.miss]=(r.misses[patch.miss]||0)+1;r.lm=1;}if(patch.answer!=null){r.answer=patch.answer;r.at=new Date().toISOString();r.last=r.lm?0:1;r.lm=0;}if(patch.ai!=null)r.ai=patch.ai;S.log[obs.id]=r;}
 
 /* ---- 作答存哪里：BK（后台）有三种
@@ -476,13 +476,16 @@ function variant(s,f){var by=s[f+"By"];if(by&&by[myBuddy().who])return by[myBudd
 var NOWAIT={next:1,input:1,choose:1,independent:1,markHeard:1,layering:1,clear:1,mc:1,findWord:1,frame:1};
 /* 11-12 自己说出答案（字词意思、写法名称）：{t:"ask",who,q,ctx:"原句",hl:"要标出的字",accept:["可接受的说法"...],hints:["第一次错的提示","第二次错的提示"],choices:[{text,ok,reply}],ans:"标准答案",reply:"答对后说的话",obs,key,paras}
  * 先自己写 → 错了只给提示（不给答案）→ 提示用完还不对，给几个选项选 → 选对了才讲明白。 */
+/* 11-22 默写错字：整句对了、只有一两个字写错（如把“暝”写成“瞑”），直接指出是哪个字，不再提示“回到第几句”，也不算进“看提示/选答案”的次数（各最多两次）。 */
+function askTypoOn(s){return s.typo!=null?!!s.typo:!!((s.obs&&s.obs.skill==="默写")||/默写/.test(String(s.q||"")));}
+function askTypo(nv,acc){var best=null;(acc||[]).forEach(function(a){var na=String(a).replace(/[\s，。、；：！？“”‘’"'（）()……\.,!?]/g,"");if(na.length<4||nv.length<na.length)return;for(var o=0;o+na.length<=nv.length;o++){var bad=[];for(var i=0;i<na.length;i++){if(nv[o+i]!==na[i])bad.push(nv[o+i]);if(bad.length>2)break;}if(bad.length&&bad.length<=2&&bad.length*4<=na.length&&(!best||bad.length<best.length))best=bad;}});return best;}
 H.ask=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.say?say(fill(s.say),s.who,tok):Promise.resolve();
   return pre.then(function(){return new Promise(function(res,rej){clearTask();keepQ();if(s.paras)QP=s.paras;task.append(q(s.q));
     if(s.ctx){var cx=el("div",{class:"ask-ctx"});var parts=s.hl?String(s.ctx).split(s.hl):[s.ctx];parts.forEach(function(pt,i){cx.append(document.createTextNode(pt));if(i<parts.length-1)cx.append(el("mark",{text:s.hl}));});task.append(cx);}
     var inp=el("input",{type:"text",class:"ask-in",autocomplete:"off",placeholder:s.ph||"写下你的答案",id:"in-ask-"+(s.obs?s.obs.id:"x")});var go=btn("确定");var row=el("div",{class:"orow"},[inp,go]);task.append(row);
-    var miss=0,done=false,chBox=null;
+    var typo=0,miss=0,done=false,chBox=null;
     function norm(v){return String(v).replace(/[\s，。、；：！？“”‘’"'（）()……\.,!?]/g,"");}
-    function finish(v,how){if(done)return;done=true;inp.disabled=true;go.disabled=true;if(chBox)$$("button",chBox).forEach(function(x){x.disabled=true;});task.classList.remove("ask");SOUND.sfx("ok");
+    function finish(v,how){if(done)return;done=true;var tn0=task.querySelector(".typonote");if(tn0)tn0.remove();inp.disabled=true;go.disabled=true;if(chBox)$$("button",chBox).forEach(function(x){x.disabled=true;});task.classList.remove("ask");SOUND.sfx("ok");
       logStep(s.obs,{answer:v+(how?"（"+how+"）":"")});logMe(v);if(s.key)set(s.key,v);commit();showLoc();
       if(s.note!==false&&(s.paras||s.hl))task.append(typeof s.hl==="string"&&!s.note?noteChip({note:"在“"+s.hl+"”旁边写："+(s.ans||v)},{}):noteChip(s,{text:s.ans||v}));
       var r=s.reply||(s.ans?"对。"+s.ans:"对。");say(fill(r),s.who||fbWho,tok).then(function(){res();},function(){});}
@@ -492,6 +495,7 @@ H.ask=function(s,tok){var fbWho=s.feedbackWho||lead();var pre=s.say?say(fill(s.s
       task.append(el("p",{class:"note",text:"从下面选一个："}),chBox);return true;}
     function check(){if(tok!==RUN.token)return rej(CANCEL);if(done)return;var v=inp.value.trim();if(norm(v).length<1){inp.focus();return;}logStep(s.obs,{try:1});
       var nv=norm(v);if((nv.match(/[\u4e00-\u9fa5]/g)||[]).length<2){sayQ("用中文写出意思，至少写两个字。",fbWho,tok);inp.select();return;}if(!(s.reject||[]).some(function(a){return nv.indexOf(norm(a))>=0;})&&(s.accept||[]).some(function(a){return nv.indexOf(norm(a))>=0;})){finish(v);return;}
+      var bad=(askTypoOn(s)&&!(s.reject||[]).some(function(a){return nv.indexOf(norm(a))>=0;}))?askTypo(nv,s.accept):null;var tn=task.querySelector(".typonote");if(bad){if(!tn){tn=el("p",{class:"note typonote"});inp.parentNode.after?inp.parentNode.after(tn):task.append(tn);}tn.textContent="✗ 写错的字："+bad.join("、")+"　对照原文，看清偏旁再写";typo++;if(typo<=2){logStep(s.obs,{miss:"typo"});SOUND.sfx("no");sayQ(typo===1?"句子找对了，有字写错了。对照原文，看清偏旁，再写一遍。":"还是那个字。把原文里的字和你写的比一比，再写。",fbWho,tok);inp.focus();return;}}else if(tn)tn.remove();
       logStep(s.obs,{miss:"h"+Math.min(miss,2)});SOUND.sfx("no");var h=(s.hints||[])[miss];miss++;
       if(h){sayQ(fill(h),fbWho,tok);inp.select();return;}
       if(showChoices()){sayQ("不着急，从这几个里选一选。",fbWho,tok);return;}

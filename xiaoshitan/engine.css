@@ -1024,3 +1024,6 @@ textarea.fixnote{width:100%;margin-top:6px}
 .xscene .xsp.r span{left:auto;right:30%;transform:none}
 .xscene .xsp.l span{left:30%;transform:none}
 .xscene .xsp.up span{top:auto;bottom:100%}
+
+/* 11-22 默写错字提示 */
+.typonote{color:#b3261e;font-weight:600}
