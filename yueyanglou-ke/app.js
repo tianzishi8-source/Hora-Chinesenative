@@ -217,7 +217,7 @@ function teacherHome() {
     '<div class="trow"><a class="btn" href="#class">全班作答</a><a class="btn ghost" href="#home">预览课后单机（学生看到的）</a></div></section>';
   if (K && K.list && K.list.length) {
     h += '<section class="card"><h3>课堂投屏（' + K.list.length + ' 节）</h3><p class="muted">在教室电脑上打开，投到大屏幕；建议用 Chrome 或 Edge，按 F11 全屏。“剧本”可以打印。</p><div class="route">' +
-      K.list.map(function (x) { return '<div class="ktrow"><a class="step" href="' + K.base + x[0] + '.html"><span class="no">' + esc(x[1].replace(/[^0-9]/g, "")) + '</span><span class="tx"><em>' + esc(x[1]) + "</em><b>" + esc(x[2]) + '</b></span><span class="min">打开投屏</span></a><a class="btn ghost" href="' + K.base + "script.html?l=" + x[0] + '">剧本</a></div>'; }).join("") + "</div>" +
+      K.list.map(function (x) { return '<div class="ktrow"><a class="step" href="' + K.base + x[0] + '.html?t=' + Math.floor(Date.now() / 60000) + '"><span class="no">' + esc(x[1].replace(/[^0-9]/g, "")) + '</span><span class="tx"><em>' + esc(x[1]) + "</em><b>" + esc(x[2]) + '</b></span><span class="min">打开投屏</span></a><a class="btn ghost" href="' + K.base + "script.html?l=" + x[0] + '">剧本</a></div>'; }).join("") + "</div>" +
       ((K.extra || []).length ? '<div class="trow">' + K.extra.map(function (x) { return '<a class="btn ghost" href="' + K.base + x[0] + '">' + esc(x[1]) + "</a>"; }).join("") + "</div>" : "") + "</section>";
   }
   page(h + '<style>.trow{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.ktrow{display:flex;gap:8px;align-items:stretch}.ktrow .step{flex:1}.ktrow .btn{min-height:auto}</style>');
