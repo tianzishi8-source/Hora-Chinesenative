@@ -1,0 +1,34 @@
+/* 课堂版（课后单机）的专属外观（11-22）。html.thk：页面底色是本课场景画（#kebg，虚化、压暗），
+   顶栏半透明毛玻璃，卡片半透明纸，直接压在画上的字浅色加投影；剧情页的对话框和按钮也换成同样的玻璃。
+   颜色由 KE_THEME 传进来：--thk-acc 按钮色、--thk-glass 玻璃色、--thk-bgc 底色。 */
+html.thk{background:var(--thk-bgc,#1d2329)!important}
+html.thk body{background:transparent!important}
+#kebg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+#kebg i{position:absolute;inset:-3%;background:center/cover no-repeat;filter:blur(5px) brightness(.64) saturate(.95);opacity:0;transition:opacity 1.4s ease}
+#kebg i.on{opacity:1}
+#kebg::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 45%,rgba(8,10,14,.45))}
+/* 顶栏 */
+html.thk .top{background:var(--thk-glass,rgba(20,28,36,.46))!important;-webkit-backdrop-filter:blur(10px) saturate(1.1);backdrop-filter:blur(10px) saturate(1.1);border-bottom:1px solid rgba(255,255,255,.12)!important;box-shadow:0 10px 26px -18px rgba(0,0,0,.6)}
+html.thk .top .brand,html.thk .top .brand b{color:#f6f0e4;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+html.thk .top .brand small,html.thk .top .who,html.thk .top .savest,html.thk .top .muted{color:rgba(242,236,224,.78)!important}
+html.thk .top .tb{color:#f2ece0!important;border-color:rgba(255,255,255,.24)!important;background:rgba(255,255,255,.08)!important}
+html.thk .top .tb:hover{background:rgba(255,255,255,.18)!important}
+/* 直接压在画上的字：首页大标题、导语，各页的大标题和说明 */
+html.thk .hero-tx h1,html.thk .hero-tx h1 small,html.thk .page>.h1,html.thk .page>h1,html.thk .page>h2,html.thk .page>.bhead{color:#f8f2e6!important;text-shadow:0 2px 10px rgba(0,0,0,.55)}
+html.thk .hero-tx .lead,html.thk .hero-tx .kick,html.thk .page>.lead,html.thk .page>p,html.thk .page>.muted,html.thk .page>.row .muted{color:rgba(246,240,228,.88)!important;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+html.thk .hero-tx .fict{color:rgba(246,240,228,.78)!important;border-left-color:var(--thk-acc,#d9a04f)!important;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+html.thk .hero-figs::after{opacity:.35}
+html.thk .hero-figs .fig img{filter:drop-shadow(0 16px 22px rgba(0,0,0,.45))}
+/* 卡片：半透明的纸 */
+html.thk .card,html.thk .sec,html.thk .page>section:not(.hero):not(.grid4){background:rgba(250,247,240,.93)!important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-color:rgba(255,255,255,.35)!important;box-shadow:0 18px 40px -22px rgba(0,0,0,.65)!important}
+html.thk .sec:hover{background:rgba(255,252,246,.97)!important}
+/* 主按钮、当前课时 */
+html.thk .btn:not(.ghost){background:var(--thk-acc,#d9a04f)!important;color:var(--thk-acc-ink,#1d1710)!important;border-color:transparent!important}
+html.thk .ln.on{background:var(--thk-acc,#d9a04f)!important;color:var(--thk-acc-ink,#1d1710)!important;border-color:transparent!important}
+/* 直接压在画上的“返回”等次要按钮 */
+html.thk .page>.row .btn.ghost,html.thk .page>.btn.ghost,html.thk .page>a.btn.ghost{color:#f6f0e4!important;border-color:rgba(255,255,255,.4)!important;background:rgba(255,255,255,.08)!important}
+/* 剧情页：对话框换成同样的玻璃（旁白本来就是深色，人物对白原来是浅纸色，统一成深色玻璃） */
+html.thk .dlg{background:var(--thk-glass2,rgba(22,26,32,.66))!important;-webkit-backdrop-filter:blur(12px) saturate(1.1);backdrop-filter:blur(12px) saturate(1.1);border:1px solid rgba(255,255,255,.14)!important;box-shadow:0 22px 44px -22px rgba(0,0,0,.7)!important}
+html.thk .dlg .say{color:#f3ede0!important;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+html.thk .dlg .more{color:var(--thk-acc,#d9a04f)!important}
+html.thk .hero-tx h1 small{white-space:nowrap}
