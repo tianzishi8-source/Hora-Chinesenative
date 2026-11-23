@@ -1,0 +1,15 @@
+/* 《悔的边缘》专属外观：城市 · 午后（11-23）
+   站台是冷的青灰玻璃（“仿佛一只巨大的鱼缸”）；出了地铁站、栅栏、三益大厦前是午后的阳光色；绿地是树荫的灰绿；回家的路是傍晚的暖色。
+   原文区：一页旧杂志内页（选自《读者》）——白纸、顶上一条细红线、栏目名。 */
+body.th-huibian{--th-glass:rgba(30,52,60,0.56);--th-glass2:rgba(24,42,49,0.82);--th-line:rgba(220,240,245,.16);--th-ink:#eef3f2;--th-dim:rgba(238,243,242,.74);
+  --th-acc:#e2b25e;--th-acc-ink:#1e170c;--th-vig:rgba(10,22,28,.34);--th-bg:#1f3239;--thi-acc:#e2b25e}
+body.th-huibian[data-tint=sun]{--th-glass:rgba(78,62,40,0.54);--th-glass2:rgba(64,50,32,0.82);--th-line:rgba(255,232,190,.18);--th-ink:#fbf2e2;--th-vig:rgba(60,40,14,.28)}
+body.th-huibian[data-tint=green]{--th-glass:rgba(44,60,44,0.56);--th-glass2:rgba(36,50,37,0.82);--th-line:rgba(220,240,210,.16);--th-ink:#f0f4ea;--th-vig:rgba(16,28,16,.32)}
+body.th-huibian[data-tint=dusk]{--th-glass:rgba(70,46,52,0.56);--th-glass2:rgba(58,38,44,0.84);--th-line:rgba(255,214,190,.16);--th-ink:#fbefe6;--th-vig:rgba(40,18,24,.34)}
+body.th-huibian #reader{background:
+  linear-gradient(180deg,#b8342a 0,#b8342a 3px,transparent 3px),
+  radial-gradient(120% 90% at 100% 100%,rgba(150,120,80,.10),transparent 60%),
+  url(img/paper.webp) 0 0/512px,#fbf8f1!important;border-radius:4px!important}
+body.th-huibian #reader .rhead::before{content:"比较 · 探究";display:block;width:100%;font-family:var(--f-ui);font-size:.72rem;letter-spacing:.3em;color:#b8342a;margin-bottom:2px}
+body.th-huibian #reader .rhead{flex-wrap:wrap}
+body.th-huibian #rbody p{text-indent:2em}

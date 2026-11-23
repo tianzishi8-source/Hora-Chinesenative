@@ -100,5 +100,8 @@ window.HORA_LESSONS = [
     blurb: "人生什么事最苦，什么事最乐？生命又像什么？两位先生，一个讲道理，一个打比方。一节课读完两篇。",
     open: 1, total: 1, unit: "课时",
     /* 11-23 老师定：期末前都上自学课，本篇一节；不再让学生在课堂版/自学版之间选（课堂版 kule-ke 仍在，老师可直接开网址） */
-    pic: "kule/img/cover.webp", picAlt: "示意画：春天的江流，两岸桃花" }
+    pic: "kule/img/cover.webp", picAlt: "示意画：春天的江流，两岸桃花" },
+  { id: "g9-huibian", folder: "huibian", grade: 9, title: "悔的边缘", author: "刘心武",
+    blurb: "地铁站里，一位老人热心给问路的年轻人带路，不知道钱包早被他偷走了。跟着两个人的心一层一层走，停在“悔的边缘”：没有结局，好不好？",
+    open: 1, total: 1, unit: "课时" }
 ];
