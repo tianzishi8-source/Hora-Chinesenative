@@ -1,0 +1,28 @@
+/* 《最苦与最乐 · 谈生命》专属外观：民国讲堂 · 江与树（11-23）
+   前半（梁启超）：讲堂里的木色玻璃、灯光金；后半（冰心）：江边、树下，按画面换色调——
+   江流与山野是青绿，暴风雨与冬天是铅灰，晚霞与黄昏是暮色，书房是灯下的暖黄。
+   原文区：一页民国旧书——米黄的纸、上下两道墨色细线、顶上一行小字栏目名。 */
+body.th-kule{--th-glass:rgba(58,42,28,0.56);--th-glass2:rgba(46,33,22,0.82);--th-line:rgba(255,232,196,.16);--th-ink:#f6ecdc;--th-dim:rgba(246,236,220,.74);
+  --th-acc:#d9a650;--th-acc-ink:#20170a;--th-vig:rgba(30,20,10,.34);--th-bg:#2a2119;--thi-acc:#d9a650}
+body.th-kule[data-tint=warm]{--th-glass:rgba(84,58,32,0.54);--th-glass2:rgba(70,48,28,0.82);--th-line:rgba(255,226,180,.18);--th-ink:#fbefdc;--th-vig:rgba(70,40,12,.30)}
+body.th-kule[data-tint=river]{--th-glass:rgba(34,58,58,0.54);--th-glass2:rgba(28,48,48,0.82);--th-line:rgba(220,240,235,.16);--th-ink:#eef4f0;--th-vig:rgba(12,30,30,.30);--th-bg:#1f3331}
+body.th-kule[data-tint=storm]{--th-glass:rgba(48,50,60,0.58);--th-glass2:rgba(38,40,50,0.84);--th-line:rgba(225,228,240,.16);--th-ink:#eff0f5;--th-vig:rgba(14,16,26,.38);--th-bg:#272a33}
+body.th-kule[data-tint=dusk]{--th-glass:rgba(78,46,40,0.54);--th-glass2:rgba(64,38,34,0.84);--th-line:rgba(255,214,190,.18);--th-ink:#fbeee4;--th-vig:rgba(50,20,14,.32);--th-acc:#e8b060}
+/* 原文：民国旧书的一页 */
+body.th-kule #reader{background:
+  linear-gradient(180deg,rgba(40,30,22,.78) 0,rgba(40,30,22,.78) 1.5px,transparent 1.5px,transparent 4px,rgba(40,30,22,.5) 4px,rgba(40,30,22,.5) 5px,transparent 5px),
+  radial-gradient(120% 90% at 0% 0%,rgba(255,250,236,.55),transparent 55%),
+  radial-gradient(110% 90% at 100% 100%,rgba(140,100,55,.16),transparent 60%),
+  url(img/paper.webp) 0 0/512px,#f4ead6!important;border-radius:4px!important}
+body.th-kule #reader .rhead::before{content:"苦与乐 · 两篇对读";display:block;width:100%;font-family:var(--f-ui);font-size:.72rem;letter-spacing:.3em;color:#8a2f24;margin-bottom:2px}
+body.th-kule #reader .rhead{flex-wrap:wrap}
+body.th-kule #rbody p{text-indent:2em}
+body.th-kule #rbody p.src{text-indent:0}
+body.th-kule #rbody p.src::before{content:none!important}
+/* 两篇合在一起时（练习、比一比）：中间一行是《谈生命》的篇名，篇名后面重新数段 */
+body.th-kule #rbody p.center{text-indent:0;text-align:center;font-weight:700;letter-spacing:.2em;margin-top:1.6em;padding-top:.8em;border-top:1px solid rgba(110,72,38,.3);counter-reset:pn}
+/* 《谈生命》不显示段号（已按课本分四段；题目里也不说第几段） */
+body.th-kule #rbody p.center ~ p::before{content:none!important}
+body.th-kule #reader:has(#rTabs .rtab:nth-child(3).on) #rbody p::before{content:none!important}
+/* 本课用 L.texts 分两篇（按环节切换），不给学生切换按钮 */
+body.th-kule #rTabs{display:none!important}
