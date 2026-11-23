@@ -17,7 +17,7 @@
  *   recite 背诵：para（遮字四级，点句偷看）
  *   rows  对照表：title, head:[…], rows:[[…]]（head 3 列或 4 列；4 列在手机上改成一行一格，格前标列名）
  *   note  知识卡：title, html（受信任的内容）或 items:[…]
- *   method 方法卡：title, points:[…], ex（例子）
+ *   method 方法卡：title, points:[…], ex（例子）；kicker 小标题（默认“写作方法”）
  * 存档：本机 hora-{id}-{班级|名字}；有表格网址时同步（课文 id 就是 ZX.id）；done[课时]=1 让首页长卷知道读完了几课时。 */
 (function () {
 "use strict";
@@ -335,7 +335,7 @@ BLOCK.note = function (el, b) {
   el.innerHTML = '<div class="box">' + (b.title ? '<p class="kicker">' + esc(b.title) + "</p>" : "") + (b.html || "") + (b.items ? "<ul>" + b.items.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>" : "") + "</div>" + (b.teacher ? '<p class="teacher"><b>给老师：</b>' + esc(b.teacher) + "</p>" : "");
 };
 BLOCK.method = function (el, b) {
-  el.innerHTML = '<div class="box method"><p class="kicker">写作方法</p><h3>' + esc(b.title) + "</h3><ol>" + b.points.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ol>" + (b.ex ? '<div class="ex">' + esc(b.ex) + "</div>" : "") + "</div>";
+  el.innerHTML = '<div class="box method"><p class="kicker">' + esc(b.kicker || "写作方法") + '</p><h3>' + esc(b.title) + "</h3><ol>" + b.points.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ol>" + (b.ex ? '<div class="ex">' + esc(b.ex) + "</div>" : "") + "</div>";
 };
 
 /* ---------- 启动 ---------- */
