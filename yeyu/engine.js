@@ -469,7 +469,8 @@ function locStep(s){if(LOCNEW[s.t]&&(LOC||Object.keys(LOCK).length))clearLoc();L
   if(s.t==="pick")return;
   if(s.paras)maskParas(s.paras);if(isNarrow())openReader();}
 function showLoc(){if(LOC&&LOC.hl&&!rbody.querySelector("mark.loc"))markWords(LOC.hl,LOC.paras);}
-function q(text){var t=fill(text),qp=QP||(LOC&&LOC.paras);QP=null;setTimeout(function(){task.classList.add("ask");var ns=qp||(LOC&&LOC.hl?[]:mentionNums(t));if(ns.length)maskParas(ns);(function(){var sp=task;while(sp&&sp!==document.body){var cs=getComputedStyle(sp);if(/(auto|scroll)/.test(cs.overflowY)&&sp.scrollHeight>sp.clientHeight){sp.scrollTop=0;break;}sp=sp.parentElement;}})();try{task.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}},0);return el("div",{class:"task-q",text:t});}
+/* 11-23 q(text,plain)：plain＝只是展示的标题（lines），不加“请你回答”红框 */
+function q(text,plain){var t=fill(text),qp=QP||(LOC&&LOC.paras);QP=null;setTimeout(function(){if(!plain)task.classList.add("ask");var ns=qp||(LOC&&LOC.hl?[]:mentionNums(t));if(ns.length)maskParas(ns);(function(){var sp=task;while(sp&&sp!==document.body){var cs=getComputedStyle(sp);if(/(auto|scroll)/.test(cs.overflowY)&&sp.scrollHeight>sp.clientHeight){sp.scrollTop=0;break;}sp=sp.parentElement;}})();try{task.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});}catch(e){}},0);return el("div",{class:"task-q",text:t});}
 
 /* ================= 步骤类型 ================= */
 var H={};
@@ -966,9 +967,13 @@ H.soundMap=function(s,tok){return new Promise(function(res,rej){clearTask();var 
     xyShuffle(s.chips).forEach(function(c){var b=el("button",{type:"button",class:"xchip",text:c.text});b.addEventListener("click",function(){$$(".xchip",tray).forEach(function(x){x.classList.remove("sel");});b.classList.add("sel");sel={c:c,b:b};});tray.append(b);});
     task.append(q(s.q),el("p",{class:"note",text:fill(s.note||"先点一个声音，再点它所在的那一幕。")}),tray,map);xyLay();});};
 function xyPlay(name){if(!name||!SOUND.isOn()){SOUND.sfx("ok");return;}try{var a=new Audio("amb/"+name+".mp3");a.volume=.75;a.currentTime=0;var p=a.play();a.addEventListener("loadedmetadata",function(){try{a.currentTime=Math.min(6,a.duration/3);}catch(e){}});setTimeout(function(){var v=.75,iv=setInterval(function(){v-=.08;if(v<=0){clearInterval(iv);a.pause();}else a.volume=v;},60);},2200);if(p&&p.catch)p.catch(function(){});}catch(e){SOUND.sfx("ok");}}
-H.fade=function(s,tok){return new Promise(function(res,rej){clearTask();var at=0;var line=el("div",{class:"xfade"});var segs=s.items.map(function(t,k){var g=el("div",{class:"xfs",style:"--w:"+(10-k*3.4)+"px"},[el("span",{text:"……"})]);line.append(g);return g;});var pool=el("div",{class:"xpool"});
+/* 11-23 麦琪试用反馈“点一下出现几条句子，后来又不见了”：lines、fade 展示完自己往下走，下一步若会清屏（mc、note、assemble……），
+   学生还没读完就被换掉。下一步是 say 这类不清屏、自己会等“继续”的，照旧直接往下；否则停住，等学生点“继续”。 */
+var KEEPTASK={say:1,me:1,todo:1,next:1};
+function holdShown(nx,tok){if(KEEPTASK[nx])return Promise.resolve();return next("继续",tok,true);}
+H.fade=function(s,tok){var nx=NEXT;return new Promise(function(res,rej){clearTask();var at=0;var line=el("div",{class:"xfade"});var segs=s.items.map(function(t,k){var g=el("div",{class:"xfs",style:"--w:"+(10-k*3.4)+"px"},[el("span",{text:"……"})]);line.append(g);return g;});var pool=el("div",{class:"xpool"});
     xyShuffle(s.items.map(function(t,k){return k;})).forEach(function(k){var b=el("button",{type:"button",class:"xchip",text:s.items[k]});b.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);
-      if(k===at){b.remove();segs[at].classList.add("on");$("span",segs[at]).textContent=s.items[k];at++;SOUND.ambScale([1,.6,.3,.08][at]);SOUND.sfx("page");if(at===s.items.length){logStep(s.obs,{answer:"排好了"});commit();setTimeout(function(){SOUND.ambScale(1);res();},1800);}}
+      if(k===at){b.remove();segs[at].classList.add("on");$("span",segs[at]).textContent=s.items[k];at++;SOUND.ambScale([1,.6,.3,.08][at]);SOUND.sfx("page");if(at===s.items.length){logStep(s.obs,{answer:"排好了"});commit();setTimeout(function(){SOUND.ambScale(1);if(tok!==RUN.token)return;holdShown(nx,tok).then(res,rej);},1800);}}
       else{SOUND.sfx("no");xyShake(b);}});pool.append(b);});
     task.append(q(s.q),line,pool);xyLay();});};
 H.assemble=function(s,tok){return new Promise(function(res,rej){clearTask();var left=s.slots.length,box=el("div",{class:"xasm"});
@@ -977,9 +982,9 @@ H.assemble=function(s,tok){return new Promise(function(res,rej){clearTask();var 
         if(o.ok){SOUND.sfx("ok");blank.textContent=o.text;blank.classList.add("on");chips.remove();left--;if(!left){logStep(s.obs,{answer:s.slots.map(function(x){return x.pre+"…";}).join(" ")});commit();setTimeout(res,600);}}
         else{SOUND.sfx("no");b.classList.add("no");b.disabled=true;logStep(s.obs,{miss:o.text.slice(0,8)});if(o.reply)sayQ(fill(o.reply),o.who||lead(),tok);}});chips.append(b);});row.append(chips);box.append(row);});
     task.append(q(s.q),box);xyLay();});};
-H.lines=function(s,tok){return new Promise(function(res,rej){clearTask();var list=el("div",{class:"xlines"});var go=s.tap?btn(s.tap):null;
-    function run(){if(go)go.remove();s.items.forEach(function(t,k){setTimeout(function(){if(tok!==RUN.token)return;list.append(el("p",{class:"xli",text:t}));SOUND.sfx("page");if(k===s.items.length-1)setTimeout(res,600);},reduce?0:k*900);});}
-    [s.q?q(s.q):null,list,go].forEach(function(x){if(x)task.append(x);});xyLay();if(go)go.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);run();});else run();});};
+H.lines=function(s,tok){var nx=NEXT;return new Promise(function(res,rej){clearTask();var list=el("div",{class:"xlines"});var go=s.tap?btn(s.tap):null;
+    function run(){if(go)go.remove();s.items.forEach(function(t,k){setTimeout(function(){if(tok!==RUN.token)return;list.append(el("p",{class:"xli",text:t}));SOUND.sfx("page");if(k===s.items.length-1)setTimeout(function(){if(tok!==RUN.token)return;holdShown(nx,tok).then(res,rej);},600);},reduce?0:k*900);});}
+    [s.q?q(s.q,true):null,list,go].forEach(function(x){if(x)task.append(x);});xyLay();if(go)go.addEventListener("click",function(){if(tok!==RUN.token)return rej(CANCEL);run();});else run();});};
 H.note=function(s,tok){var NCm=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"];clearTask();
   var card=el("div",{class:"xnote"},[el("div",{class:"xnh"},[el("b",{text:"笔记卡"+(NCm[s.n]||s.n)}),el("span",{class:"seal",text:"抄到课本"})]),
     el("h5",{text:"怎么抄"}),el("ol",{},s.how.map(function(h){return el("li",{text:h});})),el("h5",{text:"抄什么"}),el("div",{class:"xnw"},s.what.map(function(w){return el("p",{text:w});})),el("p",{class:"xnfoot",text:"慢慢抄，抄好了自己点“我抄好了”。以后在“我的笔记本”里还能再看到这张卡。"})]);
