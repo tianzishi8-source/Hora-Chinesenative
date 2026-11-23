@@ -27,7 +27,7 @@
  * 配音：lesson-voice.js 的 keys 还是空的，台词都由设备语音读；全文朗读 narration.ready:false 也用设备语音（录好 voice/n0.mp3—n6.mp3 后去掉 ready:false）。
  */
 (function(){
-var HB=window.HB={ready:{
+var HB=window.HB={ready:{"hb-platform":1,"hb-escalator":1,"hb-fence":1,"hb-plaza":1,"hb-turn":1,"hb-bench":1,"hb-home":1,
   /* 出好的图放进 img/ 以后，在这里加上文件名（不带 .webp），例如 "hb-platform":1 */
 }};
 function svg(s){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">'+s+'</svg>');}

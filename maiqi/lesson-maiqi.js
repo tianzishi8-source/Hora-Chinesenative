@@ -54,8 +54,8 @@ var SRC="选自《世界经典微型小说》，内蒙古文化出版社2001年�
 window.LESSON={
 id:"g9-maiqi",
 theme:{name:"maiqi",css:"theme-maiqi.css?v=11231200",figs:"circle",def:"",
- byBg:{"img/mq-curls.webp":"warm","img/mq-door.webp":"warm","img/mq-gifts.webp":"warm","img/mq-couch.webp":"warm","img/mq-cover.webp":"warm","img/mq-magi.webp":"night"},
- intro:{bg:"img/mq-cover.webp",title:"麦琪的礼物",author:"欧·亨利",lines:["一元八角七。","全都在这儿了，","而第二天就是圣诞节了。"],btn:"翻开 ▸"}},
+ byBg:{"img/mq-curls.webp?v=2":"warm","img/mq-door.webp?v=2":"warm","img/mq-gifts.webp?v=2":"warm","img/mq-couch.webp?v=2":"warm","img/mq-cover.webp?v=2":"warm","img/mq-magi.webp?v=2":"night"},
+ intro:{bg:"img/mq-cover.webp?v=2",title:"麦琪的礼物",author:"欧·亨利",lines:["一元八角七。","全都在这儿了，","而第二天就是圣诞节了。"],btn:"翻开 ▸"}},
 title:"读《麦琪的礼物》",sub:"九年级 · 欧·亨利",
 textTitle:"麦琪的礼物",author:"[美]欧·亨利",
 source:SRC,
@@ -111,7 +111,7 @@ images:{},visuals:{},
 sound:{mood:"calm",vol:.4,
  notes:[392,440,493.88,587.33,659.25,783.99,880,987.77],
  moods:{calm:{music:1,tick:.25},memory:{music:.6,tick:.15},focus:{music:0,tick:.45},bright:{music:1.1,tick:.2}}},
-bg:"img/mq-room.webp",
+bg:"img/mq-room.webp?v=2",
 totalDays:2,
 
 /* ---------- 课后练习：每天一组。core 基础检测（人人都做，只考课上讲过的点）；variants＝课上那道题做错了的学生，练习里先重做原题，再做这道相似的新题（键＝课上那道题的 obs id）。
@@ -234,7 +234,7 @@ practice:{
     {text:"他年纪还小，不会照顾自己，常常忘了穿戴",ok:false,reply:"原文说他“需要”买件新大衣。不是忘了穿，是买不起。"},
     {text:"他把挣的钱都花在了金表上，才没钱买大衣",ok:false,reply:"金表是“祖父传给父亲，父亲又传给他的传家宝”，不是他买的。他是挣得太少。"}]},
   "m1-order":{t:"order",feedbackWho:"hy",q:"再排一次：德拉为吉姆做的事。按课文的先后，一张一张点。",
-   cards:[{label:"卖掉头发",img:"img/mq-street.webp"},{label:"找遍各家商店",img:"img/mq-shop.webp"},{label:"买下表链",img:"img/mq-shop.webp"},{label:"烫小卷发",img:"img/mq-curls.webp"},{label:"煮好咖啡",img:"img/mq-door.webp"},{label:"握着表链等在门边",img:"img/mq-door.webp"}],
+   cards:[{label:"卖掉头发",img:"img/mq-street.webp?v=2"},{label:"找遍各家商店",img:"img/mq-shop.webp?v=2"},{label:"买下表链",img:"img/mq-shop.webp?v=2"},{label:"烫小卷发",img:"img/mq-curls.webp?v=2"},{label:"煮好咖啡",img:"img/mq-door.webp?v=2"},{label:"握着表链等在门边",img:"img/mq-door.webp?v=2"}],
    miss:"不是这一个。看左边原文，从“她走到一块招牌前”往下读。",note:"按课文的先后，一张一张点。"},
   "m1-pick":{t:"pick",feedbackWho:"hy",task:"那一串“不是”说完，作者还是没说出那是什么神情，只写了吉姆在做什么。在左边原文里，点出这一句。",label:"点这一句",
    accept:{paras:[29],has:["死死地盯着德拉"]},fallback:["不是这一句。就在那一串“不是”的后面。"],okText:"对。“他仅仅是面带这种神情死死地盯着德拉。”还是不说破，真相又往后拖了一步。"},
@@ -294,8 +294,8 @@ practice:{
 
 days:[
 /* ===================== 第 1 天：一元八角七 ===================== */
-{title:"一元八角七",bg:"img/mq-room.webp",short:"一元八角七",text:"a",beats:[
- {title:"圣诞节前一天",mood:"calm",bg:"img/mq-window.webp",steps:[
+{title:"一元八角七",bg:"img/mq-room.webp?v=2",short:"一元八角七",text:"a",beats:[
+ {title:"圣诞节前一天",mood:"calm",bg:"img/mq-window.webp?v=2",steps:[
   {t:"say",who:"hy",text:"今天读一篇小说：欧·亨利的《麦琪的礼物》。课本翻到第四单元第15课。"},
   {t:"say",who:"hy",text:"欧·亨利是美国作家，原名威廉·西德尼·波特，生于1862年，1910年去世。"},
   {t:"say",who:"hy",text:"他的小说，结尾常常出人意料，人们叫它“欧·亨利式结尾”。读到最后，你就知道了。"},
@@ -308,13 +308,13 @@ days:[
  {title:"先听前半篇",mood:"memory",steps:[
   {t:"say",who:"hy",text:"先什么都不用做。跟着声音，从“一元八角七”一直听到吉姆进门。"},
   {t:"listenAll",id:"m1all",q:"把前半篇从头听到吉姆进门",rate:1.2,silentMin:270,button:"听完了，往下",
-   beads:[{p:0,label:"一元八角七",img:"img/mq-room.webp"},{p:7,label:"窗前",img:"img/mq-window.webp"},{p:10,label:"镜前",img:"img/mq-mirror.webp"},{p:14,label:"卖头发",img:"img/mq-street.webp"},{p:21,label:"表链",img:"img/mq-shop.webp"},{p:23,label:"小卷发",img:"img/mq-curls.webp"},{p:26,label:"七点钟",img:"img/mq-door.webp"},{p:28,label:"门开了",img:"img/mq-door.webp"}],
-   scenes:[{p:0,bg:"img/mq-room.webp"},{p:7,bg:"img/mq-window.webp"},{p:10,bg:"img/mq-mirror.webp"},{p:13,bg:"img/mq-street.webp"},{p:20,bg:"img/mq-shop.webp"},{p:23,bg:"img/mq-curls.webp"},{p:26,bg:"img/mq-door.webp"}],
+   beads:[{p:0,label:"一元八角七",img:"img/mq-room.webp?v=2"},{p:7,label:"窗前",img:"img/mq-window.webp?v=2"},{p:10,label:"镜前",img:"img/mq-mirror.webp?v=2"},{p:14,label:"卖头发",img:"img/mq-street.webp?v=2"},{p:21,label:"表链",img:"img/mq-shop.webp?v=2"},{p:23,label:"小卷发",img:"img/mq-curls.webp?v=2"},{p:26,label:"七点钟",img:"img/mq-door.webp?v=2"},{p:28,label:"门开了",img:"img/mq-door.webp?v=2"}],
+   scenes:[{p:0,bg:"img/mq-room.webp?v=2"},{p:7,bg:"img/mq-window.webp?v=2"},{p:10,bg:"img/mq-mirror.webp?v=2"},{p:13,bg:"img/mq-street.webp?v=2"},{p:20,bg:"img/mq-shop.webp?v=2"},{p:23,bg:"img/mq-curls.webp?v=2"},{p:26,bg:"img/mq-door.webp?v=2"}],
    note:"左边原文会跟着声音亮起来，画面也跟着换。只听、只看，不用答题。可以调语速，也可以点“我想自己默读”。",obs:{id:"m1-all",label:"听前半篇",skill:"整体感知"}},
   {t:"say",who:"cat",text:"他就站在门口，一动不动，死死地盯着她。我在窗外，也看不明白。"},
   {t:"say",who:"hy",text:"故事先停在这里。今天，我们回到开头，看德拉这一边。"}
  ]},
- {title:"一元八角七的窘",mood:"calm",bg:"img/mq-room.webp",steps:[
+ {title:"一元八角七的窘",mood:"calm",bg:"img/mq-room.webp?v=2",steps:[
   {t:"say",who:"hy",text:"开头第一句，只有五个字：“一元八角七。”接着又说：“全都在这儿了”。"},
   {t:"mc",q:"开头先报出“一元八角七”，又说“德拉反复数了三次，还是一元八角七”。数三次，写出了什么？",
    options:[{text:"钱少得可怜，数来数去，还是那么一点",ok:true,reply:"对。数一遍就够了，她偏数三遍，还是一元八角七。“而第二天就是圣诞节了。”"},
@@ -339,7 +339,7 @@ days:[
    how:["在课文开头“一元八角七。全都在这儿了”旁边，写第一行。","在“似乎它们正严肃地思忖着是否缩写”下面画波浪线，旁边写第二行。"],
    what:["开端：一元八角七，买不起礼物（穷）","拟人：字母“思忖”缩写——对窘境的自嘲（笑里带心酸）"]}
  ]},
- {title:"窗前和镜前",mood:"memory",bg:"img/mq-window.webp",steps:[
+ {title:"窗前和镜前",mood:"memory",bg:"img/mq-window.webp?v=2",steps:[
   {t:"say",who:"cat",text:"她哭完，往脸上抹了抹粉，站在窗前，痴痴地看着后院。看着我。"},
   {t:"lines",tap:"点一下，读她看见的",items:["“她站在窗前，痴痴地瞅着灰蒙蒙的后院里一只灰白色的猫正行走在灰白色的篱笆上。”"]},
   {t:"mc",q:"灰蒙蒙的后院，灰白色的猫，灰白色的篱笆。一句里写了三个“灰”，为什么？",
@@ -350,7 +350,7 @@ days:[
   {t:"say",who:"hy",text:"景物是照着人物的心情写的。这叫借景物烘托人物的心情。"},
   {t:"say",who:"cat",text:"可她心里还有一样亮的东西：“她的吉姆啊。”"},
   {t:"say",who:"hy",text:"她要送的，是一件“至少应有点儿配得上吉姆所有的东西”的礼物。"},
-  {t:"say",who:"hy",text:"这个家很穷，却有两件宝贝。作者马上告诉你。",bg:"img/mq-mirror.webp"},
+  {t:"say",who:"hy",text:"这个家很穷，却有两件宝贝。作者马上告诉你。",bg:"img/mq-mirror.webp?v=2"},
   {t:"lines",q:"两件宝贝：",items:["“一件是吉姆的金表，是他祖父传给父亲，父亲又传给他的传家宝；”","“另一件则是德拉的秀发。”"]},
   {t:"say",who:"hy",text:"示巴女王、所罗门王，是《圣经》旧约里的人物，所罗门王极其富有。"},
   {t:"mc",q:"作者说，德拉的头发能让示巴女王的珍珠宝贝“黯然失色”，金表能让所罗门王“忌妒得吹胡子瞪眼睛”。为什么偏偏拉来这两位？",
@@ -361,7 +361,7 @@ days:[
   {t:"say",who:"hy",text:"记住这两件宝贝：吉姆的金表，德拉的头发。开头就交代清楚了，后面还要用。"},
   {t:"say",who:"hy",text:"她站到壁镜前，把头发泼散开来，“有如那褐色的瀑布”，“仿佛是她的一件长袍”。"},
   {t:"order",feedbackWho:"hy",ask:"接下来这一分多钟，她的动作一个接一个。",q:"按课文的先后，一张一张点，排成一串。",
-   cards:[{label:"旋风般地转过身来",img:"img/mq-window.webp"},{label:"两眼晶莹透亮",img:"img/mq-mirror.webp"},{label:"面色失去了光彩",img:"img/mq-mirror.webp"},{label:"折散头发，泼散开来",img:"img/mq-mirror.webp"},{label:"神经质地赶紧梳好",img:"img/mq-mirror.webp"},{label:"踌躇了一分钟",img:"img/mq-mirror.webp"},{label:"一两滴眼泪",img:"img/mq-mirror.webp"},{label:"裙子一摆，飘出房门",img:"img/mq-street.webp"}],
+   cards:[{label:"旋风般地转过身来",img:"img/mq-window.webp?v=2"},{label:"两眼晶莹透亮",img:"img/mq-mirror.webp?v=2"},{label:"面色失去了光彩",img:"img/mq-mirror.webp?v=2"},{label:"折散头发，泼散开来",img:"img/mq-mirror.webp?v=2"},{label:"神经质地赶紧梳好",img:"img/mq-mirror.webp?v=2"},{label:"踌躇了一分钟",img:"img/mq-mirror.webp?v=2"},{label:"一两滴眼泪",img:"img/mq-mirror.webp?v=2"},{label:"裙子一摆，飘出房门",img:"img/mq-street.webp?v=2"}],
    miss:"不是这一个。看左边原文：“突然，她从窗口……”往下读。",note:"按课文的先后，一张一张点。拿不准，看左边原文。",obs:{id:"m1-order",label:"镜前的动作（排顺序）",skill:"细读"}},
   {t:"mc",q:"“踌躇了一分钟，一动不动地立在那儿，破旧的红地毯上溅落了一两滴眼泪。”这一分钟，她心里在想什么？",
    options:[{text:"舍不得：头发是她最引以自豪的；可为了吉姆，她还是要卖",ok:true,reply:"对。先是“两眼晶莹透亮”：她想到办法了；接着“面色失去了光彩”：这办法要她舍掉最心爱的东西。"},
@@ -374,7 +374,7 @@ days:[
    how:["在“灰白色的篱笆”旁边写第一行。","在“现在，詹姆斯·迪林厄姆·杨夫妇俩各有一件特别引以自豪的东西”下面画直线，旁边写第二行。","在“破旧的红地毯上溅落了一两滴眼泪”下面画波浪线，旁边写第三行。"],
    what:["景物烘托心情：三个“灰”＝她心里没有光","两件宝贝：吉姆的金表，德拉的头发（开头就交代）","动作写挣扎：转身、泼散、梳好、踌躇、落泪、飘出——舍不得，还是去了"]}
  ]},
- {title:"二十美元，二十一美元",mood:"focus",bg:"img/mq-street.webp",steps:[
+ {title:"二十美元，二十一美元",mood:"focus",bg:"img/mq-street.webp?v=2",steps:[
   {t:"say",who:"hy",text:"她走到一块招牌前：“索弗罗妮夫人——专营各式头发”。"},
   {t:"say",who:"della",text:"你要买我的头发吗？"},
   {t:"say",who:"sofronie",text:"我买头发。揭掉帽子，让我看看发样。"},
@@ -386,7 +386,7 @@ days:[
     {text:"她嫌二十美元太少，想先拿到钱，再去别家问问能不能卖得更贵",ok:false,reply:"她没有讲价，也没有换一家，拿了钱就去找礼物了。急，不是嫌少。"},
     {text:"她早就嫌长发打理起来太麻烦，正好趁机剪掉",ok:false,reply:"前面她刚在镜前“踌躇了一分钟”，还落了泪。她是嫌麻烦吗？"}],
    obs:{id:"m1-kuai",label:"快给我钱",skill:"人物"}},
-  {t:"say",who:"hy",text:"接下来的两个小时，“犹如长了翅膀”。作者马上又说：“请不用理会这胡诌的比喻。”",bg:"img/mq-shop.webp"},
+  {t:"say",who:"hy",text:"接下来的两个小时，“犹如长了翅膀”。作者马上又说：“请不用理会这胡诌的比喻。”",bg:"img/mq-shop.webp?v=2"},
   {t:"say",who:"hy",text:"欧·亨利常常这样跳出来，跟读者说两句，像坐在你身边讲故事。后面还有。"},
   {t:"lines",tap:"点一下，看她找到了什么",items:["“一条朴素的白金表链，镂刻着花纹。”","“正如一切优质东西那样，它只以货色论长短，不以装潢来炫耀。”","“而且它正配得上那只金表。”","“它就像吉姆本人，文静而有价值”"]},
   {t:"mc",q:"她“找遍了各家商店”，一见这条表链，“就知道一定属于吉姆所有”。为什么认定是它？",
@@ -406,12 +406,12 @@ days:[
     {text:"金表是祖父传下来的老表，走得不准，他不好意思让人看见",ok:false,reply:"原文没说表不准。原因在前半句：“因为用的是旧皮带取代表链”。"}],
    obs:{id:"m1-pi",label:"旧皮带",skill:"细节"}}
  ]},
- {title:"七点钟",mood:"memory",bg:"img/mq-curls.webp",steps:[
+ {title:"七点钟",mood:"memory",bg:"img/mq-curls.webp?v=2",steps:[
   {t:"say",who:"hy",text:"回到家，“她的狂喜有点儿变得审慎和理智了”。她找出烫发铁钳，点燃煤气。"},
   {t:"say",who:"hy",text:"不出四十分钟，满头小卷发，“使她活像个逃学的小男孩”。"},
   {t:"say",who:"della",text:"假如吉姆看我一眼不把我宰掉的话，他定会说我像个科尼岛上合唱队的卖唱姑娘。"},
   {t:"say",who:"della",text:"但是我能怎么办呢——唉，只有一元八角七，我能干什么呢？"},
-  {t:"say",who:"hy",text:"七点钟，咖啡煮好了，煎锅在炉上。她把表链对叠握在手心，坐在离门最近的桌子角上。",bg:"img/mq-door.webp"},
+  {t:"say",who:"hy",text:"七点钟，咖啡煮好了，煎锅在炉上。她把表链对叠握在手心，坐在离门最近的桌子角上。",bg:"img/mq-door.webp?v=2"},
   {t:"say",who:"hy",text:"听见楼梯上的脚步声，“她紧张得脸色失去了一会儿血色”。她悄声说："},
   {t:"say",who:"della",text:"求求上帝，让他觉得我还是漂亮的吧。"},
   {t:"mc",q:"咖啡煮好，表链握在手心，坐在离门最近的地方，悄悄祈祷。这几笔写出她怎样的心情？",
@@ -420,7 +420,7 @@ days:[
     {text:"后悔：觉得为了一条表链卖掉头发，太不值得",ok:false,reply:"她说“我能怎么办呢”，又悄悄祈祷。她怕，可没有说后悔。"}],
    obs:{id:"m1-pan",label:"七点钟的心情",skill:"人物"}}
  ]},
- {title:"吉姆进门",mood:"focus",bg:"img/mq-door.webp",steps:[
+ {title:"吉姆进门",mood:"focus",bg:"img/mq-door.webp?v=2",steps:[
   {t:"say",who:"hy",text:"门开了。"},
   {t:"lines",q:"吉姆是什么样子？",items:["“他显得瘦削而又非常严肃。”","“可怜的人儿，他才二十二岁，就挑起了家庭重担！”","“他需要买件新大衣，连手套也没有呀。”"]},
   {t:"mc",q:"“他需要买件新大衣，连手套也没有呀。”这一句让你对吉姆知道了什么？",
@@ -444,7 +444,7 @@ days:[
    how:["在“既不是愤怒，也不是惊讶，又不是不满，更不是嫌恶”下面画波浪线，旁边写第一行。","在“他需要买件新大衣，连手套也没有呀”旁边写第二行。"],
    what:["一连串否定：神情怪异，猜不透；延宕——真相往后拖（悬念）","吉姆也穷：没有新大衣，没有手套"]}
  ]},
- {title:"今天的小结",mood:"calm",bg:"img/mq-room.webp",steps:[
+ {title:"今天的小结",mood:"calm",bg:"img/mq-room.webp?v=2",steps:[
   {t:"say",who:"hy",text:"今天读了德拉这一边：一元八角七的窘，窗前的三个“灰”，镜前的一分钟，"},
   {t:"say",who:"hy",text:"二十美元和二十一美元，七点钟的祈祷。她给出去的，是她最引以自豪的东西。"},
   {t:"say",who:"hy",text:"作者常常用玩笑的口气讲，可玩笑后面，是心酸。"},
@@ -455,19 +455,19 @@ days:[
  end:"第1天读完了。先做第1天练习；作业是把课本上的三张笔记卡拍照交上来。"},
 
 /* ===================== 第 2 天：最聪明的礼物 ===================== */
-{title:"最聪明的礼物",bg:"img/mq-gifts.webp",short:"最聪明的",beats:[
- {title:"把故事听完",mood:"memory",bg:"img/mq-door.webp",steps:[
+{title:"最聪明的礼物",bg:"img/mq-gifts.webp?v=2",short:"最聪明的",beats:[
+ {title:"把故事听完",mood:"memory",bg:"img/mq-door.webp?v=2",steps:[
   {t:"text",id:"b"},
   {t:"say",who:"hy",text:"上次停在吉姆死死盯着德拉的那一刻。今天，先把故事听完。"},
   {t:"listenAll",id:"m2all",q:"把后半篇从头听到结尾",rate:1.2,silentMin:200,button:"听完了，往下",
-   beads:[{p:0,label:"别那样盯着我",img:"img/mq-door.webp"},{p:7,label:"十秒钟",img:"img/mq-door.webp"},{p:8,label:"一个小包",img:"img/mq-gifts.webp"},{p:13,label:"她的礼物",img:"img/mq-gifts.webp"},{p:16,label:"睡椅",img:"img/mq-couch.webp"},{p:18,label:"麦琪",img:"img/mq-magi.webp"}],
-   scenes:[{p:0,bg:"img/mq-door.webp"},{p:8,bg:"img/mq-gifts.webp"},{p:16,bg:"img/mq-couch.webp"},{p:18,bg:"img/mq-magi.webp"}],
+   beads:[{p:0,label:"别那样盯着我",img:"img/mq-door.webp?v=2"},{p:7,label:"十秒钟",img:"img/mq-door.webp?v=2"},{p:8,label:"一个小包",img:"img/mq-gifts.webp?v=2"},{p:13,label:"她的礼物",img:"img/mq-gifts.webp?v=2"},{p:16,label:"睡椅",img:"img/mq-couch.webp?v=2"},{p:18,label:"麦琪",img:"img/mq-magi.webp?v=2"}],
+   scenes:[{p:0,bg:"img/mq-door.webp?v=2"},{p:8,bg:"img/mq-gifts.webp?v=2"},{p:16,bg:"img/mq-couch.webp?v=2"},{p:18,bg:"img/mq-magi.webp?v=2"}],
    note:"左边原文会跟着声音亮起来。只听、只看，不用答题。可以调语速，也可以点“我想自己默读”。",obs:{id:"m2-all",label:"听后半篇",skill:"整体感知"}},
   {t:"mc",stance:true,q:"这个结局，你猜到了吗？",options:[{text:"完全没想到"},{text:"猜到了一半"},{text:"猜到了"},{text:"以前就读过"}],key:"m2.surprise",obs:{id:"m2-surprise",label:"猜到结局了吗",skill:"感受"}},
   {t:"say",who:"hy",textIf:{key:"m2.surprise",map:{"0":"没想到，就对了。很多人第一次读，都和你一样。","1":"猜到一半，已经很细心了。另一半藏在哪里，等一下就找。","2":"你猜到了，说明前面的伏笔你都看见了。等一下一处一处找出来。"},other:"读过的人，再读一遍，会看见第一次没看见的东西。"},text:"很多人第一次读，都没有想到。"},
   {t:"text",id:"main"}
  ]},
- {title:"两件落空的礼物",mood:"memory",bg:"img/mq-gifts.webp",steps:[
+ {title:"两件落空的礼物",mood:"memory",bg:"img/mq-gifts.webp?v=2",steps:[
   {t:"say",who:"jim",text:"德尔，让我们把圣诞礼物放在一边，保存一会儿吧。它们实在太好了，目前尚不宜用。"},
   {t:"say",who:"jim",text:"我卖掉金表，换钱为你买了发梳。现在，你作肉排吧。"},
   {t:"sides",q:"回到吉姆进门的那一刻：有些事，只有一个人心里知道。每一句，放到左边还是右边。",left:"只有德拉知道的",right:"只有吉姆知道的",
@@ -489,7 +489,7 @@ days:[
    obs:{id:"m2-xiao",label:"吉姆为什么笑",skill:"人物"}},
   {t:"say",who:"hy",text:"礼物用不上了，日子照样过：“现在，你作肉排吧。”爱一点也没少。"}
  ]},
- {title:"为什么这样写",mood:"focus",bg:"img/mq-room.webp",steps:[
+ {title:"为什么这样写",mood:"focus",bg:"img/mq-room.webp?v=2",steps:[
   {t:"say",who:"hy",text:"课后第一题问：如果双方都卖掉了自己最好的东西，同时又为对方买了件有用的礼物，"},
   {t:"say",who:"hy",text:"“不是既实惠又照样能表达他们的爱情吗？”小说为什么偏要写成阴差阳错、反差极大的结局？"},
   {t:"mc",q:"小说为什么偏要写成两件礼物同时落空？",
@@ -520,7 +520,7 @@ days:[
    how:["在“各有一件特别引以自豪的东西”下面画直线，旁边写“伏笔①”。","在“用的是旧皮带取代表链”下面画直线，旁边写“伏笔②”。","在“现在，你作肉排吧”旁边，写下面三行。"],
    what:["伏笔：两件宝贝；旧皮带；吉姆没大衣、没手套；那一串“不是”","欧·亨利式结尾：意料之外，情理之中","谜底藏到最后（悬念）；两件礼物同时落空，反差越大，爱越重"]}
  ]},
- {title:"傻，还是聪明",mood:"calm",bg:"img/mq-couch.webp",steps:[
+ {title:"傻，还是聪明",mood:"calm",bg:"img/mq-couch.webp?v=2",steps:[
   {t:"say",who:"xiaoman",text:"两件礼物都没用了，还把最宝贵的东西卖了。他们是挺傻的。"},
   {t:"say",who:"hy",text:"欧·亨利自己也这么说：他们是“住公寓套间的两个傻孩子”，"},
   {t:"say",who:"hy",text:"“他们极不明智地为了对方而牺牲了他们家最最宝贵的东西。”"},
@@ -555,7 +555,7 @@ days:[
    how:["在结尾“两个傻孩子”旁边写第一行。","在“那两个人是最聪明的”下面画波浪线，旁边写第二、三行。"],
    what:["“傻”：按东西算，礼物白送了；“聪明”：按爱算，给出了最宝贵的——明贬实褒","五句：现今的聪明人（会算计的人）→送礼最聪明→又送又收也最聪明→任何地方都最聪明→他们就是麦琪","一句比一句推得远"]}
  ]},
- {title:"麦琪是谁",mood:"calm",bg:"img/mq-magi.webp",steps:[
+ {title:"麦琪是谁",mood:"calm",bg:"img/mq-magi.webp?v=2",steps:[
   {t:"say",who:"hy",text:"课本注释：麦琪，“《圣经》中基督耶稣降生时来自东方送礼的三位贤人”。"},
   {t:"say",who:"hy",text:"在和合本《圣经》马太福音第2章里，他们叫“博士”。"},
   {t:"lines",q:"马太福音第2章（和合本）：",items:["“当希律王的时候，耶稣生在犹太的伯利恒。有几个博士从东方来到耶路撒冷”（太2:1）","“进了房子，看见小孩子和他母亲马利亚，就俯伏拜那小孩子，揭开宝盒，拿黄金、乳香、没药为礼物献给他。”（太2:11）"]},
@@ -567,7 +567,7 @@ days:[
    obs:{id:"m2-ti",label:"题目说谁的礼物",skill:"主旨"}},
   {t:"say",who:"cat",text:"我只是篱笆上的一只猫。那天夜里，我看见那扇窗里的灯，亮了很久。"}
  ]},
- {title:"作者的议论多余吗",mood:"focus",bg:"img/mq-couch.webp",steps:[
+ {title:"作者的议论多余吗",mood:"focus",bg:"img/mq-couch.webp?v=2",steps:[
   {t:"say",who:"hy",text:"小说后半，作者两次跳出来发议论：一次在吉姆抱住德拉之后，一次在结尾。"},
   {t:"lines",tap:"点一下，看第一次",items:["“现在，别着急，先让我们花个十秒钟从另一角度审慎地思索一下某些无关紧要的事。房租每周八美元，或者一百万美元——那有什么差别呢？”"]},
   {t:"mc",q:"“房租每周八美元，或者一百万美元——那有什么差别呢？”这一问紧接在吉姆把德拉“紧紧地搂在怀里”之后。作者想说什么？",
@@ -583,7 +583,7 @@ days:[
   {t:"mc",stance:true,q:"你站哪一边？",options:[{text:"多余"},{text:"不多余"},{text:"两边都有道理"}],key:"m2.yi",obs:{id:"m2-yilun",label:"议论多余吗：表态",skill:"评价"}},
   {t:"say",who:"hy",text:"站哪一边都可以。说理由时，要用原文说话。"}
  ]},
- {title:"换吉姆来讲",mood:"bright",bg:"img/mq-door.webp",steps:[
+ {title:"换吉姆来讲",mood:"bright",bg:"img/mq-door.webp?v=2",steps:[
   {t:"say",who:"hy",text:"这篇小说主要是从德拉的感知角度写的：她数钱，她照镜子，她猜不透吉姆的神情。"},
   {t:"say",who:"hy",text:"所以吉姆卖了表，我们和德拉一样，直到最后才知道。"},
   {t:"say",who:"hy",text:"课后第四题：试从男主人公的角度改写其中某部分。先写几句：吉姆走到门口的那一刻。"},
@@ -595,7 +595,7 @@ days:[
    how:["在课文最后一句“无论在任何地方，他们都是最聪明的人”下面的空白处，写下面两行。"],
    what:["作者的议论：说多余——把余味说破；说不多余——解开题目、兑现预告、点明主旨","叙述角度：从德拉的感知写，吉姆卖表藏到最后；换吉姆的角度，就看见了另一半"]}
  ]},
- {title:"两天的小结",mood:"calm",bg:"img/mq-gifts.webp",steps:[
+ {title:"两天的小结",mood:"calm",bg:"img/mq-gifts.webp?v=2",steps:[
   {t:"say",who:"hy",text:"一元八角七，一头长发，一只金表，一条表链，一套梳子。"},
   {t:"say",who:"hy",text:"两件礼物都落了空，作者却说，他们是最聪明的人。"},
   {t:"say",who:"hy",text:"现在做第2天的练习。作业：把课上写的几句，扩成一小段。"},
