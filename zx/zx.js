@@ -15,7 +15,7 @@
  *   qa    想一想：q, hint, ref（参考答案，点开看）；可写在框里（存档）
  *   write 练笔：id, prompt, hint, min, max, check:[自查清单]（存档，交给老师）
  *   recite 背诵：para（遮字四级，点句偷看）
- *   rows  对照表：title, head:[…], rows:[[…]]
+ *   rows  对照表：title, head:[…], rows:[[…]]（head 3 列或 4 列；4 列在手机上改成一行一格，格前标列名）
  *   note  知识卡：title, html（受信任的内容）或 items:[…]
  *   method 方法卡：title, points:[…], ex（例子）
  * 存档：本机 hora-{id}-{班级|名字}；有表格网址时同步（课文 id 就是 ZX.id）；done[课时]=1 让首页长卷知道读完了几课时。 */
@@ -329,7 +329,7 @@ BLOCK.recite = function (el, b, id) {
   draw();
 };
 BLOCK.rows = function (el, b) {
-  el.innerHTML = '<div class="box">' + (b.title ? '<p class="kicker">' + esc(b.title) + "</p>" : "") + '<div class="rows' + (b.head && b.head.length === 3 ? " c3" : "") + '">' + (b.head ? '<div class="r2 hd">' + b.head.map(function (h) { return "<span>" + esc(h) + "</span>"; }).join("") + "</div>" : "") + b.rows.map(function (r) { return '<div class="r2"><b>' + esc(r[0]) + "</b>" + r.slice(1).map(function (c) { return "<span>" + esc(c) + "</span>"; }).join("") + "</div>"; }).join("") + "</div>" + (b.foot ? '<p class="muted small" style="margin-top:8px">' + esc(b.foot) + "</p>" : "") + "</div>";
+  el.innerHTML = '<div class="box">' + (b.title ? '<p class="kicker">' + esc(b.title) + "</p>" : "") + '<div class="rows' + (b.head && b.head.length === 3 ? " c3" : b.head && b.head.length === 4 ? " c4" : "") + '">' + (b.head ? '<div class="r2 hd">' + b.head.map(function (h) { return "<span>" + esc(h) + "</span>"; }).join("") + "</div>" : "") + b.rows.map(function (r) { return '<div class="r2"><b>' + esc(r[0]) + "</b>" + r.slice(1).map(function (c, j) { return "<span" + (b.head ? ' data-h="' + esc(b.head[j + 1] || "") + '"' : "") + ">" + esc(c) + "</span>"; }).join("") + "</div>"; }).join("") + "</div>" + (b.foot ? '<p class="muted small" style="margin-top:8px">' + esc(b.foot) + "</p>" : "") + "</div>";
 };
 BLOCK.note = function (el, b) {
   el.innerHTML = '<div class="box">' + (b.title ? '<p class="kicker">' + esc(b.title) + "</p>" : "") + (b.html || "") + (b.items ? "<ul>" + b.items.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>" : "") + "</div>" + (b.teacher ? '<p class="teacher"><b>给老师：</b>' + esc(b.teacher) + "</p>" : "");
