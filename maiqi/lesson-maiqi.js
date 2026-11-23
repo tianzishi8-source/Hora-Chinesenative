@@ -82,7 +82,7 @@ cast:{
       voices:[{id:"a",name:"徽音老师",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-6%",pitch:"-4Hz"}]},
   cat:{name:"灰猫（想象）",short:"灰猫",shape:"seal",glyph:"猫",seal:"想象",ink:"#6d6a63",voice:{gender:"female",pitch:1.05,rate:1},
       sample:"喵。我是篱笆上那只灰白色的猫。",
-      voices:[{id:"a",name:"灰猫",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-6%",pitch:"+2Hz"}]},
+      voices:[{id:"a",name:"灰猫",gender:"female",tts:"zh-CN-YunxiaNeural",rate:"-6%",pitch:"+0Hz"}]},
   zhou:{name:"清弦",sprite:"buddy",shape:"seal",glyph:"弦",seal:"伴学",ink:"--cool",voice:{gender:"female",pitch:1.15,rate:1},
       sample:"我是{buddy|清弦}。今天，我和你一起读。",
       voicesBy:{
@@ -91,7 +91,7 @@ cast:{
   xiaoman:{name:"小满（同学）",short:"小满",extra:true,fig:{a:"img/xm-a.webp",b:"img/xm-b.webp",head:[505,228]},shape:"seal",glyph:"满",ink:"#b0662a",voice:{gender:"female",pitch:1.05,rate:1},voices:[{id:"a",name:"小满",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-6%",pitch:"-4Hz"}]},
   della:{name:"德拉",extra:true,shape:"seal",glyph:"德",ink:"#8a5a2b",voice:{gender:"female",pitch:1.08,rate:1},voices:[{id:"a",name:"德拉",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-4%",pitch:"+2Hz"}]},
   jim:{name:"吉姆",extra:true,shape:"seal",glyph:"吉",ink:"#4b5d6e",voice:{gender:"male",pitch:1,rate:1},voices:[{id:"a",name:"吉姆",gender:"male",tts:"zh-CN-YunxiNeural",rate:"-8%",pitch:"-6Hz"}]},
-  sofronie:{name:"索弗罗妮夫人",extra:true,shape:"seal",glyph:"索",ink:"#6b6f80",voice:{gender:"female",pitch:.9,rate:1},voices:[{id:"a",name:"索弗罗妮夫人",gender:"female",tts:"zh-CN-XiaoxiaoNeural",rate:"-8%",pitch:"-6Hz"}]},
+  sofronie:{name:"索弗罗妮夫人",extra:true,shape:"seal",glyph:"索",ink:"#6b6f80",voice:{gender:"female",pitch:.9,rate:1},voices:[{id:"a",name:"索弗罗妮夫人",gender:"female",tts:"zh-CN-XiaoyiNeural",rate:"-12%",pitch:"-16Hz"}]},
   me:{name:"我",sprite:"me",shape:"seal",glyph:"我",seal:"同学",ink:"--warm",
       sample:"这是我的声音。读到我的话时，就用这个声音。",
       voicesBy:{
