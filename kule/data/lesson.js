@@ -25,7 +25,7 @@
  *   大生命一句点出“冰心把宇宙看成一个大生命”，所信改为“宇宙万物是神造的，神也认得我们每一个人”；text.js 诸圣诸佛注释第二句改通顺，s4 加“进化运行”注释。ver 升 11240900。备份 work/kule-lesson.pre-wv2.js、kule-text.pre-wv2.js。 */
 window.ZX = {
   theme: { name: "kule", bg: "scene-hall.webp", acc: "#d9a650", accInk: "#20170a", glass: "rgba(54,40,28,.60)", bgc: "#2a2119" },  // 11-20 专属外观：民国讲堂（木色玻璃、灯光金）
-  id: "g9-kule", title: "最苦与最乐 · 谈生命", author: "梁启超 · 冰心", ver: "11241000",
+  id: "g9-kule", title: "最苦与最乐 · 谈生命", author: "梁启超 · 冰心", ver: "11241100",
   sceneDir: "../kule-ke/img/",   // 画面先用课堂版的场景真图
   guide: { name: "梁启超", kind: "liang", vkey: "liang" },
   cast: { xm: { name: "小满", src: "img/xm.webp", c: [505, 228], v: "xm" } },
@@ -33,7 +33,7 @@ window.ZX = {
   lessons: [
     { title: "最苦与最乐 · 谈生命", guide: { name: "梁启超", kind: "liang", vkey: "liang" }, stages: [
       { t: "周日晚上", min: 2, h: "什么事最苦", blocks: [
-        { type: "pic", scene: "study", vt: "最苦与最乐", sub: "梁启超", cap: "示意画：一间书房" },
+        { type: "pic", scene: "sunday", vt: "最苦与最乐", sub: "梁启超", cap: "示意画：周日晚上，几件事都没做完" },
         { type: "talk", lines: [
           { who: "xm", say: "明天要交小组报告，我答应做演示文稿，到现在一页都没做。" },
           { who: "xm", say: "借同学的书，拖了一个月没归还；自己定的每天跑步，也断了好几天。" },
@@ -52,6 +52,7 @@ window.ZX = {
         { type: "choice", sent: "答应人办一件事没有办，……这就连这个人的面也几乎不敢见他", q: "小满一想到明天见组员，就想绕着走。梁启超怎样解释这种感觉？", opts: ["因为觉得对不住他，自己对他的责任还没有解除", "因为她和组员关系不好", "因为她怕被老师批评", "因为她太累了"], ans: "因为觉得对不住他，自己对他的责任还没有解除", explain: "原文：为什么呢？因为觉得对不住他呀，因为自己对他的责任，还没有解除呀。" }
       ] },
       { t: "最乐", min: 5, h: "责任完了，最乐", blocks: [
+        { type: "pic", scene: "relief", cap: "示意画：十一点，做完了" },
         { type: "talk", lines: [
           { who: "xm", say: "晚上十一点，演示文稿终于做完，发到小组群里了。书也装进书包，明天一早交到同学手上。" },
           { who: "xm", say: "我现在，整个人都轻了。" }
@@ -70,11 +71,12 @@ window.ZX = {
       ] },
       { t: "结构", min: 2, h: "一篇议论文怎么说服人", blocks: [{ type: "method", title: "议论文的几样“武器”", points: ["设问开头，先破后立，引人思考。", "道理论据：引古语、俗语，引孔子、孟子、曾子的话。", "事实论据：欠钱不还、答应的事没办——人人有体会。", "设想别人的疑问（圣贤为什么“有终身之忧”？把责任卸了行不行？），再一一回答，说理周全。"], ex: "全文顺序：最苦（1—2段）→ 最乐（3段）→ 答疑（4—5段）。" }] },
       { t: "冰心", min: 8, h: "生命像什么", blocks: [
-        { type: "pic", scene: "riverbank", vt: "谈生命", sub: "冰心", cap: "示意画：夹岸桃花的江流" },
+                { type: "pic", scene: "abroad", cap: "示意画：搬到国外的第一年" },
         { type: "talk", lines: [
           { who: "xm", say: "我表哥前年搬到国外。头一年听不懂课，也没有朋友，他说那是最难的一年。" },
           { who: "hy", say: "梁先生讲道理。冰心打比方，也谈苦和乐：生命像一江春水，像一棵小树。" }
         ] },
+        { type: "pic", scene: "riverbank", vt: "谈生命", sub: "冰心", cap: "示意画：夹岸桃花的江流" },
         { type: "note", title: "作者小卡", items: ["冰心（1900—1999），原名谢婉莹，福建长乐人，现代作家、诗人、儿童文学家。", "代表作《繁星》《春水》《寄小读者》。"] },
         { type: "read", paras: ["s2", "s3", "s4"], listen: 1, title: "谈生命" },
         { type: "py", items: [{ w: "巉岩", opts: ["chán yán", "cán yán", "chán ài"], ans: "chán yán" }, { w: "休憩", opts: ["xiū qì", "xiū xī", "xiū shé"], ans: "xiū qì" }, { w: "荫庇", opts: ["yìn bì", "yīn bì", "yìn pì"], ans: "yìn bì" }, { w: "（果实）累累", opts: ["léi léi", "lěi lěi", "lèi lèi"], ans: "léi léi" }, { w: "朔风", opts: ["shuò fēng", "suò fēng", "shuò fěng"], ans: "shuò fēng" }, { w: "云翳", opts: ["yún yì", "yún yī", "yún xī"], ans: "yún yì" }] }

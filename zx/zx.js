@@ -183,7 +183,7 @@ BLOCK.pic = function (el, b) {
   /* 有课堂版的场景真图（Z.sceneDir，如 "../zuiweng-ke/img/"）时先试 scene-键-色调.webp，再试 scene-键.webp，都没有才用画的 */
   if (!b.img && Z.sceneDir && b.scene) {
     var cands = (b.tone ? [Z.sceneDir + "scene-" + b.scene + "-" + b.tone + ".webp"] : []).concat([Z.sceneDir + "scene-" + b.scene + ".webp"]);
-    (function tryOne(i) { if (i >= cands.length) return; var im = new Image(); im.onload = function () { if (im.naturalWidth) zxBg(cands[i]); var pic = el.querySelector(".pic"); if (pic && im.naturalWidth) { var sv = pic.querySelector("svg"); var ni = document.createElement("img"); ni.src = cands[i]; ni.alt = b.alt || ""; if (sv) sv.replaceWith(ni); } }; im.onerror = function () { tryOne(i + 1); }; im.src = cands[i]; })(0);
+    (function tryOne(i) { if (i >= cands.length) return; var im = new Image(); im.onload = function () { if (im.naturalWidth) zxBg(cands[i]); var pic = el.querySelector(".pic"); if (pic && im.naturalWidth) { var sv = pic.querySelector("svg"); var ni = document.createElement("img"); ni.src = cands[i]; ni.alt = b.alt || ""; if (sv) sv.replaceWith(ni); else if (!pic.querySelector("img")) pic.insertBefore(ni, pic.firstChild); } };   /* 11-24 没有画好的 svg（场景键不在 YK_SCENE 里）时也把真图放进去 */ im.onerror = function () { tryOne(i + 1); }; im.src = cands[i]; })(0);
   }
   var inner = b.img ? '<img src="' + esc(b.img) + '" alt="' + esc(b.alt || "") + '">' : window.YK_SCENE ? YK_SCENE.svg(b.scene || "mount", b.tone || "day").replace("<svg ", '<svg role="img" aria-label="' + esc(b.alt || "") + '" ') : "";
   el.innerHTML = '<div class="pic">' + inner + (b.vt ? '<div class="vt">' + esc(b.vt) + (b.sub ? "<small>" + esc(b.sub) + "</small>" : "") + "</div>" : "") + (b.cap ? '<span class="cap">' + esc(b.cap) + "</span>" : "") + "</div>";
