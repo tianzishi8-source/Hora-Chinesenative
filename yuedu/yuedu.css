@@ -1,13 +1,13 @@
 :root{--ink:#2b2622;--mute:#7a6f63;--paper:#f6f0e4;--card:#fffdf8;--line:#e2d6c2;--red:#a8352a;--green:#3f7a4a;--gold:#b0852c}
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.7 "Songti SC","Noto Serif SC","STSong",serif}
-.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;background:#efe6d4;border-bottom:1px solid var(--line)}
+body{margin:0;background:#2c6176;color:var(--ink);font:17px/1.7 "Songti SC","Noto Serif SC","STSong",serif}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;background:rgba(250,245,234,.86);border-bottom:1px solid rgba(255,255,255,.5);box-shadow:0 1px 8px rgba(0,0,0,.08)}
 .top h1{margin:0;font-size:20px;letter-spacing:.2em}
 .who{color:var(--mute);font-size:14px}.save{color:var(--mute);font-size:13px;margin-left:auto}.save.bad{color:var(--red)}
 .tb{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}
 main{max-width:860px;margin:0 auto;padding:16px 16px 60px}
 .tabs{display:flex;gap:8px;margin:4px 0 14px}.tabs button{font:inherit;border:1px solid var(--line);background:var(--card);padding:6px 16px;border-radius:20px;cursor:pointer}.tabs .on{background:var(--ink);color:#fff;border-color:var(--ink)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+.card{background:rgba(255,252,246,.93);border:1px solid rgba(255,255,255,.7);border-radius:12px;padding:14px 16px;margin:12px 0;box-shadow:0 2px 12px rgba(10,30,50,.12)}
 .book h2{margin:0 0 4px;font-size:22px}.book h2 small{font-size:14px;color:var(--mute);margin-left:8px;font-weight:normal}
 .book.shut{opacity:.65}
 .meta{color:var(--mute);font-size:14px;margin:4px 0}.note{color:var(--mute);font-size:14px}
@@ -17,7 +17,7 @@ main{max-width:860px;margin:0 auto;padding:16px 16px 60px}
 .ghost{font:inherit;font-size:14px;background:none;border:1px solid var(--line);border-radius:8px;padding:4px 12px;cursor:pointer;color:var(--ink)}
 .bt{font-size:22px;margin:12px 0 4px}
 .seg h3{margin:0 0 4px;font-size:18px}.seg h3 b{color:var(--red);margin-right:6px}
-.seg.done{border-color:#b9d3bd;background:#f6fbf4}.seg.lock{opacity:.55}
+.seg.done{border-color:#b9d3bd;background:rgba(246,251,244,.93)}.seg.lock{opacity:.72}
 .st{margin:4px 0;font-size:15px}.rt{background:#f8f3e8;border-radius:6px;padding:8px 10px;font-size:15px;white-space:pre-wrap}
 .q{border:1px solid var(--line)}.q legend{font-weight:bold;padding:0 4px}
 .opt{display:flex;gap:8px;align-items:flex-start;padding:6px 4px;cursor:pointer;border-radius:6px}.opt:hover{background:#f6efe1}.opt input{margin-top:7px}
@@ -62,3 +62,66 @@ textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);borde
 .nm{font-size:14px;color:var(--mute)}.nm small{color:var(--green)}
 .brd td.tn{display:flex;align-items:center;gap:6px}
 @media (max-width:600px){.avm{grid-template-columns:1fr}.avm-side{position:static}.lane{grid-template-columns:96px 1fr 48px;gap:6px}.nm small{display:none}.ln .hav{display:none}}
+
+/* ===== 海景背景（11-23）：天色跟着读到的那一段变 ===== */
+body{--s1:#7fb6db;--s2:#dceff6;--h:#eef6f4;--w1:#4aa2b4;--w2:#1d6577;--sun:#fff6d8;--sx:76%;--sy:22%;--ss:70px;--glow:rgba(255,244,200,.55);--txt:#fff}
+body[data-sky=dawn]{--s1:#f2b89a;--s2:#fbe3c8;--h:#fff1dc;--w1:#5c95a6;--w2:#24566b;--sun:#ffe3b0;--sx:22%;--sy:32%;--glow:rgba(255,200,150,.6)}
+body[data-sky=sunset]{--s1:#d9774e;--s2:#f5bd84;--h:#ffd9a6;--w1:#4f7189;--w2:#233f55;--sun:#ffd08a;--sx:70%;--sy:34%;--ss:84px;--glow:rgba(255,170,100,.65)}
+body[data-sky=dusk]{--s1:#5f6595;--s2:#d6a189;--h:#f0c3a2;--w1:#3d5d78;--w2:#1b344b;--sun:#ffc89a;--sx:84%;--sy:36%;--ss:60px;--glow:rgba(240,160,120,.5)}
+body[data-sky=night]{--s1:#0c1830;--s2:#2b3f66;--h:#47577a;--w1:#1a3149;--w2:#08141f;--sun:#eef0e6;--sx:78%;--sy:16%;--ss:46px;--glow:rgba(220,230,255,.28)}
+body[data-sky=home]{--s1:#5f97c4;--s2:#f3dcc0;--h:#fff0da;--w1:#4d98ab;--w2:#215f72;--sun:#fff0c8;--sx:28%;--sy:26%}
+#ydSea{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:linear-gradient(180deg,var(--s1) 0%,var(--s2) 34%,var(--h) 40%,var(--w1) 40.4%,var(--w2) 100%)}
+#ydSea .sun{position:absolute;left:var(--sx);top:var(--sy);width:var(--ss);height:var(--ss);margin:calc(var(--ss)/-2);border-radius:50%;background:var(--sun);box-shadow:0 0 50px 24px var(--glow)}
+body[data-sky=night] #ydSea::before{content:"";position:absolute;inset:0 0 62% 0;background-image:radial-gradient(1.4px 1.4px at 12% 20%,#fff,transparent),radial-gradient(1.2px 1.2px at 28% 8%,#fff,transparent),radial-gradient(1.6px 1.6px at 41% 26%,#fff,transparent),radial-gradient(1px 1px at 56% 12%,#fff,transparent),radial-gradient(1.3px 1.3px at 66% 30%,#fff,transparent),radial-gradient(1px 1px at 88% 6%,#fff,transparent),radial-gradient(1.5px 1.5px at 93% 24%,#fff,transparent),radial-gradient(1px 1px at 6% 34%,#fff,transparent),radial-gradient(1.2px 1.2px at 35% 40%,#fff,transparent);opacity:.85}
+#ydSea .wv{position:absolute;left:-50%;right:-50%;top:40.4%;bottom:0;opacity:.35;background:repeating-linear-gradient(176deg,transparent 0 22px,rgba(255,255,255,.22) 23px 24px,transparent 25px 46px);animation:ydWv 26s linear infinite;will-change:transform}
+@keyframes ydWv{to{transform:translateX(120px)}}
+@media (prefers-reduced-motion:reduce){#ydSea .wv{animation:none}}
+.tabs button{background:rgba(255,252,246,.9)}
+.note{color:var(--txt);text-shadow:0 1px 3px rgba(0,0,0,.35)}
+/* 书架：封面 */
+.book.cov{display:flex;gap:16px;align-items:flex-start}
+.book .cv{width:118px;aspect-ratio:500/685;object-fit:cover;border-radius:6px;box-shadow:0 3px 10px rgba(0,0,0,.25);flex:none}
+.book .bi{flex:1;min-width:0}
+.dots7{display:flex;gap:6px;margin:6px 0 2px}.dots7 i{width:14px;height:14px;border-radius:50%;border:2px solid #8fb3bd;background:#fff}.dots7 i.d{background:#2f7d8f;border-color:#2f7d8f}
+@media (max-width:480px){.book .cv{width:84px}}
+/* 一本书：航线 */
+.hero{color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.45);margin:10px 0 6px}.hero h2{margin:0;font-size:26px;letter-spacing:.06em}.hero p{margin:2px 0;font-size:16px}
+.how{color:var(--txt);text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.chart{border-radius:12px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.22);border:3px solid #efe3c6;background:#e9dcbc}
+.chart svg{display:block;width:100%;height:auto;font-family:inherit}
+.chart .land{fill:#e9d9b0;stroke:#b79c6a;stroke-width:1.5}
+.chart .hut path{fill:#c98d5b;stroke:#8a5c34;stroke-width:1}
+.chart .lt{font-size:17px;fill:#6c5a3c;letter-spacing:.15em}
+.chart .rose circle{fill:none;stroke:#8a7650;stroke-width:1}.chart .rose path{fill:#8a7650;opacity:.7}.chart .rose text{font-size:15px;fill:#6c5a3c;text-anchor:middle}
+.chart .rt{fill:none;stroke:#8a6d4a;stroke-width:3;stroke-dasharray:7 8;opacity:.7}
+.chart .rt.on{stroke:#b5482f;stroke-dasharray:none;opacity:1;stroke-width:4}
+.chart .st{cursor:pointer}
+.chart .st circle{fill:#f6efdc;stroke:#9c8a68;stroke-width:2.5}
+.chart .st .num{font-size:20px;font-weight:bold;text-anchor:middle;fill:#9c8a68}
+.chart .st .lb{font-size:22px;text-anchor:middle;fill:#4f4130;font-weight:bold;paint-order:stroke;stroke:#e9f0ea;stroke-width:5px;stroke-linejoin:round}
+.chart .st.d circle{fill:#2f7d8f;stroke:#1d5a68}.chart .st.d .num{fill:#fff}
+.chart .st.c circle{fill:#b5482f;stroke:#7d2c1c}.chart .st.c .num{fill:#fff}.chart .st.c .lb{fill:#7d2c1c}
+.chart .st.c .ring{fill:none;stroke:#b5482f;stroke-width:2;opacity:.6;transform-box:fill-box;transform-origin:center;animation:ydRing 2.4s ease-out infinite}
+.chart .st.x .lb{fill:#7d7466}
+@keyframes ydRing{from{transform:scale(.75);opacity:.8}to{transform:scale(1.35);opacity:0}}
+.chart .boat{animation:ydBob 3.2s ease-in-out infinite}
+@keyframes ydBob{50%{transform:translateY(-3px) rotate(-2deg)}}
+@media (prefers-reduced-motion:reduce){.chart .boat,.chart .st.c .ring{animation:none}}
+.seg h3 small{font-size:13px;color:var(--mute);font-weight:normal;margin-left:8px}
+.seg.now{border:2px solid #b5482f;box-shadow:0 4px 18px rgba(181,72,47,.25)}
+.seg.flash{animation:ydFlash 1.2s ease-out}
+@keyframes ydFlash{0%{box-shadow:0 0 0 6px rgba(255,214,120,.9)}100%{box-shadow:0 2px 12px rgba(10,30,50,.12)}}
+.seg.final h3 b{color:#2f7d8f}
+/* 全班进度：海上航程 */
+.lanes.sea .tr{height:16px;border-radius:8px;background:linear-gradient(180deg,#8fc3cf,#3f8ea0);background-size:auto}
+.lanes.sea .tr::before{content:"";position:absolute;inset:0;border-radius:8px;background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(255,255,255,.35) 10px 12px,transparent 13px 20px);opacity:.6}
+.lanes.sea .tr i{width:8px;height:8px;top:50%;margin:-4px 0 0 -4px;border-radius:50%;background:#e8b04a;box-shadow:0 0 0 1.5px #fff}
+.lanes.sea .tr em{background:linear-gradient(90deg,rgba(255,255,255,.1),rgba(255,255,255,.55));border-radius:8px}
+.lanes.sea .tr .rn::after{content:"";position:absolute;left:50%;bottom:-7px;width:40px;height:9px;margin-left:-20px;background:#7a4a2a;clip-path:polygon(0 0,100% 0,82% 100%,18% 100%);z-index:-1}
+@media (max-width:600px){.hero h2{font-size:22px}.chart{border-width:2px}}
+
+/* 海景上，卡片外的字用浅色；测验题号放进卡片里 */
+main>div>.bt,main>div>.meta:not(.how),main>div>.prompt,main>div>h2{color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.5)}
+.ghost{background:rgba(255,252,246,.92);border-color:rgba(255,255,255,.7)}
+.q legend{float:left;width:100%;padding:0;margin:0 0 6px}.q legend+*{clear:both}
+@media (max-width:600px){.chart .st .lb{font-size:34px;stroke-width:7px}.chart .st .num{font-size:24px}.chart .lt{font-size:24px}.chart .rose{display:none}}

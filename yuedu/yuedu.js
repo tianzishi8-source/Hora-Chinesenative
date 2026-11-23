@@ -72,6 +72,8 @@
     if (r.avOff && r.avOff > (S.avOff || 0)) { S.avOff = r.avOff; if (S.av && (S.av.t || 0) < r.avOff) S.av = null; }
     var seen = {}; S.passes = S.passes.concat(r.passes || []).filter(function (p) { var id = p.b + "-" + p.s; if (seen[id]) return false; seen[id] = 1; return true; });
   }
+  function setSky(k) { document.body.setAttribute("data-sky", k || "day"); }
+  function curSeg(id) { var b = book(id); for (var i = 0; i < b.segs.length; i++) if (!segDone(id, b.segs[i].n)) return b.segs[i]; return null; }
   function view(node) { var m = $("#ydMain"); m.innerHTML = ""; m.append(node); window.scrollTo(0, 0); }
 
   /* ---------- 我的书 ---------- */
@@ -80,12 +82,14 @@
     if (!S.av) { var nb = el("section", { class: "card avnudge" }); nb.innerHTML = window.HoraAvatar.render(null, 56) + '<div><b>先给自己装扮一个头像吧</b><p class="meta">全班进度上，你的头像会跟着你读的进度往前走。</p></div>'; var bb = el("button", { class: "btn", type: "button", text: "装扮头像" }); bb.addEventListener("click", showAvatar); nb.append(bb); wrap.append(nb); }
     BOOKS.forEach(function (b) {
       var d = b.open ? doneCount(b.id) : 0, tot = (b.segs || []).length;
-      var card = el("section", { class: "card book" + (b.open ? "" : " shut") });
-      card.innerHTML = '<h2>《' + esc(b.title) + '》<small>' + esc(b.author) + '</small></h2><p class="meta">' + esc(b.tr) + ' · ' + esc(b.words) + '</p><p>' + esc(b.intro) + '</p>' +
-        (b.open ? '<div class="bar"><i style="width:' + (tot ? Math.round(d / tot * 100) : 0) + '%"></i></div><p class="meta">读完 ' + d + ' / ' + tot + ' 段' + (S.final[b.id] && S.final[b.id].pass ? ' · 全书测验已过 ✓' : '') + '</p>' : '<p class="meta">还没开始</p>');
-      if (b.open) { var go = el("button", { class: "btn", type: "button", text: d ? "接着读" : "开始读" }); go.addEventListener("click", function () { showBook(b.id); }); card.append(go); }
+      var card = el("section", { class: "card book" + (b.open ? "" : " shut") + (b.cover ? " cov" : "") });
+      var dots = ""; if (b.open && b.voyage) { (b.segs || []).forEach(function (s) { dots += '<i class="' + (segDone(b.id, s.n) ? "d" : "") + '" title="' + esc(s.short) + '"></i>'; }); }
+      card.innerHTML = (b.cover ? '<img class="cv" src="' + esc(b.cover) + '" alt="">' : '') + '<div class="bi"><h2>《' + esc(b.title) + '》<small>' + esc(b.author) + '</small></h2><p class="meta">' + esc(b.tr) + ' · ' + esc(b.words) + '</p><p>' + esc(b.intro) + '</p>' +
+        (b.open ? '<div class="bar"><i style="width:' + (tot ? Math.round(d / tot * 100) : 0) + '%"></i></div><p class="meta">读完 ' + d + ' / ' + tot + ' 段' + (S.final[b.id] && S.final[b.id].pass ? ' · 全书测验已过 ✓' : '') + '</p>' : '<p class="meta">还没开始</p>') + (dots ? '<p class="dots7">' + dots + '</p>' : '') + '</div>';
+      if (b.open) { var go = el("button", { class: "btn", type: "button", text: d ? (d === tot ? "看看航线" : "接着读") : (b.voyage ? "出海" : "开始读") }); go.addEventListener("click", function () { showBook(b.id); }); card.querySelector(".bi").append(go); }
       wrap.append(card);
     });
+    setSky("day");
     wrap.append(el("p", { class: "note", html: "书不在网站上：读你自己的纸书或 Kindle。每读完一段，回到这里做测验、写复述。" }));
     view(wrap);
   }
@@ -99,13 +103,21 @@
   function showBook(id) {
     var b = book(id), wrap = el("div");
     var back = el("button", { class: "ghost", type: "button", text: "← 我的书" }); back.addEventListener("click", showShelf);
-    wrap.append(back, el("h2", { class: "bt", text: "《" + b.title + "》" }), el("p", { class: "meta", text: b.tr + "。按顺序一段一段读：读完一段，做测验（随机 " + b.draw + " 题，对 " + b.pass + " 题算过），再写复述。" }));
+    var cur = curSeg(id);
+    if (b.voyage) {
+      setSky(cur ? cur.sky : "home");
+      wrap.append(back, el("div", { class: "hero" }, [el("h2", { text: "《" + b.title + "》" }), el("p", { text: cur ? "现在在：第" + cur.n + "段 · " + cur.short + "（" + cur.when + "）" : "七段都读完了，船回到了港口。" })]), chart(b, id, cur),
+        el("p", { class: "meta how", text: "读的是" + b.tr + "。按顺序一段一段读：读完一段，做测验（随机 " + b.draw + " 题，对 " + b.pass + " 题算过），再写复述，小船就往前走一站。" }));
+    } else {
+      setSky("day");
+      wrap.append(back, el("h2", { class: "bt", text: "《" + b.title + "》" }), el("p", { class: "meta", text: b.tr + "。按顺序一段一段读：读完一段，做测验（随机 " + b.draw + " 题，对 " + b.pass + " 题算过），再写复述。" }));
+    }
     var open = true;
     b.segs.forEach(function (s) {
       var k = sk(id, s.n), t = S.tests[k], r = S.retell[k], done = segDone(id, s.n);
-      var row = el("section", { class: "card seg" + (done ? " done" : "") + (open ? "" : " lock") });
+      var row = el("section", { class: "card seg" + (done ? " done" : "") + (open ? "" : " lock") + (cur && cur.n === s.n ? " now" : ""), id: "seg" + s.n });
       var st = done ? "完成 ✓" : (t && t.pass ? "测验已过，还要写复述" : (t && t.tries && t.tries.length ? "测验还没过（已测 " + t.tries.length + " 次）" : (open ? "还没测" : "先读完上一段")));
-      row.innerHTML = '<h3><b>第' + s.n + '段</b> ' + esc(s.title) + '</h3><p class="meta">从“' + esc(s.from) + '”读到“' + esc(s.to) + '”· ' + esc(s.words) + '</p><p class="st">' + esc(st) + '</p>';
+      row.innerHTML = '<h3><b>第' + s.n + '段</b> ' + esc(s.title) + (s.when ? '<small>' + esc(s.when) + '</small>' : '') + '</h3><p class="meta">从“' + esc(s.from) + '”读到“' + esc(s.to) + '”· ' + esc(s.words) + '</p><p class="st">' + esc(st) + '</p>';
       if (open && !done) {
         if (!(t && t.pass)) { var bt = el("button", { class: "btn", type: "button", text: "这一段读完了，做测验" }); bt.addEventListener("click", function () { showTest(id, s.n); }); row.append(bt); }
         else { var br = el("button", { class: "btn", type: "button", text: "写复述" }); br.addEventListener("click", function () { showRetell(id, s.n); }); row.append(br); }
@@ -122,9 +134,38 @@
     view(wrap);
   }
 
+  /* ---------- 航线图（老人与海） ---------- */
+  var PTS = [[62, 140], [232, 108], [402, 70], [577, 86], [716, 172], [522, 246], [178, 268]];
+  function curve(p) { var d = "M" + p[0][0] + "," + p[0][1]; for (var i = 0; i < p.length - 1; i++) { var a = p[i - 1] || p[i], b = p[i], c = p[i + 1], e = p[i + 2] || c; d += " C" + (b[0] + (c[0] - a[0]) / 6).toFixed(1) + "," + (b[1] + (c[1] - a[1]) / 6).toFixed(1) + " " + (c[0] - (e[0] - b[0]) / 6).toFixed(1) + "," + (c[1] - (e[1] - b[1]) / 6).toFixed(1) + " " + c[0] + "," + c[1]; } return d; }
+  function chart(b, id, cur) {
+    var n = b.segs.length, at = cur ? cur.n - 1 : n - 1, P = PTS.slice(0, n);
+    var h = '<svg viewBox="0 0 800 330" role="img" aria-label="出海航线图">' +
+      '<defs><pattern id="ydGrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#b9a578" stroke-width=".6" opacity=".45"/></pattern>' +
+      '<linearGradient id="ydWater" x1="0" x2="1"><stop offset="0" stop-color="#d6e4dc"/><stop offset="1" stop-color="#aac8ce"/></linearGradient></defs>' +
+      '<rect width="800" height="330" fill="url(#ydWater)"/><rect width="800" height="330" fill="url(#ydGrid)"/>' +
+      '<path class="land" d="M0,0 H112 C142,52 96,100 126,150 C152,196 120,232 142,330 H0Z"/>' +
+      '<g class="hut"><path d="M30,92 l14,-12 l14,12 v14 h-28z"/><path d="M22,236 l10,-9 l10,9 v10 h-20z"/></g>' +
+      '<text class="lt" x="14" y="40">古巴 · 渔村</text><text class="lt" x="600" y="318">墨西哥湾流</text>' +
+      '<g class="rose" transform="translate(744,52)"><circle r="24"/><path d="M0,-28 L6,0 L0,28 L-6,0Z"/><text y="-32">北</text></g>' +
+      '<path class="rt" d="' + curve(P) + '"/>' + (at > 0 ? '<path class="rt on" d="' + curve(P.slice(0, at + 1)) + '"/>' : '');
+    b.segs.forEach(function (s, i) {
+      var p = P[i], done = segDone(id, s.n), now = !!(cur && cur.n === s.n), cls = done ? "d" : now ? "c" : "x", ly = p[1] + (i === 2 || i === 3 ? -30 : 46);
+      h += '<g class="st ' + cls + '" data-n="' + s.n + '">' + (now ? '<circle class="ring" cx="' + p[0] + '" cy="' + p[1] + '" r="25"/>' : '') +
+        '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="18"/><text class="num" x="' + p[0] + '" y="' + (p[1] + 7) + '">' + (done ? "✓" : s.n) + '</text><text class="lb" x="' + p[0] + '" y="' + ly + '">' + esc(s.short) + '</text></g>';
+    });
+    /* 小船停在这一站“来的方向”一侧，不压站名；回程掉头 */
+    var BO = [[64, 16], [-44, 2], [-46, 6], [-46, 2], [-30, -26], [46, -8], [48, -6]], bo = BO[at] || [36, -6], bp = P[at];
+    h += '<g transform="translate(' + (bp[0] + bo[0]) + ',' + (bp[1] + bo[1]) + ')' + (at >= 4 ? ' scale(-1,1)' : '') + '"><g class="boat"><path d="M-22,0 H22 L15,10 H-15Z" fill="#7a4a2a"/><line x1="-3" y1="1" x2="-3" y2="-40" stroke="#5b3a22" stroke-width="2.4"/><path d="M-1,-38 L19,-6 H-1Z" fill="#f4ead2" stroke="#9c8762" stroke-width="1.2"/><path d="M5,-22 h6 v6 h-6z" fill="#c9b48a" opacity=".8"/></g></g>';
+    h += '</svg>';
+    var box = el("div", { class: "chart" }); box.innerHTML = h;
+    box.addEventListener("click", function (e) { var g = e.target.closest && e.target.closest(".st"); if (!g) return; var r = document.getElementById("seg" + g.getAttribute("data-n")); if (r) { r.scrollIntoView({ behavior: "smooth", block: "center" }); r.classList.remove("flash"); void r.offsetWidth; r.classList.add("flash"); } });
+    return box;
+  }
+
   /* ---------- 测验 ---------- */
   function showTest(id, n) {
     var b = book(id), isF = n === "f", k = isF ? null : sk(id, n), t = isF ? (S.final[id] || {}) : (S.tests[k] || { tries: [] });
+    setSky(!b.voyage ? "day" : isF ? "home" : b.segs[n - 1].sky);
     var last = isF ? t.lastFail : (t.tries.length ? t.tries[t.tries.length - 1] : null);
     var lastFailT = isF ? t.lastFail : (last && !last.pass ? last.t : 0);
     if (lastFailT && Date.now() - lastFailT < COOL) { var mins = Math.ceil((COOL - (Date.now() - lastFailT)) / 60000); alert0("上次没过。回书里再读一读这一段，" + mins + " 分钟后再来测。", function () { showBook(id); }); return; }
@@ -178,6 +219,7 @@
   /* ---------- 复述（不能粘贴，60—100 字，至少写到 2 个细节） ---------- */
   function showRetell(id, n) {
     var b = book(id), s = b.segs[n - 1], k = sk(id, n), old = S.retell[k] || {};
+    setSky(b.voyage ? s.sky : "day");
     var wrap = el("div"), back = el("button", { class: "ghost", type: "button", text: "← 回到分段" }); back.addEventListener("click", function () { showBook(id); });
     var ta = el("textarea", { rows: 5, placeholder: "用自己的话写，60—100 字。不能粘贴，也不要用 AI。", autocomplete: "off", spellcheck: "false" }); ta.value = old.draft || "";
     var cnt = el("span", { class: "cnt" }), msg = el("p", { class: "msg" }), first = 0, typed = 0, jumps = 0, lastLen = count(ta.value);
@@ -214,6 +256,7 @@
 
   /* ---------- 全班进度 ---------- */
   function showBoard() {
+    setSky("day");
     var wrap = el("div", {}, [tabs("board"), el("p", { class: "meta", text: "正在读取全班进度……" })]);
     view(wrap);
     api("board", cred()).then(function (j) { paintBoard(wrap, j.rows || []); }).catch(function () { wrap.lastChild.textContent = "暂时读不到全班进度，稍后再试。"; });
@@ -231,8 +274,8 @@
       '<div class="card hon"><b>阅读新星</b><div class="hps">' + people(stars, false) + '</div><small>' + (maxW ? "最近 7 天读完 " + maxW + " 段" : "最近 7 天读得最多的人") + '</small></div>';
     wrap.append(hon);
     openB.forEach(function (b) {
-      var n = b.segs.length, lanes = el("section", { class: "card lanes" });
-      var h = '<h3>《' + esc(b.title) + '》跑道 <small>一格是一段，共 ' + n + ' 段</small></h3>';
+      var n = b.segs.length, lanes = el("section", { class: "card lanes" + (b.voyage ? " sea" : "") });
+      var h = b.voyage ? '<h3>《' + esc(b.title) + '》航程 <small>一个浮标是一段，共 ' + n + ' 段；读完七段就回港</small></h3>' : '<h3>《' + esc(b.title) + '》跑道 <small>一格是一段，共 ' + n + ' 段</small></h3>';
       rows.forEach(function (r) {
         var d = r.byBook[b.id] || 0, pct = d / n * 100, ticks = "";
         for (var i = 1; i < n; i++) ticks += '<i style="left:' + (i / n * 100) + '%"></i>';
