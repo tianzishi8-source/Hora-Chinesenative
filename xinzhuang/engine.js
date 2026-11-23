@@ -913,7 +913,17 @@ function fixXShift(st,cls,name){if(!st||typeof st!=="object")return;if(!st.data|
   /* 11-21 补回“做完”：错位那段时间，打开错题本会把假期作业那一天（当时的天号）记成“没做完”。
      补作业天里给这个学生的最后一个写作框已经写好（写不够字数交不了），就算这一天做完了。 */
   DAYS.forEach(function(d,i){var o=i+1;if(!d.extra||(st.done&&st.done[o]))return;if(d.only&&(cls==null||!onlyFor(d,cls,name)))return;if(xsLastWrote(d,st)){st.done=st.done||{};st.done[o]=1;}});
+  xsGradeTab(st);
   if(st.data.hw)st.data.hw=hw;}
+/* 11-23 只给某个年级的补充课（tab.grade，如七年级慢读课）：别的年级的学生身上留着这一天的“读到第几段”，却一道题也没答过——
+   这是错位那段时间旧页面在那个天号上打开假期作业留下的（八年级 Sara、Jessica 的第13天），不是真的打开过慢读课。清掉，“现在在做”也退回去。
+   答过、试过（tries）、输入框写过（xsWrote）的一律不动。 */
+function xsGradeTab(st){var g=get("g",st.data||{});if(g==null||g==="")return;
+  DAYS.forEach(function(d,i){var n=i+1,t=d.tab;if(!d.extra||!t||!t.grade||g===t.grade||(st.done&&st.done[n]))return;
+    var hasB=(st.beat&&st.beat[n]!=null)||(st.reach&&st.reach[n]!=null);if(!hasB&&st.day!==n)return;
+    var ans=(d.beats||[]).some(function(bt){return (bt.steps||[]).some(function(s){var r=s.obs&&s.obs.id&&st.log&&st.log[s.obs.id];return !!(r&&(r.answer!=null||tMiss(r)||r.tries));});})||xsWrote(d,st);if(ans)return;
+    ["beat","reach"].forEach(function(f){if(st[f]&&typeof st[f]==="object")delete st[f][n];});
+    if(st.day===n){var k=0;for(var m=1;m<=NVIS;m++)if(dayOk(m,st.data)&&((st.done&&st.done[m])||(st.beat&&st.beat[m]!=null)))k=m;st.day=k||1;}});}
 function xsLastWrote(d,st){var last=null,D=st.data||{};(d.beats||[]).forEach(function(bt){(bt.steps||[]).forEach(function(s){if(s.t!=="input"||!s.key)return;if(s.when){var wv=get(s.when.key,D);if(s.when.not!=null?wv===s.when.not:s.when.is!=null?wv!==s.when.is:!wv)return;}last=s;});});if(!last)return false;var v=get(last.key,D);if(v&&typeof v==="object")v=v.text;return !!String(v==null?"":v).trim();}
 /* 老师标的作业状态（“作业”页的行）也按同样的规则对回原来的天号 */
 function xsRows(m,pre){Object.keys(m).forEach(function(k){var x=m[k],n=+x.day;if(!(n>1)||!xsSure(n))return;var t=(pre||"")+(n-1);if(m[t])return;m[t]=Object.assign({},x,{day:n-1});delete m[k];});}
@@ -1130,7 +1140,10 @@ var tLoading=false,tErr="",tCls="";
 $("#bTeacher").addEventListener("click",openTeacher);
 function SUMMARY_PROMPT(){return "你是一位初中语文老师的助手。下面是一个班的学生在网页上读"+L.author+"《"+L.textTitle+"》时的作答（已去掉姓名）。请用简洁的现代汉语，给老师写一份课后小结，分三部分：一、大多数学生已经做到的；二、普遍的卡点和误解，各举一两句学生原话；三、下节课值得拿出来讨论的两三个说法。不评价个人、不排名、不打分，不超过400字，不用Markdown符号。";}
 /* 进度：每一天读完打 ✓；开始了没读完写“做到第几个环节/共几个”；没开始的不写 */
-function progressText(d){d=d||S;var out=[];(L.days||[]).forEach(function(dy,i){var n=i+1;if(dy.hidden){if(dy.extra){if(d.done&&d.done[n])out.push(dy.title+"✓");else if(d.beat&&d.beat[n]!=null)out.push(dy.title+"("+(d.beat[n]+1)+"/"+dy.beats.length+")");return;}if(d.done&&d.done[n])out.push(dy.practice?"练"+((PG[dy.pg]||{days:[]}).days.join("-"))+"✓":dy.cuoti?"错题✓":"讲评"+dy.reviewOf+"✓");return;}var nm=dy.home?"课后":n;if(d.done&&d.done[n])out.push(nm+"✓");else if(d.beat&&d.beat[n]!=null){var rb=Math.max(d.beat[n],(d.reach||{})[n]||0);out.push(nm+"("+Math.min(rb+1,dy.beats.length)+"/"+dy.beats.length+")");}});return (out.join(" ")||"还没开始")+(d.day?(DAYS[d.day-1]&&DAYS[d.day-1].hidden?"　现在在做"+DAYS[d.day-1].title:"　现在"+dayName(d.day)):"");}
+/* 11-23 进度文字按这个学生来写：dayCut 以外的天（八年级第4天以后）不写，“现在”指着这些天也不写；练习组跟 mFinish 一样按 pgOk（八年级不写“练4”）。
+   别的年级的补充课（七年级慢读课）不在这里挡：错位留下的假记录 xsGradeTab 已经清掉，还留着的是真答过、写过的，天数栏也会显示那一格，进度照写。 */
+function ptSkip(d,n){var dy=DAYS[n-1],D=d.data||{};if(!dy)return false;if(!dy.hidden)return !dayOk(n,D);return !!dy.practice&&!pgOk(dy.pg,D);}
+function progressText(d){d=d||S;var out=[];(L.days||[]).forEach(function(dy,i){var n=i+1;if(ptSkip(d,n))return;if(dy.hidden){if(dy.extra){if(d.done&&d.done[n])out.push(dy.title+"✓");else if(d.beat&&d.beat[n]!=null)out.push(dy.title+"("+(d.beat[n]+1)+"/"+dy.beats.length+")");return;}if(d.done&&d.done[n])out.push(dy.practice?"练"+((PG[dy.pg]||{days:[]}).days.join("-"))+"✓":dy.cuoti?"错题✓":"讲评"+dy.reviewOf+"✓");return;}var nm=dy.home?"课后":n;if(d.done&&d.done[n])out.push(nm+"✓");else if(d.beat&&d.beat[n]!=null){var rb=Math.max(d.beat[n],(d.reach||{})[n]||0);out.push(nm+"("+Math.min(rb+1,dy.beats.length)+"/"+dy.beats.length+")");}});return (out.join(" ")||"还没开始")+(d.day&&!ptSkip(d,d.day)?(DAYS[d.day-1]&&DAYS[d.day-1].hidden?"　现在在做"+DAYS[d.day-1].title:"　现在"+dayName(d.day)):"");}
 function studentText(d){var lines=[(d.name||"未写名字")+"　进度："+progressText(d)];OBSORDER.forEach(function(id){var r=(d.log||{})[id];if(!r||r.answer==null)return;lines.push("【"+OBS[id].label+"】"+r.answer+(r.ai?"\n  （AI 的点评："+r.ai+"）":""));});var hw=(d.data||{}).hw||{};Object.keys(hw).forEach(function(k){var o=hw[k];lines.push("【作业·第"+k+"天】"+(o.text||"")+((o.photos||[]).length?"（照片 "+o.photos.length+" 张："+o.photos.map(function(p){return p.url;}).filter(Boolean).join(" ")+"）":""));});var dr=(d.data||{})._dr||{};Object.keys(dr).forEach(function(k){var o=dr[k],v=(o.v||[]).filter(function(x){return x&&String(x).trim();});if(!v.length)return;var ks=k.split("|");lines.push("【草稿·第"+ks[0]+"天】"+(o.q||"")+"："+v.join(" / "));});return lines.join("\n");}
 /* ---------- 老师看板的小工具 ---------- */
 function DNAME(n){var d=DAYS[n-1]||{};return d.hidden?d.title:d.home?"课后":"第 "+n+" 天";}
