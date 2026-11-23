@@ -103,5 +103,8 @@ window.HORA_LESSONS = [
     pic: "kule/img/cover.webp", picAlt: "示意画：春天的江流，两岸桃花" },
   { id: "g9-huibian", folder: "huibian", grade: 9, title: "悔的边缘", author: "刘心武",
     blurb: "地铁站里，一位老人热心给问路的年轻人带路，不知道钱包早被他偷走了。跟着两个人的心一层一层走，停在“悔的边缘”：没有结局，好不好？",
-    open: 1, total: 1, unit: "课时" }
+    open: 1, total: 1, unit: "课时" },
+  { id: "g9-maiqi", folder: "maiqi", grade: 9, title: "麦琪的礼物", author: "欧·亨利",
+    blurb: "一元八角七，第二天就是圣诞节。德拉卖了长发，吉姆推门进来，死死地盯着她……先听故事，再看两件礼物：作者为什么说这两个“傻孩子”最聪明？",
+    open: 2, total: 2 }
 ];

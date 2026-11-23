@@ -1,0 +1,19 @@
+/* 《麦琪的礼物》专属外观：圣诞前夜 · 煤气灯（11-23）
+   白天的公寓、窗外的后院、街上：冷灰蓝的玻璃（三个“灰”）；点燃煤气以后（烫发、七点钟、两件礼物、睡椅）：转成昏黄的煤气灯色；麦琪：深夜蓝。
+   原文区：一页旧书——泛黄的纸、褐色的细双边（德拉的褐色秀发、褐色旧外衣），顶上一道暗红（破旧的红地毯）。 */
+body.th-maiqi{--th-glass:rgba(40,47,56,.46);--th-glass2:rgba(33,39,47,.72);--th-line:rgba(226,230,236,.15);--th-ink:#f1ede6;--th-dim:rgba(241,237,230,.74);
+  --th-acc:#e2ad62;--th-acc-ink:#20160b;--th-vig:rgba(16,20,26,.36);--th-bg:#2a3038;--thi-acc:#e6b56c}
+body.th-maiqi[data-tint=warm]{--th-glass:rgba(80,54,30,.44);--th-glass2:rgba(66,45,27,.72);--th-line:rgba(255,226,180,.18);--th-ink:#fbefdc;--th-vig:rgba(60,34,10,.32);--th-bg:#3a2a1c}
+body.th-maiqi[data-tint=night]{--th-glass:rgba(24,32,58,.50);--th-glass2:rgba(20,27,50,.76);--th-line:rgba(210,220,255,.16);--th-ink:#eef0fa;--th-vig:rgba(6,10,26,.40);--th-bg:#161c30;--th-acc:#e8c170}
+body.th-maiqi #reader{background:
+  radial-gradient(120% 90% at 0% 0%,rgba(255,250,236,.55),transparent 55%),
+  radial-gradient(110% 90% at 100% 100%,rgba(140,100,55,.16),transparent 60%),
+  url(img/paper.webp) 0 0/512px,#f3ead8!important;border-radius:4px!important;
+  box-shadow:inset 0 0 0 12px #f3ead8,inset 0 0 0 13px rgba(110,72,38,.55),inset 0 0 0 16px #f3ead8,inset 0 0 0 17px rgba(110,72,38,.35),0 30px 60px -30px rgba(0,0,0,.7)!important}
+body.th-maiqi #reader .rhead{margin:20px 22px 0;border-bottom:1px solid rgba(110,72,38,.35)!important;border-top:3px solid rgba(128,34,30,.72);padding-top:8px}
+body.th-maiqi #rbody{margin:0 22px 22px;padding-left:8px!important;padding-right:8px!important}
+body.th-maiqi #rbody p{text-indent:2em}
+body.th-maiqi #rbody p.src{text-indent:0}
+@media (max-width:53.8rem){body.th-maiqi #reader .rhead{margin:14px 14px 0}body.th-maiqi #rbody{margin:0 12px 14px}}
+/* 本课用 L.texts 分前半、后半（第1天只显示前半，免得剧透），不给学生切换按钮 */
+body.th-maiqi #rTabs{display:none!important}
