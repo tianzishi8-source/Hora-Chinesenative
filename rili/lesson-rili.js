@@ -56,7 +56,7 @@ var MT_TEXT={
 window.LESSON={
 id:"g8-rili-v3",
 /* 11-20 本课专属外观（公用部分见 ../theme-base.css） */
-theme:{name:"rili",css:"theme-rili.css?v=11201500",figs:"circle",def:"",byBg:{"img/bg-5.webp":"cool"},
+theme:{name:"rili",css:"theme-rili.css?v=11231000",figs:"circle",def:"",byBg:{"img/bg-5.webp":"cool"},
  intro:{bg:"img/bg-1.webp",title:"日历",author:"冯骥才",lines:["我喜欢用日历，","不用月历。","为什么？"],btn:"翻开日历 ▸"}},
 title:"读《日历》",sub:"G8 · 冯骥才",
 textTitle:"日历",author:"冯骥才",

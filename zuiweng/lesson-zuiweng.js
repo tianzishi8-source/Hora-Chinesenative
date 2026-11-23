@@ -17,7 +17,7 @@ function W(id,p,ctx,hl,ans,accept,hints,wrong){return {t:"ask",who:"que",paras:[
 window.LESSON={
 id:"g9-zuiweng-zx",
 /* 11-20 本课专属外观（公用部分见 ../theme-base.css） */
-theme:{name:"zuiweng",css:"theme-zuiweng.css?v=11201500",figs:"circle",def:"",byBg:{"../zuiweng-ke/img/scene-feast.webp":"autumn","../zuiweng-ke/img/scene-pavilion-autumn.webp":"autumn"},
+theme:{name:"zuiweng",css:"theme-zuiweng.css?v=11231000",figs:"circle",def:"",byBg:{"../zuiweng-ke/img/scene-feast.webp":"autumn","../zuiweng-ke/img/scene-pavilion-autumn.webp":"autumn"},
  intro:{bg:"../zuiweng-ke/img/scene-mount.webp",title:"醉翁亭记",author:"宋 · 欧阳修",lines:["环滁皆山也。","醉翁之意不在酒，","在乎山水之间也。"],btn:"走进山间 ▸"}},
 title:"读《醉翁亭记》",sub:"G9 · 欧阳修 · 第三单元",
 textTitle:"醉翁亭记",author:"欧阳修",

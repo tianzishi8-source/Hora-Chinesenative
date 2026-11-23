@@ -1,12 +1,12 @@
 /* 《小石潭记》专属外观：竹林 · 清潭（11-20）
    只改界面的颜色和质感；要读的字（题目、选项、对话）始终保持高对比。
    body.th-xst 下生效；data-tint 默认是清潭的青绿；"cold" 是第4段坐潭上的凄清。 */
-body.th-xst{--th-glass:rgba(14,40,34,.40);--th-glass2:rgba(16,44,38,.66);--th-line:rgba(220,255,240,.12);--th-ink:#eef3ea;--th-dim:rgba(232,242,234,.66);--th-gold:#c9d98a;--th-gold-ink:#16251b;--th-vig:rgba(6,20,16,.5)}
-body.th-xst[data-tint=cold]{--th-glass:rgba(24,34,44,.48);--th-glass2:rgba(26,36,48,.70);--th-line:rgba(210,225,240,.12);--th-ink:#e6edf3;--th-dim:rgba(220,232,242,.62);--th-gold:#a9c3d6;--th-gold-ink:#141c24;--th-vig:rgba(8,14,22,.62)}
+body.th-xst{--th-glass:rgba(14,40,34,0.54);--th-glass2:rgba(16,44,38,0.8);--th-line:rgba(220,255,240,.12);--th-ink:#eef3ea;--th-dim:rgba(232,242,234,.66);--th-gold:#c9d98a;--th-gold-ink:#16251b;--th-vig:rgba(6,20,16,.5)}
+body.th-xst[data-tint=cold]{--th-glass:rgba(24,34,44,0.62);--th-glass2:rgba(26,36,48,0.84);--th-line:rgba(210,225,240,.12);--th-ink:#e6edf3;--th-dim:rgba(220,232,242,.62);--th-gold:#a9c3d6;--th-gold-ink:#141c24;--th-vig:rgba(8,14,22,.62)}
 body.th-xst{background:#16271f!important}
 body.th-xst .app::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(125% 95% at 60% 45%,transparent 50%,var(--th-vig) 100%);transition:background 1.6s}
 /* 顶栏 */
-body.th-xst .bar{background:var(--th-glass)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--th-line)!important;box-shadow:0 10px 26px -18px #000;transition:background 1.6s}
+body.th-xst .bar{background:var(--th-glass)!important;border-bottom:1px solid var(--th-line)!important;box-shadow:0 10px 26px -18px #000;transition:background 1.6s}
 body.th-xst .bar::before,body.th-xst .bar::after{display:none!important}
 body.th-xst .brand{color:var(--th-ink)!important}body.th-xst .brand small{color:var(--th-dim)!important}
 body.th-xst .dpad{background:rgba(255,255,255,.06)!important;color:var(--th-dim)!important;border-color:var(--th-line)!important;box-shadow:none!important}
@@ -20,10 +20,10 @@ body.th-xst .stages .st i{border-color:var(--th-dim)!important}
 body.th-xst .stages .st.done i,body.th-xst .stages .st[aria-current=true] i{border-color:var(--th-gold)!important;background-color:var(--th-gold)!important}
 body.th-xst .stages::before,body.th-xst .stages::after{background:var(--th-line)!important}
 /* 环节标题 */
-body.th-xst .work>.head{background:var(--th-glass)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--th-line)!important;transition:background 1.6s}
+body.th-xst .work>.head{background:var(--th-glass)!important;border:1px solid var(--th-line)!important;transition:background 1.6s}
 body.th-xst .work>.head h2{color:var(--th-ink)!important}body.th-xst .work>.head .when{color:var(--th-dim)!important}
 /* 对话框：竹影里的一块青石 */
-body.th-xst .dlg{background:var(--th-glass2)!important;-webkit-backdrop-filter:blur(12px) saturate(1.1);backdrop-filter:blur(12px) saturate(1.1);border:1px solid rgba(200,240,210,.18)!important;box-shadow:0 22px 44px -22px #000,inset 0 1px 0 rgba(220,255,230,.12)!important;transition:background 1.6s}
+body.th-xst .dlg{background:var(--th-glass2)!important;border:1px solid rgba(200,240,210,.18)!important;box-shadow:0 22px 44px -22px #000,inset 0 1px 0 rgba(220,255,230,.12)!important;transition:background 1.6s}
 body.th-xst .dlg-txt{color:var(--th-ink)!important;text-shadow:0 1px 2px rgba(0,0,0,.45)}
 body.th-xst .dlg .dbtn{background:rgba(255,255,255,.08)!important;color:var(--th-ink)!important;border-color:var(--th-line)!important}
 body.th-xst .dlg .tskip{color:var(--th-gold)!important}

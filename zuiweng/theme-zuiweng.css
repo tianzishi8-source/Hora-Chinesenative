@@ -1,9 +1,9 @@
 /* 《醉翁亭记》专属外观：青绿山水（11-20）
    顶栏、对话框是深青的山色玻璃，按钮用赭石金；宴饮、秋天的亭子转成秋色。
    原文区：一页宋版刻本——泛黄的纸、粗细双边的版框、淡淡的界栏。 */
-body.th-zuiweng{--th-glass:rgba(18,52,48,.40);--th-glass2:rgba(16,44,41,.66);--th-line:rgba(210,240,225,.16);--th-ink:#eef3e8;--th-dim:rgba(238,243,232,.75);
+body.th-zuiweng{--th-glass:rgba(18,52,48,0.54);--th-glass2:rgba(16,44,41,0.8);--th-line:rgba(210,240,225,.16);--th-ink:#eef3e8;--th-dim:rgba(238,243,232,.75);
   --th-acc:#d8a24e;--th-acc-ink:#1f1508;--th-vig:rgba(8,28,24,.30);--th-bg:#1d2f2b;--thi-acc:#e2b765}
-body.th-zuiweng[data-tint=autumn]{--th-glass:rgba(92,44,22,.40);--th-glass2:rgba(78,38,20,.66);--th-line:rgba(255,215,170,.18);--th-ink:#fdf0e0;--th-vig:rgba(70,26,8,.30);--th-acc:#e6b35c}
+body.th-zuiweng[data-tint=autumn]{--th-glass:rgba(92,44,22,0.54);--th-glass2:rgba(78,38,20,0.8);--th-line:rgba(255,215,170,.18);--th-ink:#fdf0e0;--th-vig:rgba(70,26,8,.30);--th-acc:#e6b35c}
 body.th-zuiweng #reader{background:radial-gradient(120% 90% at 0% 0%,rgba(255,250,235,.5),transparent 55%),url(img/paper.webp) 0 0/512px,#efe3c4!important;border-radius:3px!important;
   box-shadow:inset 0 0 0 10px #efe3c4,inset 0 0 0 13px rgba(60,40,22,.62),inset 0 0 0 16px #efe3c4,inset 0 0 0 17px rgba(60,40,22,.5),0 30px 60px -30px rgba(0,0,0,.7)!important}
 body.th-zuiweng #rbody{background:repeating-linear-gradient(180deg,transparent 0 2.05em,rgba(60,40,22,.12) 2.05em calc(2.05em + 1px));margin:0 20px 20px;padding:12px 16px!important}

@@ -14,7 +14,7 @@
 window.LESSON={
 id:"g8-xiayutian",
 /* 11-20 本课专属外观（公用部分见 ../theme-base.css） */
-theme:{name:"xiayu",css:"theme-xiayu.css?v=11201500",figs:"circle",def:"",byBg:{"img/xy-bed.webp":"warm","img/xy-hall.webp":"warm","img/xy-study.webp":"warm","img/xy-hemp.webp":"warm"},
+theme:{name:"xiayu",css:"theme-xiayu.css?v=11231000",figs:"circle",def:"",byBg:{"img/xy-bed.webp":"warm","img/xy-hall.webp":"warm","img/xy-study.webp":"warm","img/xy-hemp.webp":"warm"},
  intro:{bg:"img/xy-window.webp",title:"下雨天，真好",author:"琦君",lines:["我问你，","你喜欢下雨吗？","啊，真好，又是个下雨天。"],btn:"听雨 ▸"}},
 title:"读《下雨天，真好》",sub:"八年级 · 琦君",
 textTitle:"下雨天，真好",author:"琦君",

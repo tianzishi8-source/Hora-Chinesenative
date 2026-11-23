@@ -148,7 +148,7 @@ textarea:focus,input[type=text]:focus,input[type=password]:focus{border-color:va
 .dbtn:disabled{opacity:.4;cursor:default}
 .tskip{border:0;background:transparent;color:var(--warm);font-size:.8rem;text-decoration:underline;padding:0}
 .cont{border:0;background:var(--accent);color:var(--page);border-radius:999px;padding:5px 20px;font-size:.92rem;font-weight:700;box-shadow:0 6px 14px -8px var(--accent);animation:breathe 2.4s ease-in-out infinite}
-@keyframes breathe{50%{transform:translateY(-1px);box-shadow:0 9px 18px -8px var(--accent)}}
+@keyframes breathe{50%{transform:translateY(-1px)}}
 
 /* ===== 浮层 ===== */
 .ov{position:fixed;inset:0;z-index:40;background:rgba(30,22,12,.42);display:flex;align-items:center;justify-content:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-bottom,0px))}
@@ -420,7 +420,7 @@ mark.swapw{background:rgba(220,60,40,.15);color:#b2281c;border-bottom:2px dashed
 /* 雨、水珠、涟漪（engine.js 的 RAINFX） */
 #rainfx{position:fixed;inset:0;z-index:-1;pointer-events:none;width:100vw;height:100vh}
 /* 环节标题压在画面上：加一层半透明纸 */
-.head{align-self:flex-start;background:rgba(251,247,238,.84);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:6px 16px 8px;border-radius:12px;box-shadow:0 8px 24px -16px rgba(40,30,20,.5)}
+.head{align-self:flex-start;background:rgba(251,247,238,.84);padding:6px 16px 8px;border-radius:12px;box-shadow:0 8px 24px -16px rgba(40,30,20,.5)}
 #cast{position:relative;z-index:5}
 
 /* 还没做到的环节 */

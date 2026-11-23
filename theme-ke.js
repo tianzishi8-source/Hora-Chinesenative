@@ -8,7 +8,10 @@
     [["--thk-acc", T.acc], ["--thk-acc-ink", T.accInk], ["--thk-glass", T.glass], ["--thk-bgc", T.bgc]].forEach(function (v) { if (v[1]) H.style.setProperty(v[0], v[1]); });
     var box = document.createElement("div"); box.id = "kebg"; box.setAttribute("aria-hidden", "true"); box.innerHTML = "<i></i><i></i>"; b.prepend(box);
     var cur = 0, src0 = "";
-    function set(src) { if (!src || src === src0) return; src0 = src; var im = new Image(); im.onload = function () { if (src0 !== src) return; var ls = box.querySelectorAll("i"), nx = 1 - cur; ls[nx].style.backgroundImage = 'url("' + src + '")'; ls[nx].classList.add("on"); ls[cur].classList.remove("on"); cur = nx; }; im.src = src; }
+    /* 11-23 为流畅：先用事先虚化、压暗好的 xxx.bg.webp；没有这张图时退回原图，由浏览器虚化（class raw） */
+    function set(src) { if (!src || src === src0) return; src0 = src; var soft = String(src).replace(/\.webp(\?.*)?$/, ".bg.webp"), raw = false;
+      function show(u) { if (src0 !== src) return; var ls = box.querySelectorAll("i"), nx = 1 - cur; ls[nx].style.backgroundImage = 'url("' + u + '")'; ls[nx].classList.toggle("raw", raw); ls[nx].classList.add("on"); ls[cur].classList.remove("on"); cur = nx; }
+      var im = new Image(); im.onload = function () { show(im.src); }; im.onerror = function () { if (raw) return; raw = true; im.src = src; }; im.src = soft === src ? (raw = true, src) : soft; }
     /* 老师看全班作答（#class）是密密的数据表，保持原来的纸色，不铺画 */
     var PLAIN = { "class": 1 };
     function route() { var r = (location.hash || "#home").slice(1).split("/")[0] || "home"; H.dataset.route = r; var on = !PLAIN[r]; H.classList.toggle("thk", on); box.style.display = on ? "" : "none"; if (on) set((T.byRoute && T.byRoute[r]) || T.bg); }

@@ -219,7 +219,7 @@ practice:{
  }
 },
 /* 本课外观：竹林 · 清潭。青绿的玻璃面板，原文横排在旧纸上；坐潭上时整个界面变冷。 */
-theme:{name:"xst",css:"theme-xst.css?v=11202300",figs:"circle",def:"",byBg:{"img/xst-cold.webp?v=2":"cold"},
+theme:{name:"xst",css:"theme-xst.css?v=11231000",figs:"circle",def:"",byBg:{"img/xst-cold.webp?v=2":"cold"},
  intro:{bg:"img/xst-pond.webp?v=2",title:"小石潭记",author:"唐 · 柳宗元",lines:["一千二百多年前，永州。","竹林那边，","传来一阵水声。"],btn:"跟上柳先生 ▸"}},
 bg:"img/xst-path.webp?v=2",
 totalDays:3,

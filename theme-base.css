@@ -3,12 +3,12 @@
    这里只放各课共用的做法：半透明毛玻璃的顶栏和对话框、圆形头像、开场画面、信笺按内容收高。
    颜色全用变量，每课在自己的 theme-xxx.css 里给变量赋值，并画自己的“原文区物件”。
    原则：要读的字（题目、选项、对话）始终高对比；氛围只放在边框、底色和原文区上。 */
-body.th{--th-glass:rgba(22,24,30,.42);--th-glass2:rgba(22,24,30,.66);--th-line:rgba(255,255,255,.12);--th-ink:#efe8da;--th-dim:rgba(239,232,218,.72);
+body.th{--th-glass:rgba(22,24,30,0.56);--th-glass2:rgba(22,24,30,0.8);--th-line:rgba(255,255,255,.12);--th-ink:#efe8da;--th-dim:rgba(239,232,218,.72);
   --th-acc:#d9a04f;--th-acc-ink:#1d1710;--th-vig:rgba(10,10,14,.35);--th-bg:#1c1f26}
 body.th{background:var(--th-bg)!important}
 body.th .app::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(125% 95% at 60% 45%,transparent 52%,var(--th-vig) 100%);transition:background 1.6s}
 /* 顶栏 */
-body.th .bar{background:var(--th-glass)!important;-webkit-backdrop-filter:blur(10px) saturate(1.1);backdrop-filter:blur(10px) saturate(1.1);border-bottom:1px solid var(--th-line)!important;box-shadow:0 10px 26px -18px rgba(0,0,0,.6);transition:background 1.6s}
+body.th .bar{background:var(--th-glass)!important;border-bottom:1px solid var(--th-line)!important;box-shadow:0 10px 26px -18px rgba(0,0,0,.6);transition:background 1.6s}
 body.th .bar::before,body.th .bar::after{display:none!important}
 body.th .brand{color:var(--th-ink)!important}body.th .brand small{color:var(--th-dim)!important}
 body.th .dpad{background:rgba(255,255,255,.08)!important;color:var(--th-dim)!important;border-color:var(--th-line)!important;box-shadow:none!important}
@@ -24,10 +24,10 @@ body.th .stages::before,body.th .stages::after{background:var(--th-line)!importa
 body.th .brand,body.th .stages .st,body.th .tbtn,body.th .dpad,body.th .work>.head h2,body.th .work>.head .when{text-shadow:0 1px 3px rgba(0,0,0,.55)}
 body.th .tbtn[aria-pressed=true],body.th .dpad[aria-current=true],body.th .dlg .cont{text-shadow:none}
 /* 环节标题 */
-body.th .work>.head{background:var(--th-glass)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--th-line)!important;transition:background 1.6s}
+body.th .work>.head{background:var(--th-glass)!important;border:1px solid var(--th-line)!important;transition:background 1.6s}
 body.th .work>.head h2{color:var(--th-ink)!important}body.th .work>.head .when{color:var(--th-dim)!important}
 /* 对话框 */
-body.th .dlg{background:var(--th-glass2)!important;-webkit-backdrop-filter:blur(12px) saturate(1.1);backdrop-filter:blur(12px) saturate(1.1);border:1px solid var(--th-line)!important;box-shadow:0 22px 44px -22px rgba(0,0,0,.7)!important;transition:background 1.6s}
+body.th .dlg{background:var(--th-glass2)!important;border:1px solid var(--th-line)!important;box-shadow:0 22px 44px -22px rgba(0,0,0,.7)!important;transition:background 1.6s}
 body.th .dlg-txt{color:var(--th-ink)!important;text-shadow:0 1px 2px rgba(0,0,0,.45)}
 body.th .dlg .dbtn{background:rgba(255,255,255,.1)!important;color:var(--th-ink)!important;border-color:var(--th-line)!important}
 body.th .dlg .tskip{color:var(--th-acc)!important}

@@ -313,7 +313,7 @@ var FACEOK={},FACEING={};function loadFace(src){if(FACEING[src])return;FACEING[s
 /* 换装间在首页（所有课文共用）；没有首页（claude.ai 版）时就地提示 */
 function goWardrobe(){if(guestFig())return;if(HOME){try{sessionStorage.setItem("hora-return",location.pathname+location.search);}catch(e){}leaveTo(HOME+"#wardrobe");}}
 buildCast();
-function castLoop(){for(var w in CV){var on=SPEAKER===w;CV[w].parentElement.classList.toggle("on",on);drawActor(CV[w],w);}spriteFrame(performance.now()/1000);requestAnimationFrame(castLoop);}
+var castLast=0;function castLoop(){var _n=performance.now();if(_n-castLast<38){requestAnimationFrame(castLoop);return;}castLast=_n;for(var w in CV){var on=SPEAKER===w;CV[w].parentElement.classList.toggle("on",on);drawActor(CV[w],w);}spriteFrame(performance.now()/1000);requestAnimationFrame(castLoop);}
 requestAnimationFrame(castLoop);
 function refreshMe(){var b=$('.actor[data-who="me"] .nm');if(b)b.textContent=nameOf("me");var f=$('.fig[data-who="me"] .fnm');if(f)f.textContent=nameOf("me");}
 
@@ -812,7 +812,7 @@ function themeIntro(){var I=THEME.intro;if(!I)return;if((function(){try{return s
   var ov=el("div",{id:"thIntro",role:"dialog","aria-label":L.title},[el("div",{class:"thi-bg",style:'background-image:url("'+(I.bg||L.bg)+'")'}),el("div",{class:"thi-in"},[el("h1",{class:"thi-t",text:I.title||L.textTitle}),el("p",{class:"thi-a",text:I.author||L.author||""}),el("div",{class:"thi-lines"},(I.lines||[]).map(function(t,k){return el("p",{text:t,style:"animation-delay:"+(1.2+k*.9)+"s"});})),el("button",{type:"button",class:"thi-go",text:I.btn||"进入 ▸",style:"animation-delay:"+(1.6+(I.lines||[]).length*.9)+"s"})])]);
   document.body.append(ov);var gone=false;function go(){if(gone)return;gone=true;try{sessionStorage.setItem("thIntro:"+L.id,"1");}catch(e){}ov.classList.add("out");setTimeout(function(){ov.remove();},1300);}
   ov.addEventListener("click",go);setTimeout(go,(I.auto||14)*1000);}
-(function(){if(!THEME)return;document.body.classList.add("th","th-"+THEME.name);[THEME.base||"../theme-base.css?v=11201500",THEME.css].forEach(function(h){if(!h)return;var lk=document.createElement("link");lk.rel="stylesheet";lk.href=h;document.head.append(lk);});setTimeout(themeIntro,0);})();
+(function(){if(!THEME)return;document.body.classList.add("th","th-"+THEME.name);[THEME.base||"../theme-base.css?v=11231000",THEME.css].forEach(function(h){if(!h)return;var lk=document.createElement("link");lk.rel="stylesheet";lk.href=h;document.head.append(lk);});setTimeout(themeIntro,0);})();
 /* 讲解栏内容放不下时，底部提示“往下滑，还有”（滑到底就消失） */
 (function(){var w=$(".work");if(!w)return;var tip=el("button",{type:"button",class:"moretip","aria-hidden":"true",text:"往下滑，还有 ▾"});tip.addEventListener("click",function(){w.scrollBy({top:w.clientHeight*.7,behavior:"smooth"});});w.append(tip);
   function chk(){var more=w.scrollHeight-w.clientHeight-w.scrollTop>24;tip.classList.toggle("on",more);}w.addEventListener("scroll",chk,{passive:true});setInterval(chk,600);})();

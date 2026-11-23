@@ -168,7 +168,8 @@ function fullText() {
 var ZBG = null;
 function zxBg(src) { if (!Z.theme || !src) return; if (!ZBG) { ZBG = document.createElement("div"); ZBG.id = "zxbg"; ZBG.setAttribute("aria-hidden", "true"); ZBG.innerHTML = "<i></i><i></i>"; document.body.prepend(ZBG); }
   var ls = ZBG.querySelectorAll("i"), cur = ZBG.dataset.cur === "1" ? 1 : 0, nx = 1 - cur; if (ZBG.dataset.src === src) return; ZBG.dataset.src = src;
-  var im = new Image(); im.onload = function () { if (ZBG.dataset.src !== src) return; ls[nx].style.backgroundImage = 'url("' + src + '")'; ls[nx].classList.add("on"); ls[cur].classList.remove("on"); ZBG.dataset.cur = String(nx); }; im.src = src; }
+  var soft = String(src).replace(/\.webp(\?.*)?$/, ".bg.webp"), raw = soft === src;   /* 11-23 为流畅：先用事先虚化压暗好的 .bg.webp */
+  var im = new Image(); im.onload = function () { if (ZBG.dataset.src !== src) return; ls[nx].style.backgroundImage = 'url("' + im.src + '")'; ls[nx].classList.toggle("raw", raw); ls[nx].classList.add("on"); ls[cur].classList.remove("on"); ZBG.dataset.cur = String(nx); }; im.onerror = function () { if (raw) return; raw = true; im.src = src; }; im.src = raw ? src : soft; }
 (function () { var t = Z.theme; if (!t) return; document.body.classList.add("thz", "thz-" + t.name); var st = document.body.style;
   if (t.acc) st.setProperty("--thz-acc", t.acc); if (t.accInk) st.setProperty("--thz-acc-ink", t.accInk); if (t.glass) st.setProperty("--thz-glass", t.glass); if (t.bgc) st.setProperty("--thz-bgc", t.bgc);
   zxBg((t.bg && t.bg.indexOf("/") < 0 ? (Z.sceneDir || "") : "") + t.bg); })();

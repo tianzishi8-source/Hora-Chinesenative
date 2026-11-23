@@ -8,7 +8,10 @@
     [["--thz-acc", T.acc], ["--thz-acc-ink", T.accInk], ["--thz-glass", T.glass], ["--thz-bgc", T.bgc]].forEach(function (v) { if (v[1]) b.style.setProperty(v[0], v[1]); });
     var box = document.createElement("div"); box.id = "zxbg"; box.setAttribute("aria-hidden", "true"); box.innerHTML = "<i></i><i></i>"; b.prepend(box);
     var cur = 0, src0 = "";
-    function set(src) { if (!src || src === src0) return; src0 = src; var im = new Image(); im.onload = function () { if (src0 !== src) return; var ls = box.querySelectorAll("i"), nx = 1 - cur; ls[nx].style.backgroundImage = 'url("' + src + '")'; ls[nx].classList.add("on"); ls[cur].classList.remove("on"); cur = nx; }; im.src = src; }
+    /* 11-23 为流畅：先用事先虚化、压暗好的 xxx.bg.webp；没有这张图时退回原图，由浏览器虚化（class raw） */
+    function set(src) { if (!src || src === src0) return; src0 = src; var soft = String(src).replace(/\.webp(\?.*)?$/, ".bg.webp"), raw = false;
+      function show(u) { if (src0 !== src) return; var ls = box.querySelectorAll("i"), nx = 1 - cur; ls[nx].style.backgroundImage = 'url("' + u + '")'; ls[nx].classList.toggle("raw", raw); ls[nx].classList.add("on"); ls[cur].classList.remove("on"); cur = nx; }
+      var im = new Image(); im.onload = function () { show(im.src); }; im.onerror = function () { if (raw) return; raw = true; im.src = src; }; im.src = soft === src ? (raw = true, src) : soft; }
     set(T.bg);
     function scan() { var imgs = document.querySelectorAll("main img, .stage img"); for (var i = 0; i < imgs.length; i++) { var m = imgs[i]; if (m.naturalWidth >= 800 && m.offsetParent) { var r = m.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight) { set(m.currentSrc || m.src); return; } } } }
     setInterval(scan, 900); addEventListener("scroll", function () { clearTimeout(scan.t); scan.t = setTimeout(scan, 200); }, { passive: true });

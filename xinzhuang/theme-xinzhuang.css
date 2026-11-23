@@ -1,6 +1,6 @@
 /* 《皇帝的新装》《黑信》专属外观：童话舞台（11-20）
    深蓝紫的幕布色玻璃，金色按钮；原文区是一页童话书：奶油色的纸、金色双线边框、四角小花饰。 */
-body.th-xinzhuang{--th-glass:rgba(34,28,72,.42);--th-glass2:rgba(30,24,62,.68);--th-line:rgba(230,215,255,.16);--th-ink:#f6f0ff;--th-dim:rgba(246,240,255,.74);
+body.th-xinzhuang{--th-glass:rgba(34,28,72,0.56);--th-glass2:rgba(30,24,62,0.82);--th-line:rgba(230,215,255,.16);--th-ink:#f6f0ff;--th-dim:rgba(246,240,255,.74);
   --th-acc:#e2bc5c;--th-acc-ink:#24190a;--th-vig:rgba(18,12,40,.32);--th-bg:#211c3d;--thi-acc:#e8c66c}
 body.th-xinzhuang #reader{background:radial-gradient(110% 80% at 50% 0%,rgba(255,250,236,.7),transparent 60%),url(img/paper.webp) 0 0/512px,#fbf3e0!important;border-radius:10px!important;
   box-shadow:inset 0 0 0 8px #fbf3e0,inset 0 0 0 10px rgba(190,150,60,.75),inset 0 0 0 13px #fbf3e0,inset 0 0 0 14px rgba(190,150,60,.55),0 30px 60px -30px rgba(0,0,0,.7)!important}

@@ -1,9 +1,9 @@
 /* 《日历》专属外观：晨光 · 日历纸（11-20）
    暖琥珀色的半透明玻璃，按钮是日历红；雪景转成清冷色。
    原文区：一本挂着的日历——顶上一条红色装订条、两个挂孔，下面是一页页的纸。 */
-body.th-rili{--th-glass:rgba(96,58,30,.36);--th-glass2:rgba(80,48,26,.64);--th-line:rgba(255,228,190,.2);--th-ink:#fff4e4;--th-dim:rgba(255,244,228,.78);
+body.th-rili{--th-glass:rgba(96,58,30,0.5);--th-glass2:rgba(80,48,26,0.78);--th-line:rgba(255,228,190,.2);--th-ink:#fff4e4;--th-dim:rgba(255,244,228,.78);
   --th-acc:#c8402f;--th-acc-ink:#fff6ec;--th-vig:rgba(80,40,10,.22);--th-bg:#3a2a1e;--thi-acc:#e6735f}
-body.th-rili[data-tint=cool]{--th-glass:rgba(44,60,84,.38);--th-glass2:rgba(38,52,74,.64);--th-line:rgba(220,235,255,.18);--th-ink:#f2f6fc;--th-vig:rgba(20,30,50,.25)}
+body.th-rili[data-tint=cool]{--th-glass:rgba(44,60,84,0.52);--th-glass2:rgba(38,52,74,0.78);--th-line:rgba(220,235,255,.18);--th-ink:#f2f6fc;--th-vig:rgba(20,30,50,.25)}
 body.th-rili #reader{background:linear-gradient(180deg,#c8402f 0 46px,#a83324 46px 50px,transparent 50px),url(img/paper.webp) 0 0/512px,#fdf8ee!important;border-radius:8px 8px 4px 4px!important;
   box-shadow:0 3px 0 -1px #f3eadb,0 6px 0 -2px #e9dfcd,0 30px 60px -30px rgba(0,0,0,.6)!important}
 body.th-rili #reader::before{content:"";position:absolute;left:0;right:0;top:15px;height:14px;pointer-events:none;

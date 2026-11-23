@@ -315,7 +315,7 @@ function goWardrobe(){if(guestFig())return;if(HOME){try{sessionStorage.setItem("
 buildCast();
 /* 11-20：场景里的人物（李商隐、琦君等 extra，没有立绘）说话时，借用主讲老师的头像位，画他的头像、换他的名字；主讲老师一开口就换回来 */
 var LEFTG="";function leftWho(w){if(w!==lead())return w;var sp=SPEAKER,P=sp&&PEOPLE[sp];if(P&&P.extra&&!P.fig&&!CV[sp])LEFTG=sp;else if(sp===w)LEFTG="";return LEFTG||w;}
-function castLoop(){for(var w in CV){var w2=leftWho(w),on=SPEAKER===w2,box=CV[w].parentElement;box.classList.toggle("on",on);var nm=$(".nm",box);if(nm&&nm.textContent!==nameOf(w2))nm.textContent=nameOf(w2);drawActor(CV[w],w2);}spriteFrame(performance.now()/1000);requestAnimationFrame(castLoop);}
+var castLast=0;function castLoop(){var _n=performance.now();if(_n-castLast<38){requestAnimationFrame(castLoop);return;}castLast=_n;for(var w in CV){var w2=leftWho(w),on=SPEAKER===w2,box=CV[w].parentElement;box.classList.toggle("on",on);var nm=$(".nm",box);if(nm&&nm.textContent!==nameOf(w2))nm.textContent=nameOf(w2);drawActor(CV[w],w2);}spriteFrame(performance.now()/1000);requestAnimationFrame(castLoop);}
 requestAnimationFrame(castLoop);
 function refreshMe(){var b=$('.actor[data-who="me"] .nm');if(b)b.textContent=nameOf("me");var f=$('.fig[data-who="me"] .fnm');if(f)f.textContent=nameOf("me");}
 
@@ -1278,22 +1278,28 @@ function resetUI(){KEEPQ=null;unstrike();unmaskParas();var c5=$("#cal5");if(c5)c
 /* 背景画：lesson 写 bg（默认），某天 / 某个环节也可以写 bg；淡淡铺在整个页面后面，换环节时渐变 */
 /* 雨、玻璃上的水珠、水面涟漪：画在背景画上面、文字下面。lesson.rainfx = {byBg:{背景图:{rain,angle,speed,len,drops,ripples,alpha}}}；
    rain 每 1000×1000 像素多少根雨丝；drops 玻璃上的水珠数；ripples 每秒涟漪数。系统设置“减少动态效果”时只画静止的水珠。 */
-var RAINFX=(function(){var cfg=L.rainfx||{},cv=null,cx=null,W=0,H=0,DPR=1,P=null,streaks=[],drops=[],rips=[],raf=0,last=0,still=false;
+var RAINFX=(function(){var cfg=L.rainfx||{},cv=null,cx=null,W=0,H=0,DPR=1,P=null,streaks=[],drops=[],rips=[],raf=0,last=0,still=false,lastDraw=0,SPR={},slowN=0,thin=1,SC=.67;   /* 雨按三分之二的分辨率画，再铺满屏幕：雨丝本来就虚，看不出差别 */
+  /* 11-23 老师反映卡顿、微闪：雨丝和水滴改成先画好的小图反复贴（不再每帧每根新建渐变），每秒最多画 25 次，按普通分辨率画；电脑慢时自动减半雨丝。 */
   try{still=matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
   function rnd(a,b){return a+Math.random()*(b-a);}
-  function size(){DPR=Math.min(window.devicePixelRatio||1,1.5);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0);}
+  function size(){DPR=1;W=innerWidth;H=innerHeight;cv.width=Math.round(W*SC);cv.height=Math.round(H*SC);cv.style.width=W+"px";cv.style.height=H+"px";cx.setTransform(SC,0,0,SC,0,0);}
   function mkStreak(top){var a=(P.angle||0)*Math.PI/180;return{x:rnd(-.2*W,1.2*W),y:top?rnd(-H,0):rnd(0,H),l:rnd(.6,1.3)*(P.len||22),v:rnd(.75,1.25)*(P.speed||900),o:rnd(.35,1)*(P.alpha||.32),a:a};}
   function mkDrop(){var r=Math.pow(Math.random(),1.6)*7.5+1.8;return{x:rnd(0,W),y:rnd(0,H),r:r,vy:0,slide:r>4.2&&Math.random()<.5,t:rnd(0,6)};}
-  function build(){var area=W*H/1e6;streaks=[];drops=[];rips=[];if(!P)return;var n=Math.round((P.rain||0)*area);for(var i=0;i<n;i++)streaks.push(mkStreak(false));for(var j=0;j<(P.drops||0);j++)drops.push(mkDrop());}
-  function drawDrop(d){var g=cx.createRadialGradient(d.x-d.r*.35,d.y-d.r*.4,d.r*.1,d.x,d.y,d.r);g.addColorStop(0,"rgba(255,255,255,.75)");g.addColorStop(.35,"rgba(235,242,246,.18)");g.addColorStop(.85,"rgba(60,70,80,.16)");g.addColorStop(1,"rgba(40,50,60,.32)");
-    cx.beginPath();cx.ellipse(d.x,d.y,d.r*.92,d.r,0,0,Math.PI*2);cx.fillStyle=g;cx.fill();cx.beginPath();cx.arc(d.x-d.r*.3,d.y-d.r*.38,Math.max(.6,d.r*.22),0,Math.PI*2);cx.fillStyle="rgba(255,255,255,.85)";cx.fill();}
-  function frame(t){raf=0;if(!P||document.hidden)return;var dt=Math.min(.05,(t-(last||t))/1000);last=t;cx.clearRect(0,0,W,H);
-    cx.lineCap="round";cx.lineWidth=1.1;for(var i=0;i<streaks.length;i++){var s=streaks[i],dx=Math.sin(s.a),dy=Math.cos(s.a);s.x+=dx*s.v*dt;s.y+=dy*s.v*dt;if(s.y-s.l>H||s.x<-.3*W||s.x>1.3*W){streaks[i]=mkStreak(true);continue;}
-      var gr=cx.createLinearGradient(s.x,s.y,s.x-dx*s.l,s.y-dy*s.l);gr.addColorStop(0,"rgba(240,246,250,"+s.o+")");gr.addColorStop(1,"rgba(240,246,250,0)");cx.strokeStyle=gr;cx.beginPath();cx.moveTo(s.x,s.y);cx.lineTo(s.x-dx*s.l,s.y-dy*s.l);cx.stroke();}
+  function build(){var area=W*H/1e6;streaks=[];drops=[];rips=[];SPR={};if(!P)return;var n=Math.round((P.rain||0)*area*thin);for(var i=0;i<n;i++)streaks.push(mkStreak(false));for(var j=0;j<(P.drops||0);j++)drops.push(mkDrop());}
+  /* 一根竖直的雨丝小图（上淡下浓），贴的时候按角度旋转 */
+  function streakSpr(len){var k="s"+len;if(SPR[k])return SPR[k];var c=document.createElement("canvas");c.width=4;c.height=len+2;var g=c.getContext("2d"),gr=g.createLinearGradient(0,0,0,len);gr.addColorStop(0,"rgba(240,246,250,0)");gr.addColorStop(1,"rgba(240,246,250,1)");g.strokeStyle=gr;g.lineWidth=1.1;g.lineCap="round";g.beginPath();g.moveTo(2,1);g.lineTo(2,len+1);g.stroke();return SPR[k]=c;}
+  function dropSpr(r){var q=Math.round(r*2)/2,k="d"+q;if(SPR[k])return SPR[k];var s=Math.ceil(q*2+4),c=document.createElement("canvas");c.width=c.height=s;var g=c.getContext("2d"),x=s/2,y=s/2,gr=g.createRadialGradient(x-q*.35,y-q*.4,q*.1,x,y,q);gr.addColorStop(0,"rgba(255,255,255,.75)");gr.addColorStop(.35,"rgba(235,242,246,.18)");gr.addColorStop(.85,"rgba(60,70,80,.16)");gr.addColorStop(1,"rgba(40,50,60,.32)");
+    g.beginPath();g.ellipse(x,y,q*.92,q,0,0,Math.PI*2);g.fillStyle=gr;g.fill();g.beginPath();g.arc(x-q*.3,y-q*.38,Math.max(.6,q*.22),0,Math.PI*2);g.fillStyle="rgba(255,255,255,.85)";g.fill();return SPR[k]=c;}
+  function drawDrop(d){var s=dropSpr(d.r);cx.drawImage(s,d.x-s.width/2,d.y-s.height/2);}
+  function frame(t){raf=0;if(!P||document.hidden)return;raf=requestAnimationFrame(frame);if(t-lastDraw<40)return;
+    var gap=t-(lastDraw||t);lastDraw=t;if(gap>70){if(++slowN>20&&thin>.5){thin=.5;slowN=0;build();}}else slowN=Math.max(0,slowN-1);
+    var dt=Math.min(.07,(t-(last||t))/1000);last=t;cx.clearRect(0,0,W,H);
+    for(var i=0;i<streaks.length;i++){var s=streaks[i],dx=Math.sin(s.a),dy=Math.cos(s.a);s.x+=dx*s.v*dt;s.y+=dy*s.v*dt;if(s.y-s.l>H||s.x<-.3*W||s.x>1.3*W){streaks[i]=mkStreak(true);continue;}
+      var sp=streakSpr(Math.round(s.l/4)*4);cx.globalAlpha=s.o;cx.setTransform(SC,0,0,SC,s.x*SC,s.y*SC);cx.rotate(-s.a);cx.drawImage(sp,-2,-sp.height+1);}
+    cx.setTransform(SC,0,0,SC,0,0);cx.globalAlpha=1;
     if(P.ripples){if(Math.random()<P.ripples*dt)rips.push({x:rnd(.3*W,W),y:rnd(.72*H,.98*H),r:1,m:rnd(10,26)});
       for(var k=rips.length-1;k>=0;k--){var r=rips[k];r.r+=24*dt;var o=(1-r.r/r.m)*.5;if(o<=0){rips.splice(k,1);continue;}cx.strokeStyle="rgba(250,252,255,"+o+")";cx.lineWidth=1;cx.beginPath();cx.ellipse(r.x,r.y,r.r,r.r*.32,0,0,Math.PI*2);cx.stroke();}}
-    for(var j=0;j<drops.length;j++){var d=drops[j];if(d.slide){d.t-=dt;if(d.t<=0){d.vy=Math.min(d.vy+30*dt,46);d.y+=d.vy*dt;cx.strokeStyle="rgba(230,238,244,.22)";cx.lineWidth=d.r*.55;cx.beginPath();cx.moveTo(d.x,d.y-d.r);cx.lineTo(d.x,d.y-d.r-Math.min(60,d.vy*1.4));cx.stroke();if(d.vy>=46&&Math.random()<.01){d.vy=0;d.t=rnd(1,5);}}if(d.y-d.r>H){drops[j]=mkDrop();drops[j].y=-8;}}drawDrop(d);}
-    raf=requestAnimationFrame(frame);}
+    cx.lineCap="round";for(var j=0;j<drops.length;j++){var d=drops[j];if(d.slide){d.t-=dt;if(d.t<=0){d.vy=Math.min(d.vy+30*dt,46);d.y+=d.vy*dt;cx.strokeStyle="rgba(230,238,244,.22)";cx.lineWidth=d.r*.55;cx.beginPath();cx.moveTo(d.x,d.y-d.r);cx.lineTo(d.x,d.y-d.r-Math.min(60,d.vy*1.4));cx.stroke();if(d.vy>=46&&Math.random()<.01){d.vy=0;d.t=rnd(1,5);}}if(d.y-d.r>H){drops[j]=mkDrop();drops[j].y=-8;}}drawDrop(d);}}
   function kick(){if(!raf&&P&&!still)raf=requestAnimationFrame(frame);}
   function stillDraw(){if(!P){cx.clearRect(0,0,W,H);return;}cx.clearRect(0,0,W,H);drops.forEach(drawDrop);}
   function set(src){var p=(cfg.byBg||{})[src]||cfg.def||null;if(p===P)return;P=p;if(!cv){if(!p)return;cv=el("canvas",{id:"rainfx","aria-hidden":"true"});document.body.prepend(cv);cx=cv.getContext("2d");size();addEventListener("resize",function(){size();build();if(still)stillDraw();});document.addEventListener("visibilitychange",function(){last=0;if(!document.hidden)kick();});}
