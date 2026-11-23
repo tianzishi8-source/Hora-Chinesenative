@@ -117,7 +117,7 @@ function render() {
 }
 var GATE = function () {};
 function wire() {
-  $$("[data-l]").forEach(function (b) { b.addEventListener("click", function () { L = +b.getAttribute("data-l"); SI = S.stage[L] || 0; render(); }); });
+  $$(".lessons [data-l]").forEach(function (b) { b.addEventListener("click", function () { L = +b.getAttribute("data-l");   /* 11-23 只认顶栏课时按钮：配对题左栏也带 data-l，原来点它会把课时改成 0 而整页卡死 */ SI = S.stage[L] || 0; render(); }); });
   $$(".st[data-s]").forEach(function (b) { b.addEventListener("click", function () { SI = +b.getAttribute("data-s"); render(); }); });
   $("#bMap").addEventListener("click", leave);
   $("#bSnd").addEventListener("click", function () { soundOn = !soundOn; lsPut("zx-sound", soundOn); this.textContent = "声音" + (soundOn ? "开" : "关"); this.setAttribute("aria-pressed", soundOn); if (!soundOn) stopVoice(); });
