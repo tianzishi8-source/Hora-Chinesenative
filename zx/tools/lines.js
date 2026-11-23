@@ -12,7 +12,8 @@ function add(key, say) { if (!say) return; if (/\{name\}/.test(say)) { skipped++
 const GK = (Z.guide && Z.guide.vkey) || "g";
 Object.keys(T.paras).forEach(p => T.paras[p].forEach(x => add("read", typeof x === "string" ? x : x.t)));
 Z.lessons.forEach(l => l.stages.forEach(s => s.blocks.forEach(b => { const gk = (l.guide && l.guide.vkey) || GK;
-  if (b.type === "talk") b.lines.forEach(x => { if (x.who === "bd") { add("qx", x.say); add("cg", x.say); } else if (x.who === "g") add(gk, x.say); else if (x.who === "hy" || x.who === "narr") add(x.who, x.say); });
+  if (b.type === "talk") b.lines.forEach(x => { if (x.who === "bd") { add("qx", x.say); add("cg", x.say); } else if (x.who === "g") add(gk, x.say); else if (x.who === "hy" || x.who === "narr") add(x.who, x.say); else if (Z.cast && Z.cast[x.who]) add(Z.cast[x.who].v || x.who, x.say); });
+  if (b.type === "choice" && b.why && b.whyWho) Object.keys(b.why).forEach(k => { const w = b.whyWho; if (w === "bd") { add("qx", b.why[k]); add("cg", b.why[k]); } else if (w === "g") add(gk, b.why[k]); else add((Z.cast && Z.cast[w] && Z.cast[w].v) || w, b.why[k]); });
   if (b.type === "py") b.items.forEach(it => add("read", it.say || it.w));
 })));
 const by = {}; out.forEach(o => { by[o.who] = (by[o.who] || 0) + 1; });

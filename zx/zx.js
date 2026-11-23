@@ -7,7 +7,8 @@
  *   talk  人物对话：lines:[{who:"bd" 伴学（学生在首页选的清弦或长歌）/ "g" 作者 / "hy" 徽音老师 / "me" 我 / "narr" 旁白, say}]，逐句打字＋录音；读完才算完成
  *   read  原文：paras:[段落 id]，可点句听朗读；开关：注音、注释（红字可点）、白话；listen:1 显示“从头朗读”
  *   py    字音：items:[{w, opts, ans}]
- *   choice 单选：q, sent（【】标重点）, opts, ans（正确选项文字）, explain
+ *   choice 单选：q, sent（【】标重点）, opts, ans（正确选项文字）, explain；why:{选项文字:回应}＋whyWho（谁说，有录音）——每个选项各有回应
+ *   Z.cast：生活情景里的其他人物 {键:{name, src 立绘, c:[头部中心x,y], v 录音键}}，talk 的 who 和 whyWho 都可以用这些键
  *   flip  翻卡：cards:[{f, b, tag}]
  *   match 配对：pairs:[[左, 右]]（右边打乱，点左再点右）
  *   pick  找句子：para, q, ans:[句子序号]，explain
@@ -50,6 +51,7 @@ function who(w) {
   if (w === "bd") return { nm: BUD[b.who].name, cls: "bd", src: CHARS + b.who + "_outfit_" + b.outfit + ".webp", c: BUD[b.who].c, v: BUD[b.who].v };
   if (w === "g") return { nm: GD().name || Z.author, cls: "g", src: guideSrc(), c: [512, 250], v: GD().vkey || "g", sc: .95 };
   if (w === "hy") return { nm: "徽音老师", cls: "hy", src: CHARS + "teacher_outfit_daily.webp", c: [505, 110], v: "hy" };
+  if (Z.cast && Z.cast[w]) { var x = Z.cast[w]; return { nm: x.name, cls: "x", src: x.src, c: x.c || [512, 250], v: x.v || w, sc: x.sc }; }   /* 11-24 生活情景里的其他人物（如同学小满）：Z.cast={键:{name,src,c,v}} */
   if (w === "me") return { nm: ME ? ME.name : "我", cls: "me", src: CHARS + myHair() + "_outfit_ancient.webp", c: /^b/.test(myHair()) ? [470, 214] : [480, 318], v: "" };
   return { nm: "", cls: "narr", v: "narr" };
 }
@@ -190,10 +192,11 @@ BLOCK.talk = function (el, b, id) {
   var r = gate(id), lines = b.lines, k = 0, typing = null, timer = null, alive = true;
   var g = who("g"), bd = who("bd"), me = who("me"), hy = who("hy");
   var cast = {}; lines.forEach(function (l) { cast[l.who] = 1; });
-  var leftWho = cast.g ? g : cast.hy ? hy : null;
-  el.innerHTML = '<div class="talk">' + (leftWho ? '<div class="avs l"><div class="av" data-w="' + (cast.g ? "g" : "hy") + '">' + avatar(leftWho.src, leftWho.c, 84, leftWho.sc) + "</div>" + esc(leftWho.nm) + "</div>" : "<div></div>") +
+  var xk = Object.keys(cast).filter(function (w) { return Z.cast && Z.cast[w]; }), leftKey = cast.g ? "g" : cast.hy ? "hy" : xk[0] || "", leftWho = leftKey ? who(leftKey) : null;
+  var extraR = xk.filter(function (w) { return w !== leftKey; }).map(function (w) { var x = who(w); return '<div class="avs"><div class="av" data-w="' + w + '">' + avatar(x.src, x.c, 70, x.sc) + "</div>" + esc(x.nm) + "</div>"; }).join("") + (cast.hy && leftKey !== "hy" && !cast.g ? "" : "");
+  el.innerHTML = '<div class="talk">' + (leftWho ? '<div class="avs l"><div class="av" data-w="' + leftKey + '">' + avatar(leftWho.src, leftWho.c, 84, leftWho.sc) + "</div>" + esc(leftWho.nm) + "</div>" : "<div></div>") +
     '<div class="bubble"><span class="nm" id="nm' + id + '"></span><p class="say" id="say' + id + '"></p><div class="row"><span class="prog" id="pg' + id + '"></span><span class="row"><button type="button" class="btn ghost sm" data-log>回看</button><button type="button" class="btn sm" data-go>继续</button></span></div></div>' +
-    '<div class="avr">' + (cast.hy && cast.g ? '<div class="avs"><div class="av" data-w="hy">' + avatar(hy.src, hy.c, 70) + "</div>徽音老师</div>" : "") + '<div class="avs"><div class="av" data-w="me">' + avatar(me.src, me.c, 70) + "</div>我</div>" + (cast.bd ? '<div class="avs"><div class="av" data-w="bd">' + avatar(bd.src, bd.c, 84) + "</div>" + esc(bd.nm) + "</div>" : "") + "</div></div>";
+    '<div class="avr">' + (cast.hy && leftKey !== "hy" ? '<div class="avs"><div class="av" data-w="hy">' + avatar(hy.src, hy.c, 70) + "</div>徽音老师</div>" : "") + extraR + '<div class="avs"><div class="av" data-w="me">' + avatar(me.src, me.c, 70) + "</div>我</div>" + (cast.bd ? '<div class="avs"><div class="av" data-w="bd">' + avatar(bd.src, bd.c, 84) + "</div>" + esc(bd.nm) + "</div>" : "") + "</div></div>";
   var bub = $(".bubble", el), nm = $("#nm" + CSS.escape(id), el), say = $("#say" + CSS.escape(id), el), pg = $("#pg" + CSS.escape(id), el), goB = $("[data-go]", el);
   cleanups.push(function () { alive = false; clearInterval(typing); clearTimeout(timer); });
   function show() {
@@ -249,7 +252,8 @@ BLOCK.choice = function (el, b, id) {
   el.innerHTML = '<div class="box"><p class="kicker">' + esc(b.title || "想一想，选一选") + "</p>" + (b.sent ? '<p class="sent">' + hl(b.sent) + "</p>" : "") + '<p class="q">' + esc(fillName(b.q)) + '</p><div class="opts">' + opts.map(function (o, i) { return '<button type="button" class="opt" data-i="' + i + '">' + esc(o) + "</button>"; }).join("") + "</div><div data-fb></div></div>";
   $$(".opt", el).forEach(function (bt) { bt.addEventListener("click", function () {
     var o = opts[+bt.getAttribute("data-i")], ok = o === b.ans; $$(".opt", el).forEach(function (x) { x.disabled = true; if (opts[+x.getAttribute("data-i")] === b.ans) x.classList.add("right"); }); if (!ok) bt.classList.add("wrong");
-    $("[data-fb]", el).innerHTML = '<div class="fb ' + (ok ? "ok" : "no") + '"><b>' + (ok ? "对了！" : "正确答案：" + esc(b.ans)) + "</b>" + (b.explain ? "<p>" + esc(b.explain) + "</p>" : "") + "</div>"; r.done(ok ? 1 : 0);
+    var rp = b.why && b.why[o], rw = rp && b.whyWho ? who(b.whyWho) : null;   /* 11-24 每个选项各有回应：why={选项文字:回应}，whyWho＝谁来说 */
+    $("[data-fb]", el).innerHTML = '<div class="fb ' + (ok ? "ok" : "no") + '"><b>' + (ok ? "对了！" : "正确答案：" + esc(b.ans)) + "</b>" + (rp ? "<p>" + (rw && rw.nm ? "<b>" + esc(rw.nm) + "：</b>" : "") + esc(fillName(rp)) + "</p>" : "") + (b.explain ? "<p>" + esc(b.explain) + "</p>" : "") + "</div>"; if (rp && rw && rw.v) play(rw.v, rp); r.done(ok ? 1 : 0);
   }); });
   return r;
 };
