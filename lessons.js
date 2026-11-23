@@ -44,6 +44,11 @@ window.HORA_LESSONS = [
     open: 1, total: 1, unit: "课时",
     /* 11-23 老师定：八年级期末前按价值选篇，第四单元“读书妙语”先上这一篇，11/27 一节自学（《读书杂谈》不上，免得一节塞两篇） */
     pic: "dushu/img/scene-study.webp", picAlt: "示意画：一间书房" },
+  { id: "g8-kongmeng", folder: "kongmeng", grade: 8, title: "孔孟论学习", author: "《论语》《孟子》",
+    blurb: "两千多年前，孔子和孟子怎样谈学习：学的乐趣、学和思、不知为不知、专心和恒心、不尽信书。读懂九则，背下来。",
+    open: 1, total: 1, unit: "课时",
+    /* 11-23 老师定：12/7 一节，课本十三则课上读九则（都要背），其余四则课后读懂 */
+    pic: "kongmeng/img/scene-yard.webp", picAlt: "示意画：院中设席读书" },
   { id: "g8-zhizhu", folder: "zhizhu", grade: 8, title: "蜘蛛", author: "哥尔斯密",
     blurb: "墙角的蜘蛛小八不服气：两百多年前那个英国人写的，哪句是看见的，哪句是猜的？你来当核查员。最后回头看上个单元的蚂蚁。",
     open: 3, total: 3,
