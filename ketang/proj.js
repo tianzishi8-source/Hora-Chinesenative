@@ -25,6 +25,7 @@
     if (cur) chunks.push(cur);
     if (chunks.length < 2) return [st];
     var tail = ["hold", "copy", "btns", "timer", "tip", "respond", "id"];
+    if (st.cue && st.cue.k === "call") tail.push("cue");   // 点名放在最后一截：话说完才点名，不会被下一截切断
     return chunks.map(function (c, i) {
       var o = {};
       if (i === 0) Object.keys(st).forEach(function (k) { if (tail.indexOf(k) < 0) o[k] = st[k]; });
@@ -700,7 +701,8 @@
     var all = roster(); if (!all.length) return "";
     var done = lsGet(rkey("called"), []);
     var pool = all.filter(function (n) { return done.indexOf(n) < 0 && avoid.indexOf(n) < 0; });
-    if (!pool.length) { lsSet(rkey("called"), []); pool = all.filter(function (n) { return avoid.indexOf(n) < 0; }); if (!pool.length) pool = all; }
+    if (!pool.length) { lsSet(rkey("called"), []); pool = all.filter(function (n) { return avoid.indexOf(n) < 0; }); }
+    if (!pool.length) pool = all.length > 1 ? all.filter(function (n) { return n !== curName; }) : all;   // 全班都排进来了（小班常见）：再加人时至少别连着点同一个
     var n = pool[Math.floor(Math.random() * pool.length)];
     lsSet(rkey("called"), lsGet(rkey("called"), []).concat([n]));
     return n;
@@ -708,7 +710,7 @@
   function paintCall() {
     var box = $(".cue .callbox"); if (!box) return;
     var nm = box.querySelector(".nm"); nm.textContent = curName; nm.classList.remove("pop"); void nm.offsetWidth; nm.classList.add("pop");
-    box.querySelector(".queue").innerHTML = group.map(function (n, i) { return '<span class="' + (i < gi ? "done" : i === gi ? "now" : "") + '">' + "①②③④⑤⑥"[i] + esc(n) + "</span>"; }).join("");
+    box.querySelector(".queue").innerHTML = group.map(function (n, i) { return '<span class="' + (i < gi ? "done" : i === gi ? "now" : "") + '">' + ("①②③④⑤⑥⑦⑧⑨⑩"[i] || (i + 1) + ".") + esc(n) + "</span>"; }).join("");
   }
   function voiceCall(token) {
     var line = CALLS[callNo++ % CALLS.length].replace("{n}", curName);
@@ -718,10 +720,12 @@
   function startCall(c, token) {
     var cnt = c.n || L.callCount || [2, 3];
     if (cnt.length) cnt = cnt[Math.floor(Math.random() * cnt.length)];
+    cnt = Math.min(cnt, roster().length);   // 名单比要点的人少（1～2 人）：不排重复的名字
     group = []; for (var i = 0; i < cnt; i++) { var n = pickName(group); if (n) group.push(n); }
     gi = 0; curName = group[0] || ""; if (!curName) return;
     paintCall(); voiceCall(token);
   }
+  function callTip() { return roster().length ? "被点到的同学说完，点“继续”；换人点“下一位”。" : "请老师点一位同学，说完点“继续”。"; }
   // 下一位：排好的人点完了，就再加一位
   function nextCall(token) {
     if (!group.length) return;
@@ -745,8 +749,18 @@
     $("#rreset").onclick = function () { lsSet(rkey("called"), []); toast("已清空，重新从头点"); d.hidden = true; };
     $("#rok").onclick = function () {
       var list = $("#rlist").value.split(/[\s,，、;；]+/).map(function (x) { return x.trim(); }).filter(Boolean);
+      var wasEmpty = !roster().length, oldTip = callTip();
       lsSet(rkey("list"), list); d.hidden = true; toast("名单已保存：" + list.length + " 人");
-      var st = STEPS[cur]; if (st && st.cue && st.cue.k === "call") showCue(st.cue);
+      var st = STEPS[cur];
+      if (st && st.cue && st.cue.k === "call") {
+        showCue(st.cue);
+        // 11-23：点名步骤现在会停住，助教常在这一步现场输入名单；原来名单空时没排点名，存好后“下一位”点了没反应
+        var has = roster().length > 0;
+        if (tipEl.textContent === oldTip) setTip(callTip());   // 名单从无到有、从有到无，提示跟着换（步骤自己的提示、回应提示、环节结束提示不动）
+        if (!has) { group = []; curName = ""; }               // 清空了：不留上一份名单的名字
+        else if (wasEmpty) startCall(st.cue, TOKEN);
+        else if (group.length) paintCall();
+      }
     };
   }
 
@@ -883,7 +897,8 @@
     actors[LEAD].el.classList.toggle("away", !S.fanIn);
     respEl.hidden = true;
     $("#next").classList.remove("pulse");
-    setTip(st.tip || (st.copy ? "抄好了，再点“继续”。" : ""));
+    var isCall = !!(st.cue && st.cue.k === "call");
+    setTip(st.tip || (st.copy ? "抄好了，再点“继续”。" : isCall ? callTip() : ""));
     // 人物表情
     Object.keys(actors).forEach(function (k) { actors[k].mood = (st.think && k !== LEAD) ? "think" : (st.who === k && st.face) ? st.face : "idle"; setFace(k, restFace(k)); });
     // 额外按钮
@@ -914,7 +929,8 @@
     if (st.respond) showRespond(st.respond, token);
     run.then(function () {
       if (token !== TOKEN) return;
-      var stop = st.hold || st.copy || st.timer || st.respond || st.btns || last;
+      // 11-23 课堂反馈“点名环节容易跳台词”：三级台阶的点名步骤没写 hold，点完名 0.9 秒就自动跳走、名字录音被切断。点名步骤一律停住等助教
+      var stop = st.hold || st.copy || st.timer || st.respond || st.btns || isCall || last;
       var nextSeg = !last && STEPS[n + 1]._seg !== st._seg;
       if (nextSeg) { setTip((st.copy ? "抄好了再点“继续”。" : "本环节结束。") + "下一环节：" + L.segments[STEPS[n + 1]._seg].t + "。准备好了点“继续”。"); $("#next").classList.add("pulse"); return; }
       if (stop) { if (!st.timer) $("#next").classList.add("pulse"); return; }
