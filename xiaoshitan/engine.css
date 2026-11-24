@@ -1027,3 +1027,9 @@ textarea.fixnote{width:100%;margin-top:6px}
 
 /* 11-22 默写错字提示 */
 .typonote{color:#b3261e;font-weight:600}
+
+/* 11-24 问答题：几份参考答案，选一份抄到课本 */
+.xsh-refi{margin:6px 0 8px;padding:6px 10px;background:rgba(255,255,255,.55);border-left:3px solid #3f6b52;border-radius:6px}
+.xsh-refi b{display:block;font-size:.9rem;color:#3f6b52;margin-bottom:2px}
+.xsh-cp .note{margin:6px 0 2px}
+.xsh-pick .xchip{font-weight:600}

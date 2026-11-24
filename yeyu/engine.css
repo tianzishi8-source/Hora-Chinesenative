@@ -905,3 +905,22 @@ textarea.fixnote{width:100%;margin-top:6px}
 
 /* 11-22 默写错字提示 */
 .typonote{color:#b3261e;font-weight:600}
+
+/* 11-24 问答题（与《小石潭记》同一套样式） */
+.xsh-frame{display:flex;gap:10px;align-items:flex-start;background:rgba(63,107,82,.07);border:1px dashed var(--line);border-radius:10px;padding:8px 12px;margin:8px 0;font-size:.98rem;line-height:1.7}
+.xsh-frame b{white-space:nowrap;color:#3f6b52}
+.xshang{background:linear-gradient(#fbf8ef,#f3eddc);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:10px}
+.xshang h5{margin:6px 0 4px;font-size:.95rem;color:#3f6b52}
+.xshang .xsh-ref{font:1.05rem/1.85 var(--f-text);margin:0}
+.xsh-pts{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.xsh-pts .xchip.sel{background:#3f6b52;color:#fff;border-color:#3f6b52}
+.xsh-pts .xchip.sel::before{content:"✓ "}
+.xsh-pz{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;position:relative}
+.xsh-pz .seal{position:absolute;right:0;top:8px}
+.xsh-pz p{margin:4px 0}
+.xsh-pz .xsh-pzt{font:700 1.05rem/1.8 var(--f-text);color:#7a3a1f}
+/* 11-24 问答题：几份参考答案，选一份抄到课本 */
+.xsh-refi{margin:6px 0 8px;padding:6px 10px;background:rgba(255,255,255,.55);border-left:3px solid #3f6b52;border-radius:6px}
+.xsh-refi b{display:block;font-size:.9rem;color:#3f6b52;margin-bottom:2px}
+.xsh-cp .note{margin:6px 0 2px}
+.xsh-pick .xchip{font-weight:600}
