@@ -747,3 +747,14 @@ textarea.fixnote{width:100%;margin-top:6px}
 
 /* 11-22 默写错字提示 */
 .typonote{color:#b3261e;font-weight:600}
+/* 11-24 自己写（按得分点判）：得分点清单、参考写法 */
+.wfb:empty{display:none}
+.wfb{margin-top:8px}
+.wpts{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:.93rem;line-height:1.55}
+.wpts li{padding:4px 10px;border-radius:8px;background:var(--page2)}
+.wpts li.y{color:var(--cool)}
+.wpts li.n{border-left:3px solid var(--accent)}
+.wpts li.n b{color:var(--accent-deep)}
+.wref{margin-top:10px;padding:10px 14px;border-left:3px solid var(--cool);background:var(--cool-soft);border-radius:0 10px 10px 0}
+.wref b{display:block;font-size:.85rem;color:var(--cool);margin-bottom:2px}
+.wref p{margin:0;font-family:var(--f-text);line-height:1.85}

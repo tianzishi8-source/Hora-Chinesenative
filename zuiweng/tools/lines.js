@@ -20,6 +20,7 @@ for(const d of L.days.concat(L.reviews||[]).concat(PXDAY)){add(d.endWho||lead,d.
    case"mc":add(w,s.ask);(s.options||[]).forEach(o=>add(o.who||mfb,o.reply));break;
    case"trans":if(s.read!==false){add(w,s.src);add(w,s.tr);}if(s.replies)Object.values(s.replies).forEach(r=>add(s.who||coach,r));break;
    case"ask":add(w,s.say);(s.hints||[]).forEach(h=>add(mfb,h));(s.choices||[]).forEach(c=>{if(!c.ok)add(mfb,c.reply||"再回到原句读一读。");});add(s.who||mfb,s.reply||(s.ans?"对。"+s.ans:"对。"));add(mfb,"不着急，从这几个里选一选。");add(mfb,"句子找对了，有字写错了。对照原文，看清偏旁，再写一遍。");add(mfb,"还是那个字。把原文里的字和你写的比一比，再写。");break;
+   case"write":add(w,s.say);(s.pts||[]).forEach(pt=>add(mfb,pt.hint));add(s.who||mfb,s.reply||"写到了。看看参考写法，和你写的比一比。");add(mfb,s.short||"再多写几个字，用一两句话把意思说完整。");add(s.who||mfb,"这一题先看参考写法。对照你缺的那一点读懂它，再抄到课本上。错题本里还会再考你一次。");break;
    case"author":(s.qs||[]).forEach(it=>it.a.forEach(l=>add(it.who||w,l)));break;
    case"frame":if(s.nudge)add(s.nudge.who||lead,s.nudge.text);(s.replies||[]).forEach(r=>add(r.who||w,r.text));(s.parts||[]).forEach(pt=>add(coach,pt.short||"这一空再多写几个字。"));break;
    case"listen":add(s.who||lead,s.ask);add(s.a.who,s.a.text);add(s.b.who,s.b.text);break;
