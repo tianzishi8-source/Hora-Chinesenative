@@ -78,8 +78,8 @@ function $all(row){return Array.prototype.slice.call(row.querySelectorAll("butto
 /* ---------- 第3天 游、宴、欢、醉：点一群人，自己用一个字给它题名 ---------- */
 SC.feast=function(A){
   pic(A,"feast","day");var c=null,seen={};
-  var tags=[["g1",14,30,"山路上的行人","游"],["g2",58,44,"溪边、席上的酒菜","宴"],["g3",80,70,"投壶下棋的宾客","欢"],["g4",40,72,"白发的太守","醉"]];
-  A.hint("点一群人，再用一个字给它题名");
+  var tags=[["g1",14,30,"山路：来来往往的滁人","游"],["g2",58,44,"溪边的宴席：太守请客","宴"],["g3",80,70,"投壶下棋：众宾客","欢"],["g4",40,72,"席间：白发的太守","醉"]];
+  A.hint("点一处，再用一个字给那里的人题名");
   return A.line("intro").then(function(){return new Promise(function(res){var busy=false;
     tags.forEach(function(tg){var b=A.el("button",{type:"button",class:"zw-tag",text:tg[3]});b.style.left=tg[1]+"%";b.style.top=tg[2]+"%";A.frame.append(b);
       b.addEventListener("click",function(){if(busy||seen[tg[0]])return;busy=true;A.sfx("page");if(c)c.remove();
