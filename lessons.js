@@ -89,12 +89,13 @@ window.HORA_LESSONS = [
     pic: "youyyl/img/cover.webp", picAlt: "示意画：楼上的酒席，窗外洞庭湖风浪大作" },
   { id: "g8-jiangping", folder: "jp8zy", grade: 8, title: "考试讲评", author: "试卷 · 作文",
     blurb: "八年级第一、二单元检测：试卷逐题讲评（先亮答案、红笔批改，再讲怎样答完整）；作文讲评（最好的细节放对位置、结尾不说破、动作替人说话）。课堂投屏，助教点“继续”。",
-    open: 4, total: 4, unit: "项", static: true, chooseLead: "选一个：",
+    open: 5, total: 5, unit: "项", static: true, chooseLead: "选一个：",
     choose: [
       { label: "试卷讲评", folder: "ketang/jp-g8-1.html", desc: "课堂投屏，40 分钟：积累与运用、《绿》、《行是知之始》、仿写；每题先亮答案再讲。" },
       { label: "作文讲评", folder: "ketang/jp-g8-2.html", desc: "课堂投屏，40 分钟：三件事，每件都是看原句 → 回答 → 看示范 → 用铅笔改自己的。" },
       { label: "讲评（续）", folder: "ketang/jp-g8-3.html", desc: "课堂投屏，40 分钟：试卷第8—16题（只对答案、讲方法）＋作文三件事（当堂只改结尾）。" },
-      { label: "交作业（学生）", folder: "jp8zy", desc: "课后自己做：抄笔记卡、练笔（扩写细节、拆动作、新结尾）、改作文二稿、练笔总结自查，拍照交作业。" }
+      { label: "交作业（学生）", folder: "jp8zy", desc: "课后自己做：抄笔记卡、练笔（扩写细节、拆动作、新结尾）、改作文二稿、练笔总结自查，拍照交作业。" },
+      { label: "错别字闯关（学生）", folder: "cuozi", desc: "游戏：每题四个词，点出藏着的错字；每局 10 题，连对加分。考试和作文里错过的字出现得更多。全屏玩，中途退出这一局作废。" }
     ] },
   { id: "g9-jiangping", folder: "ketang/jp-g9-1.html", grade: 9, title: "考试讲评", author: "试卷 · 作文",
     blurb: "九上第三单元考试：试卷逐题讲评（先看答案，再讲为什么）；作文讲评（结尾不说破、高潮写慢、别人替你说）。课堂投屏，助教点“继续”。",
