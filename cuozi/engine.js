@@ -1212,12 +1212,14 @@ H.xstShang=function(s,tok){clearTask();if(typeof closeReaderIfNarrow==="function
           set(s.key+"_pts",g.length+"/"+(s.points||[]).length);set(s.key+"_copy",pick);
           logStep(s.obs,{try:1,answer:v+"｜自评："+g.length+"/"+(s.points||[]).length+(g.length?"（"+g.join("；")+"）":"")+"｜抄到课本："+pick});commit();res();});},rej);});});};
 /* ===== 错别字闯关（11-26 老师：“给学生一个刷错别字的游戏……在本界面禁止打字、退屏”） =====
-   每局 10 题；每题 4 个词，只有 1 个里面有错字，点出那个错字。每题 20 秒。
+   每局 10 题；每题 4 个词，只有 1 个里面有错字：①点出那个错字；②再从 4 个字里选出正确的写法（两步都对才算对）。每题 20 秒。
+   11-26 老师：“能认出来错字，但不知道正确的怎么写”→加第②步；“错的要让孩子继续刷好几次才算过关”→
+   错过的字进“错字清零”：之后每局优先出，每个要再对 3 次才清掉；清零（且至少玩完一局）才算过关。错过的字还要在纸上写、拍照交（作业）。
    这一步里不能打字（按键全部拦下）；开始一局时进全屏，一局中途退出全屏或切到别的窗口、别的应用，这一局作废。
    每局的成绩、错题、离开次数记进作答，老师页能看到；错过的词，下一局更容易再出现。 */
 H.czGame=function(s,tok){clearTask();if(typeof closeReaderIfNarrow==="function")closeReaderIfNarrow();
   var BANK=L.czBank||[],N=s.n||10,SEC=s.sec||20,who=s.who||lead();
-  var D=get("cz")||{};D.best=D.best||0;D.plays=D.plays||0;D.miss=D.miss||{};D.leave=D.leave||0;
+  var D=get("cz")||{};D.best=D.best||0;D.plays=D.plays||0;D.miss=D.miss||{};D.leave=D.leave||0;D.need=D.need||{};D.ever=D.ever||{};D.pass=!!D.pass;
   var root=el("div",{class:"czg"});task.append(root);xyLay();document.body.classList.add("cz-on");
   function keyBlock(e){if(e.key==="Escape")return;e.preventDefault();e.stopPropagation();}
   function noCopy(e){e.preventDefault();}
@@ -1235,35 +1237,53 @@ H.czGame=function(s,tok){clearTask();if(typeof closeReaderIfNarrow==="function")
   function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
   function wpick(pool,n,avoid){var out=[],used={};avoid=avoid||{};var arr=pool.map(function(b,k){return {b:b,k:k,w:1+(b.k?1:0)+Math.min(3,D.miss[b.w+b.i]||0)*2};});
     while(out.length<n&&arr.length){var tot=arr.reduce(function(a,x){return a+x.w;},0),r=Math.random()*tot,j=0;for(;j<arr.length;j++){r-=arr[j].w;if(r<=0)break;}j=Math.min(j,arr.length-1);var it=arr.splice(j,1)[0];if(used[it.b.w]||avoid[it.b.w])continue;used[it.b.w]=1;out.push(it.b);}return out;}
-  function build(){var bad=wpick(BANK,N);return bad.map(function(b){var others=shuffle(BANK.filter(function(x){return x.w!==b.w&&x.w.length<=5;})).slice(0,3);var tiles=shuffle([{b:b,bad:true}].concat(others.map(function(o){return {b:o,bad:false};})));return {bad:b,tiles:tiles};});}
+  function KEY(b){return b.w+b.i;}
+  function needList(){return BANK.filter(function(b){return D.need[KEY(b)]>0;});}
+  function build(){var nl=shuffle(needList()),used={},bad=[];nl.forEach(function(b){if(bad.length<Math.min(7,N)&&!used[b.w]){used[b.w]=1;bad.push(b);}});
+    bad=bad.concat(wpick(BANK.filter(function(b){return !used[b.w];}),N-bad.length));bad=shuffle(bad);return bad.map(function(b){var others=shuffle(BANK.filter(function(x){return x.w!==b.w&&x.w.length<=5;})).slice(0,3);var tiles=shuffle([{b:b,bad:true}].concat(others.map(function(o){return {b:o,bad:false};})));return {bad:b,tiles:tiles};});}
   function home(){inGame=false;clearInterval(timer);root.innerHTML="";
     root.append(el("div",{class:"cz-home"},[el("h3",{text:"错别字闯关"}),
-      el("p",{text:"每局 "+N+" 题。每题有 4 个词，其中只有 1 个词里藏着错字：用手指或鼠标点出那个错字。每题 "+SEC+" 秒，连对有加分。"}),
+      el("p",{text:"每局 "+N+" 题。每题有 4 个词，其中只有 1 个词里藏着错字：先点出那个错字，再选出它正确的写法。两步都对，这题才算对。每题 "+SEC+" 秒，连对有加分。"}),
+      el("p",{text:"怎样过关：错过的字会进“错字清零”，每个要在后面的局里再对 3 次才清掉。全部清零，才算过关。"}),
       el("p",{class:"cz-rule",text:"规则：这个界面不能打字；开始后会进入全屏。一局中途退出全屏、切到别的窗口或别的应用，这一局作废，老师能看到。"}),
-      el("p",{class:"cz-best",text:"我的最高分："+D.best+"　已玩 "+D.plays+" 局"+(Object.keys(D.miss).length?"　错过的词会更常出现":"")})]));
+      el("p",{class:"cz-best",text:"我的最高分："+D.best+"　已玩 "+D.plays+" 局"}),needBox()]));
     var go=btn("开始一局（全屏）");var row=el("div",{class:"row"},[go]);
-    if(done1||s.free){var fin=btn(s.finBtn||"不玩了，继续 ▸");fin.classList.add("ghost");row.append(fin);fin.addEventListener("click",function(){if(tok!==RUN.token)return;cleanup();RES();});}
+    if(passed()){var fin=btn(s.finBtn||"过关了，继续 ▸");fin.classList.add("ghost");row.append(fin);fin.addEventListener("click",function(){if(tok!==RUN.token)return;cleanup();RES();});}
+    else if(D.plays)root.append(el("p",{class:"note",text:"还没过关。今天刷不完，可以先关掉页面，下次接着刷：清零的进度会保存。"}));
     root.append(row);go.addEventListener("click",function(){if(tok!==RUN.token)return;enterFs();start();});}
+  function passed(){return D.plays>0&&!needList().length;}
+  function needBox(){var nl=needList();if(!D.plays)return null;if(!nl.length)return el("p",{class:"cz-pass",text:"✓ 错字清零了，过关！还可以接着玩，刷最高分。"});
+    var box=el("div",{class:"cz-need"},[el("b",{text:"错字清零：还剩 "+nl.length+" 个（每个再对 3 次）"})]);var ul=el("div",{class:"cz-needl"});nl.forEach(function(b){ul.append(el("span",{text:b.w+"（"+b.w[b.i]+"）还要对 "+D.need[KEY(b)]+" 次"}));});box.append(ul);return box;}
   function start(){Q=build();qi=0;score=0;combo=0;right=0;wrongs=[];inGame=true;ask();}
-  function ask(){clearInterval(timer);root.innerHTML="";var q=Q[qi],answered=false,left=SEC*10;
+  function ask(){clearInterval(timer);root.innerHTML="";var q=Q[qi],answered=false,found=false,left=SEC*10;
     var hud=el("div",{class:"cz-hud"},[el("span",{text:"第 "+(qi+1)+" / "+N+" 题"}),el("span",{class:"cz-combo",text:combo>1?"连对 ×"+combo:""}),el("b",{text:"得分 "+score})]);
     var bar=el("div",{class:"cz-bar"},[el("i")]);var grid=el("div",{class:"cz-grid"});var msg=el("div",{class:"cz-msg"});
     root.append(hud,bar,el("p",{class:"cz-q",text:"哪个词里有错字？点出那个错字。"}),grid,msg);
     q.tiles.forEach(function(t){var tile=el("div",{class:"cz-tile"});var chars=t.b.w.split("");if(t.bad)chars[t.b.i]=t.b.x;
       chars.forEach(function(c,ci){var b=el("button",{type:"button",class:"cz-ch",text:c});b.addEventListener("click",function(){if(answered||tok!==RUN.token)return;answer(t,ci,b,tile);});tile.append(b);});grid.append(tile);t.el=tile;});
-    function reveal(ok){answered=true;clearInterval(timer);var bt=q.tiles.filter(function(t){return t.bad;})[0];var bc=bt.el.children[q.bad.i];bc.classList.add("cz-bad");
-      bt.el.classList.add("cz-show");msg.innerHTML="";msg.append(el("div",{class:"cz-fix"},[el("b",{text:(ok?"✓ 找对了　":"正确写法：")}),el("span",{class:"cz-w",text:q.bad.w}),el("span",{class:"cz-x",text:"（不是“"+q.bad.x+"”）"})]),el("p",{class:"cz-t",text:q.bad.t}));
+    function reveal(ok,lab){answered=true;clearInterval(timer);var bt=q.tiles.filter(function(t){return t.bad;})[0];var bc=bt.el.children[q.bad.i];bc.classList.add("cz-bad");
+      bt.el.classList.add("cz-show");msg.innerHTML="";msg.append(el("div",{class:"cz-fix"},[el("b",{text:(ok?"✓ 全对了　":(lab||"正确写法："))}),el("span",{class:"cz-w",text:q.bad.w}),el("span",{class:"cz-x",text:"（不是“"+q.bad.x+"”）"})]),el("p",{class:"cz-t",text:q.bad.t}));
       var nx=btn(qi+1<N?"下一题 ▸":"看成绩 ▸");msg.append(el("div",{class:"row"},[nx]));nx.addEventListener("click",function(){if(tok!==RUN.token)return;qi++;if(qi<N)ask();else end();});
       if(ok){setTimeout(function(){if(inGame&&Q[qi]===q&&document.body.contains(nx))nx.click();},reduce?300:1600);}}
-    function answer(t,ci,b,tile){if(t.bad&&ci===t.b.i){combo++;right++;var pts=10+Math.min(combo-1,5)*2+Math.floor(left/40);score+=pts;b.classList.add("cz-ok");SOUND.sfx("ok");if(D.miss[q.bad.w+q.bad.i])D.miss[q.bad.w+q.bad.i]=Math.max(0,D.miss[q.bad.w+q.bad.i]-1);reveal(true);}
-      else{combo=0;b.classList.add("cz-no");SOUND.sfx("no");D.miss[q.bad.w+q.bad.i]=(D.miss[q.bad.w+q.bad.i]||0)+1;wrongs.push(q.bad.w);reveal(false);}}
-    timer=setInterval(function(){if(answered)return;left--;bar.firstChild.style.width=Math.max(0,left/(SEC*10)*100)+"%";if(left<=0){combo=0;D.miss[q.bad.w+q.bad.i]=(D.miss[q.bad.w+q.bad.i]||0)+1;wrongs.push(q.bad.w);SOUND.sfx("no");reveal(false);msg.firstChild.firstChild.textContent="时间到！正确写法：";}},100);}
+    function miss(){combo=0;var k=KEY(q.bad);D.miss[k]=(D.miss[k]||0)+1;D.need[k]=3;D.ever[q.bad.w+"｜"+q.bad.w[q.bad.i]]=1;wrongs.push(q.bad.w);SOUND.sfx("no");}
+    function good(){combo++;right++;var pts=10+Math.min(combo-1,5)*2+Math.floor(left/40);score+=pts;SOUND.sfx("ok");var k=KEY(q.bad);if(D.miss[k])D.miss[k]=Math.max(0,D.miss[k]-1);if(D.need[k]>0){D.need[k]--;if(!D.need[k])delete D.need[k];}}
+    function answer(t,ci,b,tile){if(found)return;if(t.bad&&ci===t.b.i){found=true;b.classList.add("cz-found");step2(b);}
+      else{b.classList.add("cz-no");miss();reveal(false);}}
+    function step2(b){/* 第②步：选出正确的写法 */var opts=shuffle((q.bad.o||q.bad.w[q.bad.i]).split(""));if(opts.length<2){good();reveal(true);return;}
+      msg.innerHTML="";var row2=el("div",{class:"cz-opts"});msg.append(el("p",{class:"cz-q2",text:"找到了！这个字应该怎么写？选出正确的："}),row2);
+      opts.forEach(function(c){var o=el("button",{type:"button",class:"cz-opt",text:c});o.addEventListener("click",function(){if(answered||tok!==RUN.token)return;
+        if(c===q.bad.w[q.bad.i]){o.classList.add("cz-ok");b.textContent=c;b.classList.remove("cz-found");b.classList.add("cz-fixed");good();reveal(true);}
+        else{o.classList.add("cz-no");miss();reveal(false,"选错了。正确写法：");}});row2.append(o);});xyLay();}
+    timer=setInterval(function(){if(answered)return;left--;bar.firstChild.style.width=Math.max(0,left/(SEC*10)*100)+"%";if(left<=0){miss();reveal(false,"时间到！正确写法：");}},100);}
   function end(){inGame=false;clearInterval(timer);exitFs();D.plays++;var nb=score>D.best;if(nb)D.best=score;set("cz",D);done1=true;
-    logStep(s.obs,{try:1,answer:"第"+D.plays+"局：对 "+right+"/"+N+"，得分 "+score+(wrongs.length?"；错："+wrongs.join("、"):"")+"；累计离开界面 "+D.leave+" 次"});commit();
+    logStep(s.obs,{try:1,answer:"第"+D.plays+"局：对 "+right+"/"+N+"，得分 "+score+(wrongs.length?"；错："+wrongs.join("、"):"")+"；错字清零还剩 "+needList().length+" 个；累计离开界面 "+D.leave+" 次"});commit();
     root.innerHTML="";root.append(el("div",{class:"cz-home"},[el("h3",{text:(right===N?"全对！":"这一局结束")}),el("p",{class:"cz-big",text:"对 "+right+" / "+N+"　得分 "+score+(nb?"　新纪录！":"")}),
       wrongs.length?el("div",{class:"cz-list"},[el("b",{text:"错的这几个，记一记："}),el("p",{text:wrongs.join("　")})]):el("p",{text:"一个都没错。再来一局，试试更高分？"})]));
-    var again=btn("再来一局（全屏）"),fin=btn(s.finBtn||"不玩了，继续 ▸");fin.classList.add("ghost");root.append(el("div",{class:"row"},[again,fin]));
-    again.addEventListener("click",function(){if(tok!==RUN.token)return;enterFs();start();});fin.addEventListener("click",function(){if(tok!==RUN.token)return;cleanup();RES();});
+    root.firstChild.append(needBox()||el("span"));
+    if(passed()&&!D.pass){D.pass=true;set("cz",D);logStep(s.passObs||{id:"cz-pass",label:"错别字闯关：过关（错字清零）",skill:"字形"},{try:1,answer:"第"+D.plays+"局过关；错过的字共 "+Object.keys(D.ever).length+" 个："+Object.keys(D.ever).map(function(x){return x.split("｜")[0];}).join("、")});commit();}
+    var again=btn("再来一局（全屏）");var row=el("div",{class:"row"},[again]);
+    if(passed()){var fin=btn(s.finBtn||"过关了，继续 ▸");fin.classList.add("ghost");row.append(fin);fin.addEventListener("click",function(){if(tok!==RUN.token)return;cleanup();RES();});}
+    root.append(row);again.addEventListener("click",function(){if(tok!==RUN.token)return;enterFs();start();});
     say(fill(right===N?"全对，真厉害！":right>=N-2?"不错！错的那几个，再看一眼。":"错的那几个，记一记写法和道理。再来一局，它们还会出现。"),who,tok).catch(function(){});}
   function abort(why){if(!inGame)return;inGame=false;clearInterval(timer);D.leave++;set("cz",D);logStep(s.obs,{miss:"leave",answer:"一局作废："+why+"（累计离开界面 "+D.leave+" 次）"});commit();
     root.innerHTML="";root.append(el("div",{class:"cz-home cz-warn"},[el("h3",{text:"这一局作废了"}),el("p",{text:"你"+why+"。闯关时要一直留在这个界面上。老师能看到离开的次数。"})]));
